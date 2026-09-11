@@ -15,6 +15,13 @@ from convolvger.core.models import (
     UnknownBlock,
 )
 
+THOUGHT_KNOWN_KEYS = frozenset({"summary", "content", "finished"})
+"""Thought fields this module maps or deliberately discards as bookkeeping.
+
+Anything outside this set is real content we cannot represent, so the
+whole thought is preserved verbatim rather than partially mapped.
+"""
+
 
 def _text_blocks(content: dict[str, Any]) -> list[ContentBlock]:
     blocks: list[ContentBlock] = []
@@ -48,10 +55,12 @@ def _thought_blocks(content: dict[str, Any]) -> list[ContentBlock]:
         extras = {
             key: value
             for key, value in thought.items()
-            if key not in ("summary", "content") and value not in (None, [], {}, "")
+            if key not in THOUGHT_KNOWN_KEYS and value not in (None, [], {}, "")
         }
         if not body and not summary:
             continue
+        if not body:
+            body, summary = summary or "", None
         if extras:
             blocks.append(
                 UnknownBlock(type="thoughts", text=body or summary, raw=thought)

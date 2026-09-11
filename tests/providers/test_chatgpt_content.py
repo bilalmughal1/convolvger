@@ -122,3 +122,42 @@ def test_empty_unknown_type_produces_no_block_and_no_warning() -> None:
 
 def test_missing_content_produces_no_blocks() -> None:
     assert convert(None) == ([], [])
+
+
+def test_thought_summary_becomes_text_when_body_is_empty() -> None:
+    """A search-progress thought has its only content in 'summary'."""
+    blocks, _ = convert(
+        {
+            "content_type": "thoughts",
+            "thoughts": [
+                {
+                    "summary": "Searching 3 websites",
+                    "content": "",
+                    "chunks": [],
+                    "finished": True,
+                }
+            ],
+        }
+    )
+
+    assert blocks == [ReasoningBlock(text="Searching 3 websites", label=None)]
+
+
+def test_finished_flag_alone_does_not_force_passthrough() -> None:
+    """'finished' is bookkeeping; it must not turn a thought into UnknownBlock."""
+    blocks, _ = convert(
+        {
+            "content_type": "thoughts",
+            "thoughts": [{"summary": "S", "content": "Body", "finished": True}],
+        }
+    )
+
+    assert isinstance(blocks[0], ReasoningBlock)
+
+
+def test_unmodelled_thought_field_still_forces_passthrough() -> None:
+    thought = {"summary": "S", "content": "Body", "chunks": ["a"], "finished": True}
+    blocks, _ = convert({"content_type": "thoughts", "thoughts": [thought]})
+
+    assert isinstance(blocks[0], UnknownBlock)
+    assert blocks[0].raw == thought
