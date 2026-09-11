@@ -74,6 +74,13 @@ ContentBlock = Annotated[
 
 
 class Message(BaseModel):
+    """A single turn in a conversation.
+
+    ``provider_metadata`` holds source fields this version does not model
+    canonically, so nothing recoverable is lost. Renderers must not read
+    it; it exists for validation and lossless export only.
+    """
+
     model_config = ConfigDict(extra="forbid")
 
     id: str | None = None
@@ -81,6 +88,11 @@ class Message(BaseModel):
     author: str | None = None
     timestamp: datetime | None = None
     content: list[ContentBlock] = Field(default_factory=list)
+    visible: bool = True
+    active: bool = True
+    status: str | None = None
+    recipient: str | None = None
+    provider_metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class Conversation(BaseModel):
