@@ -10,6 +10,8 @@ stays a trustworthy representation of what the snapshot contained.
 Nothing here is provider-specific.
 """
 
+from datetime import datetime
+
 from convolvger.core.models import (
     CodeBlock,
     ContentBlock,
@@ -81,6 +83,7 @@ def _provenance(
     omitted_inactive: int,
     omitted_empty: int,
     warnings: list[str] | None,
+    fetched_at: datetime | None,
 ) -> str:
     lines = [
         f"# {conversation.title or 'Untitled conversation'}",
@@ -92,6 +95,8 @@ def _provenance(
         lines.append(f"- Conversation id: {conversation.id}")
     if conversation.created_at:
         lines.append(f"- Snapshot created: {conversation.created_at.isoformat()}")
+    if fetched_at:
+        lines.append(f"- Retrieved: {fetched_at.isoformat()}")
     lines.append(
         f"- Messages: {len(conversation.messages)} in snapshot, {rendered} rendered"
     )
@@ -107,6 +112,18 @@ def _provenance(
         )
     if warnings:
         lines.append(f"- Extraction warnings: {len(warnings)}")
+    lines.extend(
+        [
+            "",
+            (
+                "> **Note on snapshots.** A provider's public share page can "
+                "change after it is published: content present when a "
+                "conversation was shared may be withheld or altered later. "
+                "This archive records what the snapshot contained when it "
+                "was retrieved, and nothing more."
+            ),
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -116,6 +133,7 @@ def render_markdown(
     include_hidden: bool = False,
     include_inactive: bool = False,
     warnings: list[str] | None = None,
+    fetched_at: datetime | None = None,
 ) -> str:
     """Render a conversation as Markdown.
 
@@ -147,6 +165,7 @@ def render_markdown(
             omitted_inactive,
             omitted_empty,
             warnings,
+            fetched_at,
         )
     ]
     sections.extend(_render_message(message) for message in selected)
