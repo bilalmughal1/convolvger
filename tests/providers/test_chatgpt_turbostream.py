@@ -166,3 +166,18 @@ def test_real_capture_decodes() -> None:
     result = decode_html(html)
 
     assert "loaderData" in result.value
+
+
+def test_non_standard_json_constants_are_warned_and_nulled() -> None:
+    """NaN and Infinity are not valid JSON and must never pass silently."""
+    flat, warnings = parse_stream(['[{"_1":2},"value",NaN]\n'])
+
+    assert flat == [{"_1": 2}, "value", None]
+    assert any("NaN" in warning for warning in warnings)
+
+
+def test_repeated_constants_warn_once_per_token() -> None:
+    _, warnings = parse_stream(["[NaN, NaN, Infinity]\n"])
+
+    assert len([w for w in warnings if "NaN" in w]) == 1
+    assert any("Infinity" in w for w in warnings)

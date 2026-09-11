@@ -48,8 +48,16 @@ def parse_stream(payloads: list[str]) -> tuple[list[Any], list[str]]:
     if not lines:
         raise TurboStreamError("Turbo-stream payload is empty")
 
+    seen_constants: set[str] = set()
+
+    def note_constant(token: str) -> None:
+        if token in seen_constants:
+            return
+        seen_constants.add(token)
+        warnings.append(f"non-standard JSON constant {token} stored as null")
+
     try:
-        flat = json.loads(lines[0])
+        flat = json.loads(lines[0], parse_constant=note_constant)
     except json.JSONDecodeError as exc:
         raise TurboStreamError(f"Leading turbo-stream line is not JSON: {exc.msg}") from exc
 
