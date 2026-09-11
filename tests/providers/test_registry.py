@@ -4,10 +4,10 @@ import pytest
 
 from convolvger.core.errors import ProviderNotFoundError
 from convolvger.core.models import (
-    ContentBlock,
     Conversation,
     Message,
     MessageRole,
+    TextBlock,
 )
 from convolvger.core.source import RawSource
 from convolvger.providers.base import Provider
@@ -41,7 +41,7 @@ class FakeProvider:
             messages=[
                 Message(
                     role=MessageRole.USER,
-                    content=[ContentBlock(type="text", content=source.content)],
+                    content=[TextBlock(text=source.content)],
                 )
             ],
         )
@@ -112,4 +112,4 @@ def test_provider_round_trip_produces_canonical_conversation() -> None:
     conversation = provider.parse(provider.fetch("https://fake.example/share/abc"))
 
     assert conversation.provider == "fake"
-    assert conversation.messages[0].content[0].content == "raw snapshot"
+    assert conversation.messages[0].content[0].text == "raw snapshot"

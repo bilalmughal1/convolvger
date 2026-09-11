@@ -1,10 +1,10 @@
 from datetime import UTC, datetime
 
 from convolvger.core.models import (
-    ContentBlock,
     Conversation,
     Message,
     MessageRole,
+    TextBlock,
 )
 
 
@@ -19,22 +19,12 @@ def test_conversation_can_be_created() -> None:
                 id="msg-1",
                 role=MessageRole.USER,
                 timestamp=datetime(2026, 1, 1, tzinfo=UTC),
-                content=[
-                    ContentBlock(
-                        type="text",
-                        content="Hello",
-                    )
-                ],
+                content=[TextBlock(text="Hello")],
             ),
             Message(
                 id="msg-2",
                 role=MessageRole.ASSISTANT,
-                content=[
-                    ContentBlock(
-                        type="text",
-                        content="Hello! How can I help?",
-                    )
-                ],
+                content=[TextBlock(text="Hello! How can I help?")],
             ),
         ],
     )
@@ -42,4 +32,4 @@ def test_conversation_can_be_created() -> None:
     assert conversation.provider == "chatgpt"
     assert len(conversation.messages) == 2
     assert conversation.messages[0].role == MessageRole.USER
-    assert conversation.messages[1].content[0].content == "Hello! How can I help?"
+    assert conversation.messages[1].content[0].text == "Hello! How can I help?"
