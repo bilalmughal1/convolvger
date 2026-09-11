@@ -10,6 +10,7 @@ from convolvger.core.models import (
     TextBlock,
     UnknownBlock,
 )
+from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
 
 __all__ = [
@@ -20,6 +21,8 @@ __all__ = [
     "KnownBlock",
     "Message",
     "MessageRole",
+    "ParseError",
+    "ParseResult",
     "ProviderNotFoundError",
     "RawSource",
     "ReasoningBlock",

@@ -9,6 +9,7 @@ from convolvger.core.models import (
     MessageRole,
     TextBlock,
 )
+from convolvger.core.results import ParseResult
 from convolvger.core.source import RawSource
 from convolvger.providers.base import Provider
 from convolvger.providers.registry import ProviderRegistry
@@ -34,8 +35,8 @@ class FakeProvider:
             fetched_at=datetime(2026, 1, 1, tzinfo=UTC),
         )
 
-    def parse(self, source: RawSource) -> Conversation:
-        return Conversation(
+    def parse(self, source: RawSource) -> ParseResult:
+        conversation = Conversation(
             provider=self.name,
             source_url=source.url,
             messages=[
@@ -45,6 +46,7 @@ class FakeProvider:
                 )
             ],
         )
+        return ParseResult(conversation=conversation)
 
 
 def test_fake_provider_satisfies_provider_protocol() -> None:
@@ -109,7 +111,8 @@ def test_provider_round_trip_produces_canonical_conversation() -> None:
     registry.register(FakeProvider())
 
     provider = registry.detect("https://fake.example/share/abc")
-    conversation = provider.parse(provider.fetch("https://fake.example/share/abc"))
+    result = provider.parse(provider.fetch("https://fake.example/share/abc"))
+    conversation = result.conversation
 
     assert conversation.provider == "fake"
     assert conversation.messages[0].content[0].text == "raw snapshot"
