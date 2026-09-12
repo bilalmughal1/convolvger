@@ -260,3 +260,69 @@ def test_real_capture_parses_completely() -> None:
         MessageRole.SYSTEM,
         MessageRole.TOOL,
     }
+
+
+@pytest.mark.skipif(
+    not (LOCAL / "minimal-2026-09-12.html").exists(),
+    reason="local capture not present (see tests/fixtures/local/)",
+)
+def test_later_capture_shows_the_provider_withholding_tool_calls() -> None:
+    """The same share URL, fetched a day later, served less.
+
+    Four assistant messages addressed to a tool came back with their
+    content_type relabelled from 'code' to 'text' and their payload
+    emptied. Every other field -- id, role, recipient, status, weight
+    and the metadata keys -- is unchanged, so a differ comparing
+    anything but content would call the two snapshots identical.
+
+    A failure here does not necessarily mean the parser broke. It may
+    mean the provider changed what it serves a third time.
+    """
+    html = (LOCAL / "minimal-2026-09-12.html").read_text(encoding="utf-8")
+    conversation = parse(RawSource(url=URL, content=html)).conversation
+
+    assert len(conversation.messages) == 31
+    assert sum(len(m.content) for m in conversation.messages) == 15
+
+    withheld = [
+        message
+        for message in conversation.messages
+        if not message.content
+        and message.role is MessageRole.ASSISTANT
+        and message.recipient in {"web", "web.run"}
+    ]
+
+    assert len(withheld) == 4
+    assert all(m.status == "finished_successfully" for m in withheld)
+
+
+@pytest.mark.skipif(
+    not (LOCAL / "minimal-2026-09-11.html").exists()
+    or not (LOCAL / "minimal-2026-09-12.html").exists(),
+    reason="local captures not present (see tests/fixtures/local/)",
+)
+def test_a_tool_recipient_marks_content_the_provider_withheld() -> None:
+    """Empty is not one thing, and 'recipient' tells the kinds apart.
+
+    Among empty messages the recipient is 'all', 'assistant', or a tool
+    name. Only a tool name means the provider served a message whose
+    content it declined to include: those four are empty in the later
+    capture and populated in the earlier one, with every other field
+    identical. The claim is narrow on purpose -- it rests on one
+    conversation from one provider, so it says what a tool recipient
+    implies, not that the other values form a tidy partition.
+    """
+    counts = {}
+    for name in ("minimal-2026-09-11.html", "minimal-2026-09-12.html"):
+        html = (LOCAL / name).read_text(encoding="utf-8")
+        messages = parse(RawSource(url=URL, content=html)).conversation.messages
+        empty = [m for m in messages if not m.content]
+        counts[name] = sum(
+            1
+            for m in empty
+            if m.role is MessageRole.ASSISTANT
+            and m.recipient not in {"all", "assistant"}
+        )
+
+    assert counts["minimal-2026-09-11.html"] == 0
+    assert counts["minimal-2026-09-12.html"] == 4
