@@ -6,7 +6,97 @@ Convolvger takes a public AI conversation share URL, reconstructs the conversati
 
 ## Install
 
-or `pip install convolvger`. Requires Python 3.12 or newer.
+Convolvger needs Python 3.12 or newer. The simplest route is [uv](https://docs.astral.sh/uv/),
+which downloads a suitable Python itself if you do not have one.
+
+**macOS, Linux, WSL**
+
+```
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv tool install convolvger
+```
+
+**Windows** (PowerShell)
+
+```
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+uv tool install convolvger
+```
+
+**Without uv**
+
+```
+pipx install convolvger
+```
+
+or `pip install convolvger` inside a virtual environment running Python 3.12 or
+newer. Installing with an older interpreter fails with `Requires-Python >=3.12`,
+which is the error to expect on a system Python 3.10 or 3.11.
+
+Check the install:
+
+```
+convolvger --help
+```
+
+## Usage
+
+Every command begins with `convolvger`, followed by a subcommand. There are
+four: `providers`, `inspect`, `export` and `verify`. Note that a bare
+`export <url>` runs your shell's own `export` builtin rather than this tool.
+
+**See which providers are supported**
+
+```
+convolvger providers
+```
+
+**Look at a conversation without saving anything**
+
+```
+convolvger inspect https://chatgpt.com/share/SHARE_ID
+```
+
+Prints the title, provider, message counts and every extraction finding, then
+exits without writing a file.
+
+**Export it**
+
+```
+convolvger export https://chatgpt.com/share/SHARE_ID
+```
+
+Writes Markdown to a filename derived from the conversation title, in the
+current directory. To choose the format or the destination:
+
+```
+convolvger export https://chatgpt.com/share/SHARE_ID -f json
+convolvger export https://chatgpt.com/share/SHARE_ID -o mychat.md
+convolvger export https://chatgpt.com/share/SHARE_ID -o -
+```
+
+`-f json` writes the archival record; `-f md` (the default) writes the
+reader-facing document. `-o -` writes to stdout instead of a file.
+
+Markdown omits provider-hidden messages and deactivated branches by default and
+reports each omission in its header. `--include-hidden` and
+`--include-inactive` keep them. Both flags are ignored for JSON, which never
+omits anything.
+
+**Check an archive's integrity**
+
+```
+convolvger verify mychat.json
+```
+
+Reads a JSON archive and reports what it records, without re-fetching or
+re-parsing anything. See the Status section below for what the two verdicts
+mean.
+
+**Exit codes**
+
+`0` clean, `2` completed with warnings or with a failed integrity check, `1`
+failed.
 
 ## Goals
 
@@ -43,7 +133,7 @@ Additional providers will be added as their public sharing formats are supported
 
 Convolvger is under active development and not yet ready for general use.
 
-Working today: `convolvger providers`, `convolvger inspect URL`, `convolvger export URL` with `-o PATH` or `-o -` for stdout, `-f md` or `-f json`, plus `--include-hidden` and `--include-inactive`, and `convolvger verify PATH`.
+Every command shown under Usage above works today.
 
 ChatGPT share links can be fetched, parsed, and exported. Markdown is a reader-facing document that may omit content and reports every omission in its header; JSON is the complete archival record and omits nothing the model holds. The remaining providers are not implemented yet.
 
