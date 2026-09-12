@@ -272,11 +272,11 @@ def test_output_ends_with_a_single_newline() -> None:
 
 
 @pytest.mark.skipif(
-    not (LOCAL / "minimal.html").exists(),
+    not (LOCAL / "minimal-2026-09-11.html").exists(),
     reason="local capture not present (see tests/fixtures/local/)",
 )
 def test_real_capture_renders_and_reconciles() -> None:
-    html = (LOCAL / "minimal.html").read_text(encoding="utf-8")
+    html = (LOCAL / "minimal-2026-09-11.html").read_text(encoding="utf-8")
     result = parse(RawSource(url="https://chatgpt.com/share/x", content=html))
     output = render_markdown(result.conversation, warnings=result.warnings)
 

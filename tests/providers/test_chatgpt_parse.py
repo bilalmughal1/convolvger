@@ -243,11 +243,11 @@ def test_no_messages_raises_parse_error() -> None:
 
 
 @pytest.mark.skipif(
-    not (LOCAL / "minimal.html").exists(),
+    not (LOCAL / "minimal-2026-09-11.html").exists(),
     reason="local capture not present (see tests/fixtures/local/)",
 )
 def test_real_capture_parses_completely() -> None:
-    html = (LOCAL / "minimal.html").read_text(encoding="utf-8")
+    html = (LOCAL / "minimal-2026-09-11.html").read_text(encoding="utf-8")
     result = parse(RawSource(url=URL, content=html))
     conversation = result.conversation
 
