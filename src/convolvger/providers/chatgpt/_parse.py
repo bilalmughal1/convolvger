@@ -83,8 +83,9 @@ def _share_payload(
     for value in loader.values():
         if isinstance(value, dict) and "serverResponse" in value:
             server = value["serverResponse"]
-            if isinstance(server, dict) and isinstance(server.get("data"), dict):
-                return server["data"]
+            data = server.get("data") if isinstance(server, dict) else None
+            if isinstance(data, dict):
+                return data
 
     raise ParseError("Snapshot contains no shared conversation payload", findings)
 

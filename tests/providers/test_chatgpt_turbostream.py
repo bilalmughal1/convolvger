@@ -19,7 +19,10 @@ LOCAL = Path(__file__).parent.parent / "fixtures" / "local" / "chatgpt"
 
 @pytest.fixture
 def flat_minimal() -> list[Any]:
-    return json.loads((FIXTURES / "flat-minimal.json").read_text(encoding="utf-8"))
+    flat: list[Any] = json.loads(
+        (FIXTURES / "flat-minimal.json").read_text(encoding="utf-8")
+    )
+    return flat
 
 
 def test_decodes_conversation_structure(flat_minimal: list[Any]) -> None:

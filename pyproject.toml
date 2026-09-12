@@ -21,6 +21,12 @@ convolvger = "convolvger.cli.main:app"
 requires = ["uv_build>=0.12.13,<0.13.0"]
 build-backend = "uv_build"
 
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+strict = true
+
 [dependency-groups]
 dev = [
     "mypy>=2.3.1",
