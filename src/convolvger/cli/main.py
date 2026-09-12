@@ -11,11 +11,14 @@ from convolvger.core.errors import ConvolvgerError
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
 from convolvger.providers.default import build_registry
-from convolvger.renderers import render_markdown
+from convolvger.renderers import render_json, render_markdown
 
 EXIT_OK = 0
 EXIT_FAILED = 1
 EXIT_WARNINGS = 2
+
+FORMATS = ("md", "json")
+FORMAT_HELP = f"Output format ({', '.join(FORMATS)})."
 
 app = typer.Typer(
     name="convolvger",
@@ -102,7 +105,7 @@ def export(
     ] = None,
     output_format: Annotated[
         str,
-        typer.Option("--format", "-f", help="Output format."),
+        typer.Option("--format", "-f", help=FORMAT_HELP),
     ] = "md",
     include_hidden: Annotated[
         bool,
@@ -114,8 +117,9 @@ def export(
     ] = False,
 ) -> None:
     """Export a conversation to a portable archive."""
-    if output_format != "md":
+    if output_format not in FORMATS:
         _warn(f"Error: unsupported format: {output_format}")
+        _warn(f"Supported formats: {', '.join(FORMATS)}")
         raise typer.Exit(EXIT_FAILED)
 
     try:
@@ -124,19 +128,28 @@ def export(
         _fail(error)
         return
 
-    rendered = render_markdown(
-        result.conversation,
-        include_hidden=include_hidden,
-        include_inactive=include_inactive,
-        warnings=result.warnings,
-        fetched_at=raw.fetched_at,
-    )
+    if output_format == "json":
+        if include_hidden or include_inactive:
+            _warn("Note: include flags are ignored; JSON keeps every message.")
+        rendered = render_json(
+            result.conversation,
+            warnings=result.warnings,
+            fetched_at=raw.fetched_at,
+        )
+    else:
+        rendered = render_markdown(
+            result.conversation,
+            include_hidden=include_hidden,
+            include_inactive=include_inactive,
+            warnings=result.warnings,
+            fetched_at=raw.fetched_at,
+        )
 
     if output is not None and str(output) == "-":
         sys.stdout.write(rendered)
     else:
         destination = output or Path(
-            f"{_slug(result.conversation.title, result.conversation.provider)}.md"
+            f"{_slug(result.conversation.title, result.conversation.provider)}.{output_format}"
         )
         destination.write_text(rendered, encoding="utf-8")
         _warn(f"Wrote {destination}")

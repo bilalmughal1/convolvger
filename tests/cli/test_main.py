@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -124,3 +125,43 @@ def test_parse_failure_reports_collected_warnings(
     result = runner.invoke(app, ["inspect", URL])
 
     assert result.exit_code == 1
+
+
+def test_export_json_writes_a_slugged_file(
+    clean: None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["export", URL, "-f", "json"])
+
+    assert result.exit_code == 0
+    assert [p.name for p in tmp_path.glob("*.json")] == ["a-test-chat.json"]
+
+
+def test_export_json_to_stdout_is_valid_json(clean: None) -> None:
+    result = runner.invoke(app, ["export", URL, "-f", "json", "-o", "-"])
+
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["tool"] == "convolvger"
+    assert payload["conversation"]["title"] == "A Test Chat"
+
+
+def test_include_flags_do_not_change_the_json(clean: None, tmp_path: Path) -> None:
+    """The flags are meaningless here: JSON always keeps every message."""
+    plain, flagged = tmp_path / "plain.json", tmp_path / "flagged.json"
+    runner.invoke(app, ["export", URL, "-f", "json", "-o", str(plain)])
+    runner.invoke(
+        app,
+        [
+            "export",
+            URL,
+            "-f",
+            "json",
+            "--include-hidden",
+            "--include-inactive",
+            "-o",
+            str(flagged),
+        ],
+    )
+
+    assert flagged.read_text(encoding="utf-8") == plain.read_text(encoding="utf-8")
