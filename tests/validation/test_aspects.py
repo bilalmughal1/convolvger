@@ -10,15 +10,6 @@ def test_every_code_has_exactly_one_aspect() -> None:
     }
 
 
-def test_informational_is_not_derivable_from_level() -> None:
-    """Two notes, two different questions: the tables must stay separate."""
-    assert LEVELS["literal_object_key"] is Level.NOTE
-    assert LEVELS["message_has_no_content"] is Level.NOTE
-
-    assert ASPECTS["literal_object_key"] is Aspect.FIDELITY
-    assert ASPECTS["message_has_no_content"] is Aspect.INFORMATIONAL
-
-
 def test_nothing_that_changes_the_exit_status_is_informational() -> None:
     """A warning must bear on a check, or exit 2 would contradict the verdict."""
     warnings = {code for code, level in LEVELS.items() if level is Level.WARNING}

@@ -28,9 +28,12 @@ drop silently out of every report -- the same class of failure as a test
 no longer being collected -- so a test keeps this table and ``LEVELS``
 in step.
 
-An aspect is not a severity. ``INFORMATIONAL`` cannot be derived from
-``Level.NOTE``: ``literal_object_key`` and ``message_has_no_content``
-are both notes and answer different questions.
+An aspect is not a severity. Every warning bears on a check -- a
+finding that changes the exit status must answer some question, or the
+status would contradict the verdict -- but the reverse does not hold.
+That every note is informational is a fact about today's eleven codes,
+not a rule: a genuinely minor fidelity loss could be minted as a note
+tomorrow, and an aspect derived from a level would then be wrong.
 """
 
 from enum import StrEnum
@@ -47,7 +50,7 @@ class Aspect(StrEnum):
 ASPECTS: dict[str, Aspect] = {
     "deferred_slot_not_merged": Aspect.COMPLETENESS,
     "deferred_value_unresolved": Aspect.COMPLETENESS,
-    "literal_object_key": Aspect.FIDELITY,
+    "literal_object_key": Aspect.INFORMATIONAL,
     "message_content_withheld": Aspect.COMPLETENESS,
     "message_has_no_content": Aspect.INFORMATIONAL,
     "message_weight_absent": Aspect.INFORMATIONAL,
@@ -59,7 +62,9 @@ ASPECTS: dict[str, Aspect] = {
 }
 """The single place a code's integrity question is decided.
 
-``non_standard_json_constant`` and ``literal_object_key`` are fidelity
-rather than completeness: the provider served the value, and what was
-lost was lost converting it here.
+``literal_object_key`` is informational: the decoder returns such a key
+verbatim, so nothing is lost and neither check is answered.
+``non_standard_json_constant`` is fidelity rather than completeness --
+the provider served the value, and what was lost was lost converting it
+here.
 """
