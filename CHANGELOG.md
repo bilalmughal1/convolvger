@@ -4,7 +4,7 @@ All notable changes to Convolvger will be documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.1.0] - 2026-09-12
 
 ### Added
 
@@ -28,6 +28,11 @@ The project follows [Semantic Versioning](https://semver.org/).
   version cannot read, rather than validating it into a false clean verdict
 - `convolvger verify PATH`: reports an archive's integrity from the findings
   it already carries, re-fetching and re-parsing nothing
+- Continuous integration running the full quality gate on every push and
+  pull request
+- Packaging metadata for publication: a licence expression, classifiers,
+  project URLs, and a `py.typed` marker so type checkers use the annotations
+  the package already ships
 
 ### Changed
 
@@ -39,7 +44,10 @@ The project follows [Semantic Versioning](https://semver.org/).
 - Exit code 2 is now raised only by warning-level findings. Empty messages
   a public snapshot omits by design are recorded as notes and leave the
   exit code at 0
-- Quality gate covers tests as well as sources (`mypy src tests`)
+- Quality gate covers tests as well as sources (`mypy src tests`), and is now
+  strict rather than nominal: `mypy` runs in strict mode, and `ruff` selects
+  import-order, pyupgrade, bugbear, simplify and ruff-specific rules on top of
+  its defaults
 - A literal object key in a provider payload is recorded as an observation
   rather than a fidelity loss: the decoder returns such a key verbatim, so
   nothing is lost on that branch

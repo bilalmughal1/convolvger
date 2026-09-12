@@ -4,6 +4,10 @@ Local-first, provider-independent archival for public AI conversations.
 
 Convolvger takes a public AI conversation share URL, reconstructs the conversation into a canonical internal model, validates the extracted data, and exports it into portable formats such as Markdown and JSON.
 
+## Install
+
+or `pip install convolvger`. Requires Python 3.12 or newer.
+
 ## Goals
 
 - Archive public AI conversations locally

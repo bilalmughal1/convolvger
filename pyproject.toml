@@ -6,7 +6,26 @@ readme = "README.md"
 authors = [
     { name = "Fahad Bilal Saleem", email = "contact@fahadbilal.com" }
 ]
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
+keywords = [
+    "archival",
+    "chatgpt",
+    "cli",
+    "conversations",
+    "digital-preservation",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Archiving",
+    "Typing :: Typed",
+]
 dependencies = [
     "httpx>=0.28.1",
     "pydantic>=2.13.5",
@@ -16,6 +35,12 @@ dependencies = [
 
 [project.scripts]
 convolvger = "convolvger.cli.main:app"
+
+[project.urls]
+Homepage = "https://github.com/bilalmughal1/convolvger"
+Repository = "https://github.com/bilalmughal1/convolvger"
+Issues = "https://github.com/bilalmughal1/convolvger/issues"
+Changelog = "https://github.com/bilalmughal1/convolvger/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
