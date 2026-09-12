@@ -20,7 +20,7 @@ class Provider(Protocol):
     def parse(self, source: RawSource) -> ParseResult:
         """Convert a raw snapshot into a canonical conversation.
 
-        Returns the conversation with any non-fatal warnings. Raises
+        Returns the conversation with any non-fatal findings. Raises
         ``ParseError`` when the source cannot be parsed at all.
         """
         ...

@@ -146,10 +146,12 @@ def test_unexpected_weight_warns_and_stays_active() -> None:
     result = parse(source)
 
     assert result.conversation.messages[0].active is True
-    assert any("weight" in warning for warning in result.warnings)
+    assert any(
+        item.code == "unexpected_message_weight" for item in result.findings
+    )
 
 
-def test_unrecognised_role_becomes_unknown_with_warning() -> None:
+def test_unrecognised_role_becomes_unknown_with_a_finding() -> None:
     source = snapshot(
         {
             "linear_conversation": [
@@ -162,7 +164,8 @@ def test_unrecognised_role_becomes_unknown_with_warning() -> None:
     result = parse(source)
 
     assert result.conversation.messages[0].role is MessageRole.UNKNOWN
-    assert any("oracle" in warning for warning in result.warnings)
+    assert any(item.code == "unrecognised_role" for item in result.findings)
+    assert any("oracle" in item.message for item in result.findings)
 
 
 def test_author_name_and_recipient_are_carried() -> None:
@@ -207,7 +210,7 @@ def test_channel_and_end_turn_go_to_provider_metadata() -> None:
     }
 
 
-def test_empty_content_is_warned_not_silently_dropped() -> None:
+def test_empty_content_is_recorded_not_silently_dropped() -> None:
     source = snapshot(
         {
             "linear_conversation": [
@@ -220,7 +223,11 @@ def test_empty_content_is_warned_not_silently_dropped() -> None:
     result = parse(source)
 
     assert result.conversation.messages[0].content == []
-    assert any("no content blocks" in warning for warning in result.warnings)
+    recorded = [
+        item for item in result.findings if item.code == "message_has_no_content"
+    ]
+
+    assert [item.message_id for item in recorded] == ["a"]
 
 
 def test_missing_payload_raises_parse_error() -> None:

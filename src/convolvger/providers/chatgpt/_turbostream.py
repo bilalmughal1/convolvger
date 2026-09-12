@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from convolvger.core.errors import ConvolvgerError
+from convolvger.core.findings import Finding, finding
 
 _ENQUEUE_RE = re.compile(r'streamController\.enqueue\("((?:[^"\\]|\\.)*)"\)')
 _DEFERRED_RE = re.compile(r"^P(\d+):")
@@ -26,7 +27,7 @@ class TurboStreamError(ConvolvgerError):
 @dataclass
 class DecodeResult:
     value: Any
-    warnings: list[str] = field(default_factory=list)
+    findings: list[Finding] = field(default_factory=list)
 
 
 def _is_ref(value: Any) -> bool:
@@ -41,9 +42,9 @@ def extract_payloads(html: str) -> list[str]:
     return [json.loads(f'"{match}"') for match in matches]
 
 
-def parse_stream(payloads: list[str]) -> tuple[list[Any], list[str]]:
+def parse_stream(payloads: list[str]) -> tuple[list[Any], list[Finding]]:
     """Split chunks into the leading flat array and any deferred lines."""
-    warnings: list[str] = []
+    findings: list[Finding] = []
     lines = [line for payload in payloads for line in payload.split("\n") if line.strip()]
     if not lines:
         raise TurboStreamError("Turbo-stream payload is empty")
@@ -54,7 +55,9 @@ def parse_stream(payloads: list[str]) -> tuple[list[Any], list[str]]:
         if token in seen_constants:
             return
         seen_constants.add(token)
-        warnings.append(f"non-standard JSON constant {token} stored as null")
+        findings.append(
+            finding("non_standard_json_constant", f"{token} stored as null")
+        )
 
     try:
         flat = json.loads(lines[0], parse_constant=note_constant)
@@ -67,11 +70,18 @@ def parse_stream(payloads: list[str]) -> tuple[list[Any], list[str]]:
     for line in lines[1:]:
         match = _DEFERRED_RE.match(line)
         if match:
-            warnings.append(f"deferred slot {match.group(1)} was not merged")
+            findings.append(
+                finding(
+                    "deferred_slot_not_merged",
+                    f"slot {match.group(1)} was not merged",
+                )
+            )
         else:
-            warnings.append("ignored unrecognised turbo-stream line")
+            findings.append(
+                finding("unrecognised_stream_line", "line ignored")
+            )
 
-    return flat, warnings
+    return flat, findings
 
 
 def decode(flat: list[Any]) -> DecodeResult:
@@ -79,7 +89,7 @@ def decode(flat: list[Any]) -> DecodeResult:
     if not flat:
         raise TurboStreamError("Flat array is empty")
 
-    warnings: list[str] = []
+    findings: list[Finding] = []
     resolved: dict[int, Any] = {}
     active: set[int] = set()
 
@@ -104,12 +114,16 @@ def decode(flat: list[Any]) -> DecodeResult:
     def key_name(key: str) -> str:
         if key.startswith("_"):
             return str(at(int(key[1:])))
-        warnings.append(f"literal object key kept as-is: {key}")
+        findings.append(
+            finding("literal_object_key", f"kept as-is: {key}")
+        )
         return key
 
     def marker(node: list[Any]) -> Any:
         if node[0] == "P":
-            warnings.append(f"deferred value left unresolved: {node[1:]}")
+            findings.append(
+                finding("deferred_value_unresolved", f"value {node[1:]}")
+            )
             return None
         raise TurboStreamError(f"Unsupported turbo-stream marker: {node[0]!r}")
 
@@ -122,11 +136,13 @@ def decode(flat: list[Any]) -> DecodeResult:
             return [at(item) if _is_ref(item) else item for item in node]
         return node
 
-    return DecodeResult(value=at(0), warnings=warnings)
+    return DecodeResult(value=at(0), findings=findings)
 
 
 def decode_html(html: str) -> DecodeResult:
     """Extract and decode the turbo-stream payload from an HTML page."""
-    flat, warnings = parse_stream(extract_payloads(html))
+    flat, findings = parse_stream(extract_payloads(html))
     result = decode(flat)
-    return DecodeResult(value=result.value, warnings=warnings + result.warnings)
+    return DecodeResult(
+        value=result.value, findings=findings + result.findings
+    )

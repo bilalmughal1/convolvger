@@ -12,6 +12,7 @@ Nothing here is provider-specific.
 
 from datetime import datetime
 
+from convolvger.core.findings import Finding, Level
 from convolvger.core.models import (
     CodeBlock,
     ContentBlock,
@@ -82,7 +83,7 @@ def _provenance(
     omitted_hidden: int,
     omitted_inactive: int,
     omitted_empty: int,
-    warnings: list[str] | None,
+    findings: list[Finding] | None,
     fetched_at: datetime | None,
 ) -> str:
     lines = [
@@ -110,8 +111,10 @@ def _provenance(
         lines.append(
             "- Omitted messages are preserved in full in the JSON export."
         )
-    if warnings:
-        lines.append(f"- Extraction warnings: {len(warnings)}")
+    for level in (Level.WARNING, Level.NOTE):
+        count = sum(1 for item in findings or [] if item.level is level)
+        if count:
+            lines.append(f"- Extraction {level.value}s: {count}")
     lines.extend(
         [
             "",
@@ -132,7 +135,7 @@ def render_markdown(
     *,
     include_hidden: bool = False,
     include_inactive: bool = False,
-    warnings: list[str] | None = None,
+    findings: list[Finding] | None = None,
     fetched_at: datetime | None = None,
 ) -> str:
     """Render a conversation as Markdown.
@@ -164,7 +167,7 @@ def render_markdown(
             omitted_hidden,
             omitted_inactive,
             omitted_empty,
-            warnings,
+            findings,
             fetched_at,
         )
     ]

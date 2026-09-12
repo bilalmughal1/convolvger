@@ -99,7 +99,9 @@ def test_deferred_marker_resolves_to_none_with_warning() -> None:
     result = decode(flat)
 
     assert result.value == {"pending": None}
-    assert any("deferred" in warning for warning in result.warnings)
+    assert any(
+        item.code == "deferred_value_unresolved" for item in result.findings
+    )
 
 
 def test_unknown_sentinel_raises() -> None:
@@ -127,7 +129,7 @@ def test_extracts_and_decodes_html_snapshot() -> None:
     result = decode_html(html)
 
     assert result.value == {"pending": None, "ready": "yes"}
-    assert len(result.warnings) == 2
+    assert len(result.findings) == 2
 
 
 def test_extract_payloads_finds_all_chunks() -> None:
@@ -141,10 +143,11 @@ def test_missing_payload_raises() -> None:
         extract_payloads("<html><body>nothing here</body></html>")
 
 
-def test_deferred_lines_are_reported_as_warnings() -> None:
-    _, warnings = parse_stream(['[{"_1":2},"a","b"]\n', "P7:[{}]\n"])
+def test_deferred_lines_are_reported_as_findings() -> None:
+    _, findings = parse_stream(['[{"_1":2},"a","b"]\n', "P7:[{}]\n"])
 
-    assert any("deferred slot 7" in warning for warning in warnings)
+    assert [item.code for item in findings] == ["deferred_slot_not_merged"]
+    assert any("slot 7" in item.message for item in findings)
 
 
 def test_non_json_leading_line_raises() -> None:
@@ -170,14 +173,16 @@ def test_real_capture_decodes() -> None:
 
 def test_non_standard_json_constants_are_warned_and_nulled() -> None:
     """NaN and Infinity are not valid JSON and must never pass silently."""
-    flat, warnings = parse_stream(['[{"_1":2},"value",NaN]\n'])
+    flat, findings = parse_stream(['[{"_1":2},"value",NaN]\n'])
 
     assert flat == [{"_1": 2}, "value", None]
-    assert any("NaN" in warning for warning in warnings)
+    assert [item.code for item in findings] == ["non_standard_json_constant"]
+    assert any("NaN" in item.message for item in findings)
 
 
 def test_repeated_constants_warn_once_per_token() -> None:
-    _, warnings = parse_stream(["[NaN, NaN, Infinity]\n"])
+    _, findings = parse_stream(["[NaN, NaN, Infinity]\n"])
 
-    assert len([w for w in warnings if "NaN" in w]) == 1
-    assert any("Infinity" in w for w in warnings)
+    assert len(findings) == 2
+    assert len([item for item in findings if "NaN" in item.message]) == 1
+    assert any("Infinity" in item.message for item in findings)

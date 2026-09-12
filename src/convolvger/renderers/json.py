@@ -16,19 +16,20 @@ Nothing here is provider-specific.
 from datetime import datetime
 
 from convolvger.core.archive import ArchiveEnvelope
+from convolvger.core.findings import Finding
 from convolvger.core.models import Conversation
 
 
 def render_json(
     conversation: Conversation,
     *,
-    warnings: list[str] | None = None,
+    findings: list[Finding] | None = None,
     fetched_at: datetime | None = None,
 ) -> str:
     """Render a conversation as a complete, portable archival record."""
     envelope = ArchiveEnvelope(
         retrieved_at=fetched_at,
-        warnings=list(warnings or []),
+        findings=list(findings or []),
         conversation=conversation,
     )
     return envelope.model_dump_json(indent=2) + "\n"

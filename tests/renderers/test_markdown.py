@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from convolvger.core.findings import finding
 from convolvger.core.models import (
     CodeBlock,
     Conversation,
@@ -248,12 +249,21 @@ def test_timestamp_is_rendered_when_present() -> None:
     assert "2026-01-02T03:04:00+00:00" in output
 
 
-def test_warning_count_is_reported() -> None:
+def test_findings_are_counted_by_level() -> None:
+    """Notes and warnings are counted apart: a reader needs to see at a
+    glance whether anything actually went wrong.
+    """
     output = render_markdown(
-        conversation(text(MessageRole.USER, "hi")), warnings=["a", "b"]
+        conversation(text(MessageRole.USER, "hi")),
+        findings=[
+            finding("unrecognised_role", "a"),
+            finding("message_has_no_content", "b", "m1"),
+            finding("message_has_no_content", "c", "m2"),
+        ],
     )
 
-    assert "Extraction warnings: 2" in output
+    assert "Extraction warnings: 1" in output
+    assert "Extraction notes: 2" in output
 
 
 def test_render_is_deterministic() -> None:
@@ -278,7 +288,7 @@ def test_output_ends_with_a_single_newline() -> None:
 def test_real_capture_renders_and_reconciles() -> None:
     html = (LOCAL / "minimal-2026-09-11.html").read_text(encoding="utf-8")
     result = parse(RawSource(url="https://chatgpt.com/share/x", content=html))
-    output = render_markdown(result.conversation, warnings=result.warnings)
+    output = render_markdown(result.conversation, findings=result.findings)
 
     assert "31 in snapshot, 18 rendered" in output
     assert "Omitted as hidden by the provider: 11" in output

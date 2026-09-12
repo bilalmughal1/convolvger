@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 from convolvger.core.archive import ArchiveEnvelope
+from convolvger.core.findings import finding
 from convolvger.core.models import (
     Conversation,
     Message,
@@ -57,12 +58,16 @@ def test_empty_raw_is_written_so_unknown_blocks_cannot_collapse() -> None:
     assert '"raw": {}' in render_json(conversation())
 
 
-def test_warnings_and_retrieval_time_are_recorded() -> None:
+def test_findings_and_retrieval_time_are_recorded() -> None:
     restored = ArchiveEnvelope.model_validate_json(
-        render_json(conversation(), warnings=["skipped"], fetched_at=RETRIEVED)
+        render_json(
+            conversation(),
+            findings=[finding("unrecognised_role", "skipped")],
+            fetched_at=RETRIEVED,
+        )
     )
 
-    assert restored.warnings == ["skipped"]
+    assert [item.code for item in restored.findings] == ["unrecognised_role"]
     assert restored.retrieved_at == RETRIEVED
 
 

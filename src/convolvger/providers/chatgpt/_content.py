@@ -7,6 +7,7 @@ as ``UnknownBlock`` rather than dropped.
 
 from typing import Any
 
+from convolvger.core.findings import Finding, finding
 from convolvger.core.models import (
     CodeBlock,
     ContentBlock,
@@ -79,7 +80,7 @@ def _recap_blocks(content: dict[str, Any]) -> list[ContentBlock]:
 
 def to_blocks(
     content: dict[str, Any] | None,
-    warnings: list[str],
+    findings: list[Finding],
 ) -> list[ContentBlock]:
     """Convert one ChatGPT content payload into canonical blocks."""
     if not content:
@@ -101,5 +102,10 @@ def to_blocks(
     if not any(value not in (None, "", [], {}) for value in remainder.values()):
         return []
 
-    warnings.append(f"unmodelled content_type preserved verbatim: {content_type}")
+    findings.append(
+        finding(
+            "unmodelled_content_type",
+            f"{content_type} preserved verbatim",
+        )
+    )
     return [UnknownBlock(type=str(content_type), raw=remainder)]

@@ -1,5 +1,6 @@
 from typing import Any
 
+from convolvger.core.findings import Finding
 from convolvger.core.models import (
     CodeBlock,
     ReasoningBlock,
@@ -9,16 +10,16 @@ from convolvger.core.models import (
 from convolvger.providers.chatgpt._content import to_blocks
 
 
-def convert(content: dict[str, Any] | None) -> tuple[list[Any], list[str]]:
-    warnings: list[str] = []
-    return to_blocks(content, warnings), warnings
+def convert(content: dict[str, Any] | None) -> tuple[list[Any], list[Finding]]:
+    findings: list[Finding] = []
+    return to_blocks(content, findings), findings
 
 
 def test_text_becomes_a_text_block() -> None:
-    blocks, warnings = convert({"content_type": "text", "parts": ["Hello"]})
+    blocks, findings = convert({"content_type": "text", "parts": ["Hello"]})
 
     assert blocks == [TextBlock(text="Hello")]
-    assert warnings == []
+    assert findings == []
 
 
 def test_multiple_parts_become_multiple_blocks() -> None:
@@ -28,10 +29,10 @@ def test_multiple_parts_become_multiple_blocks() -> None:
 
 
 def test_empty_text_part_produces_no_block() -> None:
-    blocks, warnings = convert({"content_type": "text", "parts": [""]})
+    blocks, findings = convert({"content_type": "text", "parts": [""]})
 
     assert blocks == []
-    assert warnings == []
+    assert findings == []
 
 
 def test_non_string_part_is_preserved_as_unknown() -> None:
@@ -100,24 +101,25 @@ def test_reasoning_recap_is_labelled() -> None:
 
 
 def test_unknown_type_with_payload_warns_and_preserves() -> None:
-    blocks, warnings = convert(
+    blocks, findings = convert(
         {"content_type": "multimodal_text", "parts": ["x"], "extra": 1}
     )
 
     assert isinstance(blocks[0], UnknownBlock)
     assert blocks[0].type == "multimodal_text"
     assert blocks[0].raw == {"parts": ["x"], "extra": 1}
-    assert any("multimodal_text" in warning for warning in warnings)
+    assert [item.code for item in findings] == ["unmodelled_content_type"]
+    assert any("multimodal_text" in item.message for item in findings)
 
 
-def test_empty_unknown_type_produces_no_block_and_no_warning() -> None:
+def test_empty_unknown_type_produces_no_block_and_no_finding() -> None:
     """model_editable_context with an empty context carries nothing to keep."""
-    blocks, warnings = convert(
+    blocks, findings = convert(
         {"content_type": "model_editable_context", "model_set_context": ""}
     )
 
     assert blocks == []
-    assert warnings == []
+    assert findings == []
 
 
 def test_missing_content_produces_no_blocks() -> None:

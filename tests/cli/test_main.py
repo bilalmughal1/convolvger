@@ -6,6 +6,7 @@ from typer.testing import CliRunner
 
 from convolvger.cli.main import app
 from convolvger.core.errors import ProviderNotFoundError
+from convolvger.core.findings import Finding, finding
 from convolvger.core.models import Conversation, Message, MessageRole, TextBlock
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
@@ -14,7 +15,7 @@ runner = CliRunner()
 URL = "https://chatgpt.com/share/6aa3f5a2-00a4-83eb-8d18-3b2266aac2e6"
 
 
-def fake_result(warnings: list[str] | None = None) -> ParseResult:
+def fake_result(findings: list[Finding] | None = None) -> ParseResult:
     conversation = Conversation(
         provider="chatgpt",
         source_url=URL,
@@ -24,7 +25,7 @@ def fake_result(warnings: list[str] | None = None) -> ParseResult:
             Message(role=MessageRole.ASSISTANT, content=[TextBlock(text="hi")]),
         ],
     )
-    return ParseResult(conversation=conversation, warnings=warnings or [])
+    return ParseResult(conversation=conversation, findings=findings or [])
 
 
 @pytest.fixture
@@ -40,7 +41,7 @@ def warned(monkeypatch: pytest.MonkeyPatch) -> None:
     def _retrieve(source: str) -> tuple[RawSource, ParseResult]:
         return (
             RawSource(url=source, content="<html></html>"),
-            fake_result(["something was skipped"]),
+            fake_result([finding("unrecognised_role", "something was skipped")]),
         )
 
     monkeypatch.setattr("convolvger.cli.main._retrieve", _retrieve)
@@ -115,11 +116,14 @@ def test_unknown_url_fails_with_exit_one(monkeypatch: pytest.MonkeyPatch) -> Non
     assert result.exit_code == 1
 
 
-def test_parse_failure_reports_collected_warnings(
+def test_parse_failure_reports_collected_findings(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     def _retrieve(source: str) -> tuple[RawSource, ParseResult]:
-        raise ParseError("no messages", warnings=["saw something odd"])
+        raise ParseError(
+            "no messages",
+            findings=[finding("unrecognised_stream_line", "saw something odd")],
+        )
 
     monkeypatch.setattr("convolvger.cli.main._retrieve", _retrieve)
     result = runner.invoke(app, ["inspect", URL])

@@ -8,6 +8,7 @@ from typing import Annotated
 import typer
 
 from convolvger.core.errors import ConvolvgerError
+from convolvger.core.findings import Finding, Level
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
 from convolvger.providers.default import build_registry
@@ -45,18 +46,32 @@ def _retrieve(source: str) -> tuple[RawSource, ParseResult]:
     return raw, provider.parse(raw)
 
 
-def _report_warnings(warnings: list[str]) -> None:
-    if not warnings:
+def _report_findings(findings: list[Finding]) -> None:
+    """Report every finding, loudest first.
+
+    Notes are printed as well as warnings: a note does not change the
+    exit status, but it is still something the snapshot did not carry
+    and the operator should be able to see it.
+    """
+    if not findings:
         return
-    _warn(f"\n{len(warnings)} warning(s):")
-    for warning in warnings:
-        _warn(f"  - {warning}")
+    warnings = [item for item in findings if item.level is Level.WARNING]
+    notes = [item for item in findings if item.level is Level.NOTE]
+    counts = [
+        f"{len(group)} {label}"
+        for group, label in ((warnings, "warning(s)"), (notes, "note(s)"))
+        if group
+    ]
+    _warn(f"\n{', '.join(counts)}:")
+    for item in warnings + notes:
+        where = f" ({item.message_id})" if item.message_id else ""
+        _warn(f"  - [{item.level.value}] {item.code}{where}: {item.message}")
 
 
 def _fail(error: Exception) -> None:
     _warn(f"Error: {error}")
-    if isinstance(error, ParseError) and error.warnings:
-        _report_warnings(error.warnings)
+    if isinstance(error, ParseError) and error.findings:
+        _report_findings(error.findings)
     raise typer.Exit(EXIT_FAILED)
 
 
@@ -89,8 +104,8 @@ def inspect(
     typer.echo(f"Active:    {sum(m.active for m in conversation.messages)}")
     typer.echo(f"Blocks:    {sum(len(m.content) for m in conversation.messages)}")
 
-    _report_warnings(result.warnings)
-    raise typer.Exit(EXIT_WARNINGS if result.warnings else EXIT_OK)
+    _report_findings(result.findings)
+    raise typer.Exit(EXIT_WARNINGS if result.warned else EXIT_OK)
 
 
 @app.command()
@@ -133,7 +148,7 @@ def export(
             _warn("Note: include flags are ignored; JSON keeps every message.")
         rendered = render_json(
             result.conversation,
-            warnings=result.warnings,
+            findings=result.findings,
             fetched_at=raw.fetched_at,
         )
     else:
@@ -141,7 +156,7 @@ def export(
             result.conversation,
             include_hidden=include_hidden,
             include_inactive=include_inactive,
-            warnings=result.warnings,
+            findings=result.findings,
             fetched_at=raw.fetched_at,
         )
 
@@ -154,8 +169,8 @@ def export(
         destination.write_text(rendered, encoding="utf-8")
         _warn(f"Wrote {destination}")
 
-    _report_warnings(result.warnings)
-    raise typer.Exit(EXIT_WARNINGS if result.warnings else EXIT_OK)
+    _report_findings(result.findings)
+    raise typer.Exit(EXIT_WARNINGS if result.warned else EXIT_OK)
 
 
 if __name__ == "__main__":

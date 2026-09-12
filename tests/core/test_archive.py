@@ -5,6 +5,7 @@ from importlib.metadata import PackageNotFoundError
 import pytest
 
 from convolvger.core.archive import SCHEMA_VERSION, ArchiveEnvelope
+from convolvger.core.findings import finding
 from convolvger.core.models import (
     Conversation,
     Message,
@@ -47,7 +48,7 @@ def conversation() -> Conversation:
 def envelope() -> ArchiveEnvelope:
     return ArchiveEnvelope(
         retrieved_at=RETRIEVED,
-        warnings=["something was skipped"],
+        findings=[finding("unrecognised_role", "something was skipped")],
         conversation=conversation(),
     )
 
@@ -96,8 +97,8 @@ def test_serialisation_is_byte_stable() -> None:
 def test_warnings_sit_beside_the_conversation_not_inside_it() -> None:
     dumped = envelope().model_dump()
 
-    assert dumped["warnings"] == ["something was skipped"]
-    assert "warnings" not in dumped["conversation"]
+    assert [item["code"] for item in dumped["findings"]] == ["unrecognised_role"]
+    assert "findings" not in dumped["conversation"]
 
 
 def test_retrieval_time_stays_null_when_none_was_recorded() -> None:
