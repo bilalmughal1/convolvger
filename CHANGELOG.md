@@ -21,6 +21,13 @@ The project follows [Semantic Versioning](https://semver.org/).
   the canonical model holds
 - Structured findings with stable codes and note/warning levels, replacing
   free-text extraction warnings
+- Integrity aspects: every finding code is mapped to the question it answers
+  -- snapshot completeness, modelling fidelity, or neither -- in one total
+  table, kept in step with the severity table by a test
+- Archive reader that refuses any file whose declared schema version this
+  version cannot read, rather than validating it into a false clean verdict
+- `convolvger verify PATH`: reports an archive's integrity from the findings
+  it already carries, re-fetching and re-parsing nothing
 
 ### Changed
 
@@ -33,8 +40,15 @@ The project follows [Semantic Versioning](https://semver.org/).
   a public snapshot omits by design are recorded as notes and leave the
   exit code at 0
 - Quality gate covers tests as well as sources (`mypy src tests`)
+- A literal object key in a provider payload is recorded as an observation
+  rather than a fidelity loss: the decoder returns such a key verbatim, so
+  nothing is lost on that branch
 
 ### Fixed
 
 - Non-standard JSON constants (`NaN`, `Infinity`) in a provider payload are
   reported instead of becoming `null` unannounced
+- A message weight the snapshot never carried no longer warns as an
+  unexpected value. An omitted field and an explicit null are different
+  things, and the absence is recorded as a note so that a provider dropping
+  a field it always sent stays visible
