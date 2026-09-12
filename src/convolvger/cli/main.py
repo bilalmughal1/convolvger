@@ -48,6 +48,22 @@ def _retrieve(source: str) -> tuple[RawSource, ParseResult]:
     return raw, provider.parse(raw)
 
 
+def _reparse(source: str, path: Path) -> tuple[RawSource, ParseResult]:
+    """Parse a snapshot already on disk instead of fetching it.
+
+    The URL is still required and still routes the snapshot to a
+    provider: a file on disk carries no indication of where it came
+    from, and the URL is the provenance every archive records.
+
+    ``fetched_at`` stays unset. When a saved file was captured is not
+    knowable from the file, and guessing it would put a false retrieval
+    time into an archive.
+    """
+    provider = build_registry().detect(source)
+    raw = RawSource(url=source, content=path.read_text(encoding="utf-8"))
+    return raw, provider.parse(raw)
+
+
 def _report_findings(findings: list[Finding]) -> None:
     """Report every finding, loudest first.
 
@@ -88,13 +104,20 @@ def providers() -> None:
 def inspect(
     source: Annotated[
         str,
-        typer.Argument(help="Public conversation URL or local conversation source."),
+        typer.Argument(help="Public conversation URL, or the URL a saved snapshot came from."),
     ],
+    from_file: Annotated[
+        Path | None,
+        typer.Option(
+            "--from-file",
+            help="Parse this saved snapshot instead of fetching the URL.",
+        ),
+    ] = None,
 ) -> None:
     """Inspect a conversation source without exporting it."""
     try:
-        _, result = _retrieve(source)
-    except ConvolvgerError as error:
+        _, result = _reparse(source, from_file) if from_file else _retrieve(source)
+    except (ConvolvgerError, OSError) as error:
         _fail(error)
         return
 
@@ -114,7 +137,7 @@ def inspect(
 def export(
     source: Annotated[
         str,
-        typer.Argument(help="Public conversation URL or local conversation source."),
+        typer.Argument(help="Public conversation URL, or the URL a saved snapshot came from."),
     ],
     output: Annotated[
         Path | None,
@@ -132,6 +155,13 @@ def export(
         bool,
         typer.Option("--include-inactive", help="Include deactivated branches."),
     ] = False,
+    from_file: Annotated[
+        Path | None,
+        typer.Option(
+            "--from-file",
+            help="Parse this saved snapshot instead of fetching the URL.",
+        ),
+    ] = None,
 ) -> None:
     """Export a conversation to a portable archive."""
     if output_format not in FORMATS:
@@ -140,8 +170,8 @@ def export(
         raise typer.Exit(EXIT_FAILED)
 
     try:
-        raw, result = _retrieve(source)
-    except ConvolvgerError as error:
+        raw, result = _reparse(source, from_file) if from_file else _retrieve(source)
+    except (ConvolvgerError, OSError) as error:
         _fail(error)
         return
 

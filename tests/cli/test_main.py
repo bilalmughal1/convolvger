@@ -60,6 +60,10 @@ def archive_file(
     return path
 
 
+SNAPSHOT = Path(__file__).parent.parent / "fixtures" / "chatgpt" / "share-minimal.html"
+SHARE_URL = "https://chatgpt.com/share/abc123"
+
+
 def test_providers_lists_chatgpt() -> None:
     result = runner.invoke(app, ["providers"])
 
@@ -259,3 +263,74 @@ def test_verify_fails_on_a_file_that_is_not_an_archive(tmp_path: Path) -> None:
 
 def test_verify_fails_when_the_file_is_missing(tmp_path: Path) -> None:
     assert runner.invoke(app, ["verify", str(tmp_path / "gone.json")]).exit_code == 1
+
+
+def test_export_from_file_does_not_fetch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A saved snapshot is parsed as it stands, network untouched."""
+
+    def boom(self: object, url: str) -> RawSource:
+        raise AssertionError("fetch must not be called for --from-file")
+
+    monkeypatch.setattr(
+        "convolvger.providers.chatgpt.ChatGPTProvider.fetch", boom
+    )
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(
+        app, ["export", SHARE_URL, "--from-file", str(SNAPSHOT), "-f", "json"]
+    )
+
+    assert result.exit_code == 0
+    written = tmp_path / "a-saved-snapshot.json"
+    assert written.exists()
+    assert "A Saved Snapshot" in written.read_text(encoding="utf-8")
+
+
+def test_from_file_records_no_retrieval_time(tmp_path: Path) -> None:
+    """When a file was captured is not knowable, so it is not claimed."""
+    monkeypatched = tmp_path / "out.json"
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            SHARE_URL,
+            "--from-file",
+            str(SNAPSHOT),
+            "-f",
+            "json",
+            "-o",
+            str(monkeypatched),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert '"retrieved_at": null' in monkeypatched.read_text(encoding="utf-8")
+
+
+def test_inspect_from_file_reports_the_snapshot() -> None:
+    result = runner.invoke(
+        app, ["inspect", SHARE_URL, "--from-file", str(SNAPSHOT)]
+    )
+
+    assert result.exit_code == 0
+    assert "A Saved Snapshot" in result.stdout
+    assert "Messages:  2" in result.stdout
+
+
+def test_from_file_still_needs_a_url_a_provider_claims(tmp_path: Path) -> None:
+    """Routing is by URL even when the bytes come from disk."""
+    result = runner.invoke(
+        app, ["inspect", "https://example.com/nope", "--from-file", str(SNAPSHOT)]
+    )
+
+    assert result.exit_code == 1
+
+
+def test_from_file_fails_when_the_file_is_missing(tmp_path: Path) -> None:
+    result = runner.invoke(
+        app, ["inspect", SHARE_URL, "--from-file", str(tmp_path / "gone.html")]
+    )
+
+    assert result.exit_code == 1
