@@ -36,6 +36,7 @@ LEVELS: dict[str, Level] = {
     "literal_object_key": Level.NOTE,
     "message_content_withheld": Level.WARNING,
     "message_has_no_content": Level.NOTE,
+    "message_weight_absent": Level.NOTE,
     "non_standard_json_constant": Level.WARNING,
     "unexpected_message_weight": Level.WARNING,
     "unmodelled_content_type": Level.WARNING,
@@ -49,6 +50,11 @@ omits content by design: OpenAI states that custom instructions are not
 shared with share-link viewers, so empty system messages appear in every
 such conversation. ``message_content_withheld`` is a warning because it
 marks content the snapshot was expected to carry and did not.
+
+``message_weight_absent`` is a note because absence is not damage on
+its own: a snapshot that never carried the field says nothing about
+whether a branch was deactivated. It is recorded rather than assumed
+away so that a provider dropping a field it always sent is visible.
 """
 
 

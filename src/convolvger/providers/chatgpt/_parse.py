@@ -40,7 +40,27 @@ def _role(raw: Any, findings: list[Finding]) -> MessageRole:
         return MessageRole.UNKNOWN
 
 
-def _active(weight: Any, findings: list[Finding]) -> bool:
+_ABSENT = object()
+"""Marks a weight the snapshot did not carry at all.
+
+``dict.get`` cannot tell an omitted key from an explicit null, and the
+two mean different things: one is a field this snapshot never had, the
+other is a value ChatGPT was not expected to send.
+"""
+
+
+def _active(
+    weight: Any, findings: list[Finding], message_id: str | None = None
+) -> bool:
+    if weight is _ABSENT:
+        findings.append(
+            finding(
+                "message_weight_absent",
+                "no weight in snapshot; recorded as active",
+                message_id,
+            )
+        )
+        return True
     if weight in (0, 0.0):
         return False
     if weight in (1, 1.0):
@@ -98,7 +118,7 @@ def _message(node: dict[str, Any], findings: list[Finding]) -> Message | None:
         timestamp=_timestamp(raw.get("create_time")),
         content=content,
         visible=not metadata.get("is_visually_hidden_from_conversation", False),
-        active=_active(raw.get("weight"), findings),
+        active=_active(raw.get("weight", _ABSENT), findings, raw.get("id")),
         status=raw.get("status"),
         recipient=raw.get("recipient"),
         provider_metadata=passthrough,
