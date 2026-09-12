@@ -28,9 +28,18 @@ def _tool_version() -> str:
 
 
 class ArchiveEnvelope(BaseModel):
-    """A conversation together with the provenance of its capture."""
+    """A conversation together with the provenance of its capture.
 
-    model_config = ConfigDict(extra="forbid")
+    ``extra="allow"``, unlike every other model here. An archive is a
+    permanent file that a later version of this tool must be able to
+    read: forbidding unknown fields would make every future addition a
+    breaking change, and ignoring them would drop them on
+    re-serialisation. Allowing them preserves a field this version does
+    not model. The canonical models keep ``forbid`` -- they guard an
+    internal invariant, not a file format.
+    """
+
+    model_config = ConfigDict(extra="allow")
 
     schema_version: int = SCHEMA_VERSION
     tool: str = "convolvger"

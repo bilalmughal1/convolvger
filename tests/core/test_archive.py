@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError
 
@@ -120,3 +121,22 @@ def test_tool_version_falls_back_when_not_installed(
     monkeypatch.setattr("convolvger.core.archive.version", missing)
 
     assert ArchiveEnvelope(conversation=conversation()).tool_version == "unknown"
+
+
+def test_fields_from_a_newer_writer_survive_a_round_trip() -> None:
+    """An archive is permanent, so a later version may add fields this
+    one does not model. Reading such a file must not quietly drop them.
+    """
+    payload = json.loads(ArchiveEnvelope(conversation=conversation()).model_dump_json())
+    payload["schema_version"] = SCHEMA_VERSION + 1
+    payload["digest"] = {"algorithm": "sha256", "value": "abc"}
+
+    restored = ArchiveEnvelope.model_validate(payload)
+
+    assert restored.model_extra == {"digest": {"algorithm": "sha256", "value": "abc"}}
+    assert "digest" in restored.model_dump_json()
+
+
+def test_a_freshly_rendered_envelope_carries_no_extra_fields() -> None:
+    """The cost of extra='allow': a mistyped kwarg would land here."""
+    assert ArchiveEnvelope(conversation=conversation()).model_extra == {}
