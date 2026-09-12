@@ -7,12 +7,14 @@ from typing import Annotated
 
 import typer
 
+from convolvger.core.archive import ArchiveError, load_archive
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding, Level
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
 from convolvger.providers.default import build_registry
 from convolvger.renderers import render_json, render_markdown
+from convolvger.validation.report import Report
 
 EXIT_OK = 0
 EXIT_FAILED = 1
@@ -171,6 +173,50 @@ def export(
 
     _report_findings(result.findings)
     raise typer.Exit(EXIT_WARNINGS if result.warned else EXIT_OK)
+
+
+def _yes_no(value: bool) -> str:
+    return "yes" if value else "no"
+
+
+@app.command()
+def verify(
+    archive: Annotated[
+        Path,
+        typer.Argument(help="Path to a JSON archive written by convolvger."),
+    ],
+) -> None:
+    """Report what a JSON archive says about its own integrity.
+
+    The verdict is derived from the findings the archive already
+    carries. Nothing is re-fetched and nothing is re-parsed: this reads
+    a file and reports what it records.
+    """
+    try:
+        envelope = load_archive(archive.read_text(encoding="utf-8"))
+    except (ArchiveError, OSError) as error:
+        _fail(error)
+        return
+
+    report = Report(findings=envelope.findings)
+    conversation = envelope.conversation
+
+    typer.echo(f"Archive:   {archive}")
+    typer.echo(f"Schema:    {envelope.schema_version}")
+    typer.echo(f"Tool:      {envelope.tool} {envelope.tool_version}")
+    if envelope.retrieved_at is not None:
+        typer.echo(f"Retrieved: {envelope.retrieved_at.isoformat()}")
+    typer.echo(f"Provider:  {conversation.provider}")
+    typer.echo(f"Messages:  {len(conversation.messages)}")
+    typer.echo(f"Complete:  {_yes_no(report.complete)}")
+    typer.echo(f"Faithful:  {_yes_no(report.faithful)}")
+    if report.unrecognised:
+        typer.echo(f"Unknown:   {len(report.unrecognised)} unclassifiable code(s)")
+
+    _report_findings(envelope.findings)
+    raise typer.Exit(
+        EXIT_OK if report.complete and report.faithful else EXIT_WARNINGS
+    )
 
 
 if __name__ == "__main__":

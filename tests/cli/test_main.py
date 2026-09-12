@@ -10,6 +10,7 @@ from convolvger.core.findings import Finding, finding
 from convolvger.core.models import Conversation, Message, MessageRole, TextBlock
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
+from convolvger.renderers import render_json
 
 runner = CliRunner()
 URL = "https://chatgpt.com/share/6aa3f5a2-00a4-83eb-8d18-3b2266aac2e6"
@@ -45,6 +46,18 @@ def warned(monkeypatch: pytest.MonkeyPatch) -> None:
         )
 
     monkeypatch.setattr("convolvger.cli.main._retrieve", _retrieve)
+
+
+def archive_file(
+    tmp_path: Path, findings: list[Finding] | None = None
+) -> Path:
+    """Write a real archive, exactly as ``export --format json`` would."""
+    path = tmp_path / "archive.json"
+    path.write_text(
+        render_json(fake_result().conversation, findings=findings or []),
+        encoding="utf-8",
+    )
+    return path
 
 
 def test_providers_lists_chatgpt() -> None:
@@ -169,3 +182,80 @@ def test_include_flags_do_not_change_the_json(clean: None, tmp_path: Path) -> No
     )
 
     assert flagged.read_text(encoding="utf-8") == plain.read_text(encoding="utf-8")
+
+
+def test_verify_reports_a_clean_archive(tmp_path: Path) -> None:
+    result = runner.invoke(app, ["verify", str(archive_file(tmp_path))])
+
+    assert result.exit_code == 0
+    assert "Complete:  yes" in result.stdout
+    assert "Faithful:  yes" in result.stdout
+
+
+def test_verify_calls_empty_messages_complete(tmp_path: Path) -> None:
+    """The whole point: a snapshot of empty system messages is not damage."""
+    empty = [
+        finding("message_has_no_content", "no content blocks", f"m{n}")
+        for n in range(12)
+    ]
+    result = runner.invoke(app, ["verify", str(archive_file(tmp_path, empty))])
+
+    assert result.exit_code == 0
+    assert "Complete:  yes" in result.stdout
+
+
+def test_verify_reports_an_incomplete_archive(tmp_path: Path) -> None:
+    withheld = [finding("message_content_withheld", "emptied", "m1")]
+    result = runner.invoke(app, ["verify", str(archive_file(tmp_path, withheld))])
+
+    assert result.exit_code == 2
+    assert "Complete:  no" in result.stdout
+    assert "Faithful:  yes" in result.stdout
+
+
+def test_verify_reports_an_unfaithful_archive(tmp_path: Path) -> None:
+    unmodelled = [finding("unmodelled_content_type", "no block for it")]
+    result = runner.invoke(app, ["verify", str(archive_file(tmp_path, unmodelled))])
+
+    assert result.exit_code == 2
+    assert "Faithful:  no" in result.stdout
+
+
+def test_verify_reports_a_code_it_cannot_classify(tmp_path: Path) -> None:
+    path = archive_file(tmp_path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["findings"] = [
+        {"code": "minted_by_a_later_version", "level": "warning", "message": "?"}
+    ]
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = runner.invoke(app, ["verify", str(path)])
+
+    assert result.exit_code == 0
+    assert "unclassifiable" in result.stdout
+
+
+def test_verify_refuses_an_older_schema_version(tmp_path: Path) -> None:
+    """Exit 1, not a clean verdict on a file recording real damage."""
+    path = archive_file(tmp_path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["schema_version"] = 1
+    payload["warnings"] = ["a deferred slot was never merged"]
+    del payload["findings"]
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = runner.invoke(app, ["verify", str(path)])
+
+    assert result.exit_code == 1
+    assert "Complete:" not in result.stdout
+
+
+def test_verify_fails_on_a_file_that_is_not_an_archive(tmp_path: Path) -> None:
+    path = tmp_path / "notes.md"
+    path.write_text("# Untitled conversation\n", encoding="utf-8")
+
+    assert runner.invoke(app, ["verify", str(path)]).exit_code == 1
+
+
+def test_verify_fails_when_the_file_is_missing(tmp_path: Path) -> None:
+    assert runner.invoke(app, ["verify", str(tmp_path / "gone.json")]).exit_code == 1
