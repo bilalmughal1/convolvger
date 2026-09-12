@@ -78,6 +78,36 @@ convolvger export https://chatgpt.com/share/SHARE_ID -o -
 `-f json` writes the archival record; `-f md` (the default) writes the
 reader-facing document. `-o -` writes to stdout instead of a file.
 
+**Parse a snapshot you already saved**
+
+```
+convolvger export https://chatgpt.com/share/SHARE_ID --from-file saved-page.html
+```
+
+`--from-file` parses a saved copy of the share page instead of fetching the URL.
+The URL is still required: it routes the snapshot to the right provider, and it
+is the provenance the archive records. Because when a saved file was captured is
+not knowable from the file, an archive made this way records no retrieval time
+rather than claiming a false one.
+
+This is how to re-read a capture without asking the provider for it again, which
+matters because the answer may have changed since. It works with `inspect` too.
+
+**Parse a snapshot you already saved**
+
+```
+convolvger export https://chatgpt.com/share/SHARE_ID --from-file saved-page.html
+```
+
+`--from-file` parses a saved copy of the share page instead of fetching the URL.
+The URL is still required: it routes the snapshot to the right provider, and it
+is the provenance the archive records. Because when a saved file was captured is
+not knowable from the file, an archive made this way records no retrieval time
+rather than claiming a false one.
+
+This is how to re-read a capture without asking the provider for it again, which
+matters because the answer may have changed since. It works with `inspect` too.
+
 Markdown omits provider-hidden messages and deactivated branches by default and
 reports each omission in its header. `--include-hidden` and
 `--include-inactive` keep them. Both flags are ignored for JSON, which never

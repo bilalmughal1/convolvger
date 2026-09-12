@@ -4,6 +4,24 @@ All notable changes to Convolvger will be documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-09-12
+
+### Added
+
+- `--from-file` on `inspect` and `export`: parse a saved copy of a share page
+  instead of fetching the URL, so a capture can be re-read without asking the
+  provider for it again. The URL is still required, since it routes the snapshot
+  and records its provenance; no retrieval time is claimed for a saved file
+
+### Fixed
+
+- A deferred turbo-stream slot is now reported as a fidelity loss rather than an
+  incomplete snapshot. The stream carries the deferred line and this decoder
+  discards it, so the earlier verdict blamed the provider for the decoder's own
+  gap
+- Install and usage instructions in the README, which were mangled when the
+  0.1.0 release metadata was written and so shipped broken to PyPI
+
 ## [0.1.0] - 2026-09-12
 
 ### Added
