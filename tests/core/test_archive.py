@@ -4,7 +4,13 @@ from importlib.metadata import PackageNotFoundError
 
 import pytest
 
-from convolvger.core.archive import SCHEMA_VERSION, ArchiveEnvelope
+from convolvger.core.archive import (
+    SCHEMA_VERSION,
+    ArchiveEnvelope,
+    ArchiveError,
+    load_archive,
+)
+from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import finding
 from convolvger.core.models import (
     Conversation,
@@ -141,3 +147,77 @@ def test_fields_from_a_newer_writer_survive_a_round_trip() -> None:
 def test_a_freshly_rendered_envelope_carries_no_extra_fields() -> None:
     """The cost of extra='allow': a mistyped kwarg would land here."""
     assert ArchiveEnvelope(conversation=conversation()).model_extra == {}
+
+
+def test_load_round_trips_an_envelope_this_version_wrote() -> None:
+    original = ArchiveEnvelope(
+        retrieved_at=RETRIEVED,
+        findings=[finding("message_has_no_content", "no content blocks", "m2")],
+        conversation=conversation(),
+    )
+
+    assert load_archive(original.model_dump_json()) == original
+
+
+def test_load_refuses_an_older_schema_version() -> None:
+    """A version 1 file would otherwise validate and read as clean."""
+    older = json.dumps(
+        {
+            "schema_version": 1,
+            "warnings": ["a deferred slot was never merged"],
+            "conversation": conversation().model_dump(mode="json"),
+        }
+    )
+
+    with pytest.raises(ArchiveError, match="schema version 1"):
+        load_archive(older)
+
+
+def test_load_refuses_a_newer_schema_version() -> None:
+    newer = json.dumps(
+        {
+            "schema_version": SCHEMA_VERSION + 1,
+            "conversation": conversation().model_dump(mode="json"),
+        }
+    )
+
+    with pytest.raises(ArchiveError, match=f"schema version {SCHEMA_VERSION + 1}"):
+        load_archive(newer)
+
+
+def test_load_refuses_a_file_that_declares_no_schema_version() -> None:
+    undeclared = json.dumps({"conversation": conversation().model_dump(mode="json")})
+
+    with pytest.raises(ArchiveError, match="no schema_version"):
+        load_archive(undeclared)
+
+
+def test_load_refuses_text_that_is_not_json() -> None:
+    with pytest.raises(ArchiveError, match="Not JSON"):
+        load_archive("# Untitled conversation\n")
+
+
+def test_load_refuses_json_that_is_not_an_object() -> None:
+    with pytest.raises(ArchiveError, match="found list"):
+        load_archive("[]")
+
+
+def test_load_refuses_an_envelope_with_no_conversation() -> None:
+    with pytest.raises(ArchiveError, match="not a valid envelope"):
+        load_archive(json.dumps({"schema_version": SCHEMA_VERSION}))
+
+
+def test_load_keeps_a_field_a_later_version_added() -> None:
+    """Additions do not bump the schema version, so they must survive."""
+    envelope = ArchiveEnvelope(conversation=conversation())
+    payload = json.loads(envelope.model_dump_json())
+    payload["captured_by"] = "some later version"
+
+    loaded = load_archive(json.dumps(payload))
+
+    assert loaded.model_dump()["captured_by"] == "some later version"
+
+
+def test_archive_error_is_catchable_as_the_base_error() -> None:
+    with pytest.raises(ConvolvgerError):
+        load_archive("not json at all")
