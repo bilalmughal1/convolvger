@@ -1,7 +1,7 @@
 [project]
 name = "convolvger"
 version = "0.1.0"
-description = "Add your description here"
+description = "Local-first, provider-independent archival for public AI conversations"
 readme = "README.md"
 authors = [
     { name = "Fahad Bilal Saleem", email = "contact@fahadbilal.com" }

@@ -20,7 +20,7 @@ uv run ruff check .
 
 Run type checking:
 
-uv run mypy src
+uv run mypy src tests
 
 ## Architecture
 

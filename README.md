@@ -39,9 +39,11 @@ Additional providers will be added as their public sharing formats are supported
 
 Convolvger is under active development and not yet ready for general use.
 
-Working today: `convolvger providers`, `convolvger inspect URL`, and `convolvger export URL` with `-o PATH` or `-o -` for stdout, plus `--include-hidden` and `--include-inactive`.
+Working today: `convolvger providers`, `convolvger inspect URL`, and `convolvger export URL` with `-o PATH` or `-o -` for stdout, `-f md` or `-f json`, plus `--include-hidden` and `--include-inactive`.
 
-ChatGPT share links can be fetched, parsed, and exported to Markdown. JSON export, integrity validation, and the remaining providers are not implemented yet.
+ChatGPT share links can be fetched, parsed, and exported. Markdown is a reader-facing document that may omit content and reports every omission in its header; JSON is the complete archival record and omits nothing the model holds. Integrity validation, `convolvger verify`, and the remaining providers are not implemented yet.
+
+Extraction records structured findings, each with a stable code and a level. A note is recorded but does not change the exit status; a warning does. Both are written into the JSON archive either way, so nothing is withheld from the record because it was judged unremarkable.
 
 Exit codes: 0 clean, 2 completed with warnings, 1 failed.
 
