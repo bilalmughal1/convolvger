@@ -28,13 +28,13 @@ def report_for(name: str) -> Report:
     not (LOCAL / "minimal-2026-09-11.html").exists(),
     reason="local capture not present (see tests/fixtures/local/)",
 )
-def test_the_first_capture_is_incomplete_but_faithful() -> None:
-    """Twelve messages empty by design; one deferred slot never merged."""
+def test_the_first_capture_is_complete_but_not_faithful() -> None:
+    """The provider served everything; we drop one deferred slot."""
     report = report_for("minimal-2026-09-11.html")
 
-    assert report.complete is False
-    assert report.faithful is True
-    assert len(report.findings_for(Aspect.COMPLETENESS)) == 2
+    assert report.complete is True
+    assert report.faithful is False
+    assert len(report.findings_for(Aspect.FIDELITY)) == 2
     assert len(report.findings_for(Aspect.INFORMATIONAL)) == 12
     assert report.unrecognised == []
 
@@ -48,7 +48,8 @@ def test_the_second_capture_withholds_four_more_messages() -> None:
     report = report_for("minimal-2026-09-12.html")
 
     assert report.complete is False
-    assert report.faithful is True
-    assert len(report.findings_for(Aspect.COMPLETENESS)) == 6
+    assert report.faithful is False
+    assert len(report.findings_for(Aspect.COMPLETENESS)) == 4
+    assert len(report.findings_for(Aspect.FIDELITY)) == 2
     assert len(report.findings_for(Aspect.INFORMATIONAL)) == 12
     assert report.unrecognised == []

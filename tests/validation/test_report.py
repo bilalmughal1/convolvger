@@ -38,8 +38,8 @@ def test_informational_findings_change_no_verdict() -> None:
     assert len(report.findings) == 12
 
 
-def test_a_real_capture_shape_is_complete_but_for_the_deferred_slots() -> None:
-    """12 empty messages plus 2 unresolved slots: incomplete, still faithful."""
+def test_a_real_capture_shape_is_complete_but_not_faithful() -> None:
+    """12 empty messages the provider meant to send, 2 slots we dropped."""
     findings = [
         finding("message_has_no_content", "no content blocks", f"m{n}")
         for n in range(12)
@@ -48,9 +48,9 @@ def test_a_real_capture_shape_is_complete_but_for_the_deferred_slots() -> None:
     findings.append(finding("deferred_value_unresolved", "value [4]"))
     report = Report(findings=findings)
 
-    assert report.complete is False
-    assert report.faithful is True
-    assert len(report.findings_for(Aspect.COMPLETENESS)) == 2
+    assert report.complete is True
+    assert report.faithful is False
+    assert len(report.findings_for(Aspect.FIDELITY)) == 2
 
 
 def test_findings_are_grouped_by_aspect_in_the_order_recorded() -> None:

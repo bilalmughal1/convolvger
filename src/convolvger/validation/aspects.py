@@ -5,12 +5,13 @@ observation answers, and there are two worth asking of an archive:
 
 ``COMPLETENESS``
     Did the provider serve everything its own snapshot structure
-    referenced? A slot left unmerged or a message emptied of content the
-    snapshot was expected to carry means it did not.
+    referenced? A message emptied of content the snapshot was expected to
+    carry means it did not.
 
 ``FIDELITY``
     Could we model everything the provider did serve? A content type we
-    have no block for, or a value JSON cannot carry, means we could not.
+    have no block for, a value JSON cannot carry, or a deferred slot the
+    stream carried and this decoder discarded means we could not.
 
 ``INFORMATIONAL``
     Neither. The observation is recorded because it is true, not because
@@ -48,8 +49,8 @@ class Aspect(StrEnum):
 
 
 ASPECTS: dict[str, Aspect] = {
-    "deferred_slot_not_merged": Aspect.COMPLETENESS,
-    "deferred_value_unresolved": Aspect.COMPLETENESS,
+    "deferred_slot_not_merged": Aspect.FIDELITY,
+    "deferred_value_unresolved": Aspect.FIDELITY,
     "literal_object_key": Aspect.INFORMATIONAL,
     "message_content_withheld": Aspect.COMPLETENESS,
     "message_has_no_content": Aspect.INFORMATIONAL,
@@ -61,6 +62,10 @@ ASPECTS: dict[str, Aspect] = {
     "unrecognised_stream_line": Aspect.FIDELITY,
 }
 """The single place a code's integrity question is decided.
+
+The deferred codes are fidelity, not completeness: the stream carries
+the deferred line, and it is this decoder that drops it rather than the
+provider that withheld it.
 
 ``literal_object_key`` is informational: the decoder returns such a key
 verbatim, so nothing is lost and neither check is answered.
