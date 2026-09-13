@@ -4,6 +4,8 @@ All notable changes to Convolvger will be documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
 ## [0.1.1] - 2026-09-12
 
 ### Added
