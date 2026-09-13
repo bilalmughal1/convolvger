@@ -49,6 +49,7 @@ class Aspect(StrEnum):
 
 
 ASPECTS: dict[str, Aspect] = {
+    "attachment_withheld": Aspect.COMPLETENESS,
     "deferred_slot_not_merged": Aspect.FIDELITY,
     "deferred_value_unresolved": Aspect.FIDELITY,
     "literal_object_key": Aspect.INFORMATIONAL,
@@ -56,6 +57,7 @@ ASPECTS: dict[str, Aspect] = {
     "message_has_no_content": Aspect.INFORMATIONAL,
     "message_weight_absent": Aspect.INFORMATIONAL,
     "non_standard_json_constant": Aspect.FIDELITY,
+    "tool_result_has_no_content": Aspect.COMPLETENESS,
     "unexpected_message_weight": Aspect.FIDELITY,
     "unmodelled_content_type": Aspect.FIDELITY,
     "unrecognised_role": Aspect.FIDELITY,

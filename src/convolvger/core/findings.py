@@ -14,6 +14,7 @@ descriptive name tempts renaming when an interpretation shifts. If the
 meaning changes, add a new code and stop emitting the old one.
 """
 
+from collections.abc import Iterable
 from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -31,6 +32,7 @@ class Level(StrEnum):
 
 
 LEVELS: dict[str, Level] = {
+    "attachment_withheld": Level.WARNING,
     "deferred_slot_not_merged": Level.WARNING,
     "deferred_value_unresolved": Level.WARNING,
     "literal_object_key": Level.NOTE,
@@ -38,6 +40,7 @@ LEVELS: dict[str, Level] = {
     "message_has_no_content": Level.NOTE,
     "message_weight_absent": Level.NOTE,
     "non_standard_json_constant": Level.WARNING,
+    "tool_result_has_no_content": Level.WARNING,
     "unexpected_message_weight": Level.WARNING,
     "unmodelled_content_type": Level.WARNING,
     "unrecognised_role": Level.WARNING,
@@ -55,6 +58,14 @@ marks content the snapshot was expected to carry and did not.
 its own: a snapshot that never carried the field says nothing about
 whether a branch was deactivated. It is recorded rather than assumed
 away so that a provider dropping a field it always sent is visible.
+
+``attachment_withheld`` and ``tool_result_has_no_content`` are warnings
+for the reason ``message_content_withheld`` is: the snapshot's own
+structure referenced something it then did not serve. A snapshot
+declaring a file count while carrying no files says so itself, and a
+tool result addressed by a tool call but holding no payload is the same
+shape. That a provider withholds them deliberately makes them expected,
+not present.
 """
 
 
@@ -92,3 +103,31 @@ def finding(code: str, message: str, message_id: str | None = None) -> Finding:
     return Finding(
         code=code, level=LEVELS[code], message=message, message_id=message_id
     )
+
+
+def collapse(findings: Iterable[Finding]) -> list[Finding]:
+    """Fold identical observations into one finding carrying a count.
+
+    Two findings are the same observation when code, message and
+    message id all match. Anything that differs stays separate:
+    collapsing on the code alone would discard which key, or which
+    block, each observation was about, and that is the part worth
+    keeping. SARIF counts a logically unique result rather than a rule,
+    for the same reason.
+
+    The first occurrence of each observation keeps its position, so a
+    reader sees them in the order they were noticed. Counts already
+    carried are added rather than overwritten, so collapsing a list
+    twice cannot lose a number.
+    """
+    counted: dict[tuple[str, str, str | None], Finding] = {}
+    for item in findings:
+        key = (item.code, item.message, item.message_id)
+        seen = counted.get(key)
+        if seen is None:
+            counted[key] = item
+            continue
+        counted[key] = seen.model_copy(
+            update={"occurrences": seen.occurrences + item.occurrences}
+        )
+    return list(counted.values())
