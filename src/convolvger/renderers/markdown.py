@@ -10,6 +10,7 @@ stays a trustworthy representation of what the snapshot contained.
 Nothing here is provider-specific.
 """
 
+import json
 from datetime import datetime
 
 from convolvger.core.findings import Finding, Level
@@ -21,6 +22,8 @@ from convolvger.core.models import (
     MessageRole,
     ReasoningBlock,
     TextBlock,
+    ToolResultBlock,
+    ToolUseBlock,
     UnknownBlock,
 )
 
@@ -46,6 +49,21 @@ def _render_block(block: ContentBlock) -> str:
     if isinstance(block, ReasoningBlock):
         label = f"**Reasoning — {block.label}**" if block.label else "**Reasoning**"
         return f"{label}\n{_quote(block.text)}"
+    if isinstance(block, ToolUseBlock):
+        header = f"**Tool call — `{block.name}`**"
+        if not block.input:
+            return f"{header}\n> (no arguments recorded)"
+        arguments = json.dumps(block.input, indent=2, ensure_ascii=False)
+        return f"{header}\n```json\n{arguments}\n```"
+    if isinstance(block, ToolResultBlock):
+        named = f" — `{block.name}`" if block.name else ""
+        header = f"**Tool result{named}**"
+        if block.is_error:
+            header = f"{header} (the provider reported an error)"
+        if not block.content:
+            return f"{header}\n> (the shared snapshot carried no result)"
+        body = "\n\n".join(_render_block(item) for item in block.content)
+        return f"{header}\n{body}"
     if isinstance(block, UnknownBlock):
         header = f"**Unrendered content — `{block.type}`**"
         if block.text:

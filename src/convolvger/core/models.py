@@ -62,8 +62,39 @@ class UnknownBlock(BaseModel):
     raw: dict[str, Any] = Field(default_factory=dict)
 
 
+class ToolUseBlock(BaseModel):
+    """A tool the assistant invoked, as the snapshot recorded it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["tool_use"] = "tool_use"
+    name: str
+    id: str | None = None
+    input: dict[str, Any] = Field(default_factory=dict)
+    raw: dict[str, Any] = Field(default_factory=dict)
+
+
+class ToolResultBlock(BaseModel):
+    """What a tool returned, as the snapshot carried it.
+
+    ``content`` is empty when the snapshot carried no payload. That is
+    not the same as a tool that returned nothing, and the distinction
+    is not recoverable from the data, so it is recorded as a finding
+    rather than decided here.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["tool_result"] = "tool_result"
+    tool_use_id: str | None = None
+    name: str | None = None
+    is_error: bool = False
+    content: list["ContentBlock"] = Field(default_factory=list)
+    raw: dict[str, Any] = Field(default_factory=dict)
+
+
 KnownBlock = Annotated[
-    TextBlock | CodeBlock | ReasoningBlock,
+    TextBlock | CodeBlock | ReasoningBlock | ToolUseBlock | ToolResultBlock,
     Field(discriminator="type"),
 ]
 
@@ -71,6 +102,8 @@ ContentBlock = Annotated[
     KnownBlock | UnknownBlock,
     Field(union_mode="left_to_right"),
 ]
+
+ToolResultBlock.model_rebuild()
 
 
 class Message(BaseModel):

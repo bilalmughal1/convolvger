@@ -10,6 +10,8 @@ from convolvger.core.models import (
     MessageRole,
     ReasoningBlock,
     TextBlock,
+    ToolResultBlock,
+    ToolUseBlock,
     UnknownBlock,
 )
 
@@ -100,3 +102,45 @@ def test_message_round_trips_through_json() -> None:
     restored = Message.model_validate_json(message.model_dump_json())
 
     assert restored == message
+
+
+def test_a_tool_call_keeps_its_name_and_arguments() -> None:
+    block = adapter.validate_python(
+        {"type": "tool_use", "name": "web_search", "id": "u1", "input": {"query": "x"}}
+    )
+
+    assert isinstance(block, ToolUseBlock)
+    assert block.name == "web_search"
+    assert block.input == {"query": "x"}
+
+
+def test_a_tool_result_nests_canonical_blocks() -> None:
+    block = adapter.validate_python(
+        {
+            "type": "tool_result",
+            "tool_use_id": "u1",
+            "content": [{"type": "text", "text": "found it"}],
+        }
+    )
+
+    assert isinstance(block, ToolResultBlock)
+    assert [type(item) for item in block.content] == [TextBlock]
+
+
+def test_a_tool_result_that_carried_no_payload_is_not_an_error() -> None:
+    """A result the snapshot emptied is not a tool that failed."""
+    block = adapter.validate_python({"type": "tool_result", "name": "memory_read"})
+
+    assert isinstance(block, ToolResultBlock)
+    assert block.content == []
+    assert block.is_error is False
+
+
+def test_a_nested_unknown_block_does_not_reload_as_a_known_block() -> None:
+    """The existing top-level guard, one level further down."""
+    original = ToolResultBlock(content=[UnknownBlock(type="knowledge", text="a title")])
+
+    reloaded = adapter.validate_python(original.model_dump(mode="json"))
+
+    assert isinstance(reloaded, ToolResultBlock)
+    assert type(reloaded.content[0]) is UnknownBlock

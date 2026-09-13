@@ -115,4 +115,6 @@ def test_provider_round_trip_produces_canonical_conversation() -> None:
     conversation = result.conversation
 
     assert conversation.provider == "fake"
-    assert conversation.messages[0].content[0].text == "raw snapshot"
+    block = conversation.messages[0].content[0]
+    assert isinstance(block, TextBlock)
+    assert block.text == "raw snapshot"

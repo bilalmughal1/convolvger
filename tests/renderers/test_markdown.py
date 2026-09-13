@@ -11,6 +11,8 @@ from convolvger.core.models import (
     MessageRole,
     ReasoningBlock,
     TextBlock,
+    ToolResultBlock,
+    ToolUseBlock,
     UnknownBlock,
 )
 from convolvger.core.source import RawSource
@@ -293,3 +295,48 @@ def test_real_capture_renders_and_reconciles() -> None:
     assert "31 in snapshot, 18 rendered" in output
     assert "Omitted as hidden by the provider: 11" in output
     assert "Omitted as carrying no renderable content: 2" in output
+
+
+def test_a_tool_call_renders_its_arguments() -> None:
+    rendered = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[ToolUseBlock(name="web_search", input={"query": "drift"})],
+            )
+        )
+    )
+
+    assert "**Tool call — `web_search`**" in rendered
+    assert '"query": "drift"' in rendered
+
+
+def test_a_tool_result_the_snapshot_did_not_carry_says_so() -> None:
+    rendered = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[ToolResultBlock(name="memory_read")],
+            )
+        )
+    )
+
+    assert "**Tool result — `memory_read`**" in rendered
+    assert "carried no result" in rendered
+
+
+def test_a_tool_result_renders_the_content_it_did_carry() -> None:
+    rendered = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[
+                    ToolResultBlock(
+                        name="web_search", content=[TextBlock(text="nine results")]
+                    )
+                ],
+            )
+        )
+    )
+
+    assert "nine results" in rendered

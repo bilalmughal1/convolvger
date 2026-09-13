@@ -32,4 +32,6 @@ def test_conversation_can_be_created() -> None:
     assert conversation.provider == "chatgpt"
     assert len(conversation.messages) == 2
     assert conversation.messages[0].role == MessageRole.USER
-    assert conversation.messages[1].content[0].text == "Hello! How can I help?"
+    block = conversation.messages[1].content[0]
+    assert isinstance(block, TextBlock)
+    assert block.text == "Hello! How can I help?"
