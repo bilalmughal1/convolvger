@@ -12,6 +12,12 @@ The project follows [Semantic Versioning](https://semver.org/).
   made. One decoder can meet the same unmodelled shape dozens of times in a
   single snapshot; collapsing those into one finding with a count keeps the
   report readable without losing how much of it there was
+- Tool calls and tool results are first-class content. A conversation that used
+  tools now records each call with its arguments, and whatever result the
+  snapshot carried, nested as canonical blocks. The Markdown export states
+  plainly when a result was not carried at all, instead of rendering nothing.
+  Both previously landed as unrecognised blocks, which made every tool-using
+  conversation report a fidelity loss it had not actually suffered
 
 ### Changed
 
