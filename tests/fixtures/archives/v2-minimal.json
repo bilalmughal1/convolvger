@@ -1,0 +1,64 @@
+{
+  "schema_version": 2,
+  "tool": "convolvger",
+  "tool_version": "0.1.1",
+  "retrieved_at": null,
+  "findings": [
+    {
+      "code": "literal_object_key",
+      "level": "note",
+      "message": "kept as-is: title",
+      "message_id": null
+    },
+    {
+      "code": "literal_object_key",
+      "level": "note",
+      "message": "kept as-is: linear_conversation",
+      "message_id": null
+    }
+  ],
+  "conversation": {
+    "id": null,
+    "provider": "chatgpt",
+    "source_url": "https://chatgpt.com/share/00000000-0000-0000-0000-000000000000",
+    "title": "A Saved Snapshot",
+    "created_at": null,
+    "updated_at": null,
+    "messages": [
+      {
+        "id": "m1",
+        "role": "user",
+        "author": null,
+        "timestamp": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "What does this do?"
+          }
+        ],
+        "visible": true,
+        "active": true,
+        "status": null,
+        "recipient": null,
+        "provider_metadata": {}
+      },
+      {
+        "id": "m2",
+        "role": "assistant",
+        "author": null,
+        "timestamp": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "It reads a saved file."
+          }
+        ],
+        "visible": true,
+        "active": true,
+        "status": null,
+        "recipient": null,
+        "provider_metadata": {}
+      }
+    ]
+  }
+}

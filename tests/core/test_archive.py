@@ -1,6 +1,7 @@
 import json
 from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError
+from pathlib import Path
 
 import pytest
 
@@ -21,6 +22,8 @@ from convolvger.core.models import (
 )
 
 RETRIEVED = datetime(2026, 9, 12, 9, 14, 22, tzinfo=UTC)
+
+ARCHIVES = Path(__file__).parent.parent / "fixtures" / "archives"
 
 
 def conversation() -> Conversation:
@@ -221,3 +224,25 @@ def test_load_keeps_a_field_a_later_version_added() -> None:
 def test_archive_error_is_catchable_as_the_base_error() -> None:
     with pytest.raises(ConvolvgerError):
         load_archive("not json at all")
+
+
+def test_an_archive_written_by_an_earlier_release_still_loads() -> None:
+    """A real archive produced by 0.1.1, before the schema moved on.
+
+    Committed rather than generated, because regenerating it would mean
+    checking out an older tag. It is the only evidence that a reader
+    still accepts what an earlier writer actually wrote, as opposed to
+    what this version believes an earlier writer would have written.
+    """
+    envelope = load_archive(
+        (ARCHIVES / "v2-minimal.json").read_text(encoding="utf-8")
+    )
+
+    assert envelope.schema_version == 2
+    assert envelope.tool_version == "0.1.1"
+    assert envelope.retrieved_at is None
+    assert [message.role for message in envelope.conversation.messages] == [
+        MessageRole.USER,
+        MessageRole.ASSISTANT,
+    ]
+    assert [item.code for item in envelope.findings] == ["literal_object_key"] * 2
