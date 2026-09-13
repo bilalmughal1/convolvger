@@ -6,6 +6,21 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- A finding records `occurrences`, the number of times the same observation was
+  made. One decoder can meet the same unmodelled shape dozens of times in a
+  single snapshot; collapsing those into one finding with a count keeps the
+  report readable without losing how much of it there was
+
+### Changed
+
+- Archive schema version 3. An archive written by version 2 still loads: a
+  version stays readable for as long as this tool can represent it truthfully,
+  and a test reads a real archive produced by 0.1.1 to prove it. Version 1
+  remains refused, because its list of warning strings has no honest reading
+  here and accepting it reported a clean verdict on a damaged file
+
 ## [0.1.1] - 2026-09-12
 
 ### Added
