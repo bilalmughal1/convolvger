@@ -246,3 +246,26 @@ def test_an_archive_written_by_an_earlier_release_still_loads() -> None:
         MessageRole.ASSISTANT,
     ]
     assert [item.code for item in envelope.findings] == ["literal_object_key"] * 2
+
+
+def test_a_finding_written_before_the_count_existed_reads_as_one() -> None:
+    """Version 2 predates ``occurrences``; the default has to fill it."""
+    envelope = load_archive(
+        (ARCHIVES / "v2-minimal.json").read_text(encoding="utf-8")
+    )
+
+    assert [item.occurrences for item in envelope.findings] == [1, 1]
+
+
+def test_a_repeated_finding_records_how_many_times_it_occurred() -> None:
+    """The count is written out and survives a reload, not just the code."""
+    repeated = finding("unmodelled_content_type", "knowledge preserved verbatim")
+    original = ArchiveEnvelope(
+        findings=[repeated.model_copy(update={"occurrences": 82})],
+        conversation=conversation(),
+    )
+
+    rendered = original.model_dump_json()
+    assert '"occurrences":82' in rendered
+
+    assert load_archive(rendered).findings[0].occurrences == 82

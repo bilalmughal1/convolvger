@@ -19,12 +19,26 @@ from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding
 from convolvger.core.models import Conversation
 
-SCHEMA_VERSION = 2
-"""Bumped only when a change would stop an older reader loading a file.
+SCHEMA_VERSION = 3
+"""The version this release writes.
 
+Bumped only when a change would stop an older reader loading a file.
 Version 2 replaced the ``warnings`` list of strings with ``findings``.
-Adding a field is safe for a reader that allows unknown ones; removing
-or renaming one is not.
+Version 3 added ``occurrences`` to a finding: the envelope allows
+unknown fields, but a nested ``Finding`` forbids them, so the
+envelope's forward compatibility does not reach inside it.
+"""
+
+READABLE_VERSIONS: frozenset[int] = frozenset({2, SCHEMA_VERSION})
+"""Every version this release can read, not merely the one it writes.
+
+A format that orphans its own older files on each release is a poor
+archival format, so a version stays readable for as long as this code
+can represent it truthfully. Membership is earned rather than assumed:
+a version belongs here only once a test reads a real archive written by
+the release that produced it. Version 1 is absent for that reason -- its
+``warnings`` list of strings has no honest reading here, and accepting
+it produced a clean verdict on a file recording real damage.
 """
 
 
@@ -94,10 +108,11 @@ def load_archive(text: str) -> ArchiveEnvelope:
     declared = payload.get("schema_version")
     if not isinstance(declared, int):
         raise ArchiveError("Not an archive: no schema_version")
-    if declared != SCHEMA_VERSION:
+    if declared not in READABLE_VERSIONS:
+        readable = ", ".join(str(item) for item in sorted(READABLE_VERSIONS))
         raise ArchiveError(
             f"Archive declares schema version {declared}; "
-            f"this version reads {SCHEMA_VERSION}"
+            f"this version reads {readable}"
         )
 
     try:

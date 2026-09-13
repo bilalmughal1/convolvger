@@ -16,7 +16,7 @@ meaning changes, add a new code and stop emitting the old one.
 
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Level(StrEnum):
@@ -67,6 +67,17 @@ class Finding(BaseModel):
     level: Level
     message: str
     message_id: str | None = None
+    occurrences: int = Field(default=1, ge=1)
+    """How many times this observation was made.
+
+    Repeated observations of one code collapse into a single finding
+    carrying a count, rather than one finding each. A decoder can meet
+    the same unmodelled shape eighty times in one snapshot, and eighty
+    identical findings bury the other things the report has to say
+    while adding nothing. The count is kept because the number is
+    itself evidence: an archival record should not lose how much of
+    something it saw.
+    """
 
 
 def finding(code: str, message: str, message_id: str | None = None) -> Finding:
