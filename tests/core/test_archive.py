@@ -269,3 +269,21 @@ def test_a_repeated_finding_records_how_many_times_it_occurred() -> None:
     assert '"occurrences":82' in rendered
 
     assert load_archive(rendered).findings[0].occurrences == 82
+
+
+def test_an_archive_keeps_conversation_level_provider_metadata() -> None:
+    """A Claude envelope carries fields the canonical model does not name."""
+    written = ArchiveEnvelope(
+        conversation=Conversation(
+            provider="claude",
+            source_url="https://claude.ai/share/x",
+            provider_metadata={"up_to_date": True, "created_by": "A Name"},
+        )
+    ).model_dump_json()
+
+    loaded = load_archive(written)
+
+    assert loaded.conversation.provider_metadata == {
+        "up_to_date": True,
+        "created_by": "A Name",
+    }

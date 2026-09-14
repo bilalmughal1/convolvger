@@ -129,6 +129,16 @@ class Message(BaseModel):
 
 
 class Conversation(BaseModel):
+    """A whole conversation as one provider's snapshot described it.
+
+    ``provider_metadata`` holds envelope fields this version does not
+    model canonically -- a second identity for the underlying
+    conversation, a flag saying whether the snapshot still matches it,
+    the account that shared it. Renderers must not read it, so none of
+    it reaches the Markdown export; it exists so the JSON archive
+    remains a faithful record of the file it was made from.
+    """
+
     model_config = ConfigDict(extra="forbid")
 
     id: str | None = None
@@ -138,3 +148,4 @@ class Conversation(BaseModel):
     created_at: datetime | None = None
     updated_at: datetime | None = None
     messages: list[Message] = Field(default_factory=list)
+    provider_metadata: dict[str, Any] = Field(default_factory=dict)
