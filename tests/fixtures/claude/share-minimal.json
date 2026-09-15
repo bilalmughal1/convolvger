@@ -1,0 +1,97 @@
+{
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "conversation_uuid": "11111111-1111-4111-8111-111111111111",
+  "created_at": "2026-09-13T10:00:00.000000Z",
+  "updated_at": "2026-09-13T10:05:00.000000Z",
+  "snapshot_name": "A minimal shared conversation",
+  "created_by": "Example Sharer",
+  "creator": {
+    "full_name": "Example Sharer",
+    "uuid": "22222222-2222-4222-8222-222222222222"
+  },
+  "project_uuid": null,
+  "up_to_date": true,
+  "is_public": true,
+  "working_documents": [],
+  "chat_messages": [
+    {
+      "uuid": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "index": 0,
+      "sender": "human",
+      "created_at": "2026-09-13T10:00:00.000000Z",
+      "updated_at": "2026-09-13T10:00:00.000000Z",
+      "content": [
+        {
+          "type": "text",
+          "text": "Summarise the two files I attached.",
+          "citations": [],
+          "flags": null,
+          "start_timestamp": "2026-09-13T10:00:00.000000Z",
+          "stop_timestamp": "2026-09-13T10:00:00.000000Z"
+        }
+      ],
+      "text": "",
+      "truncated": false,
+      "stop_reason": null,
+      "input_mode": "text",
+      "parent_message_uuid": "00000000-0000-4000-8000-000000000000",
+      "attachments": [],
+      "files": [],
+      "file_count": 2,
+      "image_count": 0,
+      "attached_folders": [],
+      "compaction_summary": null,
+      "local_project": null
+    },
+    {
+      "uuid": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "index": 1,
+      "sender": "assistant",
+      "created_at": "2026-09-13T10:05:00.000000Z",
+      "updated_at": "2026-09-13T10:05:00.000000Z",
+      "content": [
+        {
+          "type": "tool_use",
+          "name": "example_tool",
+          "id": "toolu_0000",
+          "input": {"query": "the two files"},
+          "message": null,
+          "hidden_in_chat": false,
+          "tool_origin": "first_party"
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_0000",
+          "name": "example_tool",
+          "is_error": false,
+          "content": [],
+          "structured_content": null,
+          "display_content": null,
+          "message": null,
+          "meta": null,
+          "hidden_in_chat": false
+        },
+        {
+          "type": "text",
+          "text": "The snapshot did not carry those files, so I cannot summarise them.",
+          "citations": [],
+          "flags": null,
+          "start_timestamp": "2026-09-13T10:05:00.000000Z",
+          "stop_timestamp": "2026-09-13T10:05:00.000000Z"
+        }
+      ],
+      "text": "",
+      "truncated": false,
+      "stop_reason": "end_turn",
+      "input_mode": "text",
+      "parent_message_uuid": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "attachments": [],
+      "files": [],
+      "file_count": 0,
+      "image_count": 0,
+      "attached_folders": [],
+      "compaction_summary": null,
+      "local_project": null
+    }
+  ]
+}
