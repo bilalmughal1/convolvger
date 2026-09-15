@@ -1,6 +1,7 @@
 """Parsing a saved Claude snapshot: the mapping, and what it records."""
 
 import json
+from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -11,9 +12,13 @@ from convolvger.core.models import MessageRole, TextBlock, ToolResultBlock, Tool
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
 from convolvger.providers.claude._parse import parse
+from convolvger.validation.aspects import Aspect
+from convolvger.validation.report import Report
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "claude" / "share-minimal.json"
 SHARE_URL = "https://claude.ai/share/00000000-0000-0000-0000-000000000000"
+LOCAL = Path(__file__).parent.parent / "fixtures" / "local" / "claude"
+CAPTURE = LOCAL / "snapshot-2026-09-13.json"
 
 
 def _parse(payload: Any) -> ParseResult:
@@ -187,3 +192,99 @@ def test_a_snapshot_without_messages_is_refused() -> None:
 def test_a_snapshot_whose_messages_are_all_unreadable_is_refused() -> None:
     with pytest.raises(ParseError, match="no messages"):
         _parse(_envelope(chat_messages=["not", "objects"]))
+
+
+@pytest.mark.skipif(
+    not CAPTURE.exists(),
+    reason="local capture not present (see tests/fixtures/local/)",
+)
+def test_the_real_capture_parses_as_measured() -> None:
+    """A 34-message conversation captured from claude.ai on 2026-09-13.
+
+    The share URL here is the synthetic one: the parser reads the file,
+    and the real link is not committed.
+    """
+    result = parse(
+        RawSource(url=SHARE_URL, content=CAPTURE.read_text(encoding="utf-8"))
+    )
+    messages = result.conversation.messages
+
+    assert len(messages) == 34
+    assert Counter(m.role for m in messages) == {
+        MessageRole.USER: 17,
+        MessageRole.ASSISTANT: 17,
+    }
+    assert Counter(b.type for m in messages for b in m.content) == {
+        "text": 34,
+        "tool_use": 30,
+        "tool_result": 30,
+    }
+    assert Counter(
+        inner.type
+        for m in messages
+        for b in m.content
+        if isinstance(b, ToolResultBlock)
+        for inner in b.content
+    ) == {"knowledge": 82, "text": 2}
+
+
+@pytest.mark.skipif(
+    not CAPTURE.exists(),
+    reason="local capture not present (see tests/fixtures/local/)",
+)
+def test_the_real_capture_reports_what_claude_withheld() -> None:
+    """Both verdicts are no, and for different reasons.
+
+    A failure here need not mean the parser broke. It may mean the
+    provider changed what a share link serves.
+    """
+    result = parse(
+        RawSource(url=SHARE_URL, content=CAPTURE.read_text(encoding="utf-8"))
+    )
+    report = Report(findings=result.findings)
+
+    counted = Counter(item.code for item in result.findings)
+    occurrences: Counter[str] = Counter()
+    for item in result.findings:
+        occurrences[item.code] += item.occurrences
+
+    assert counted == {
+        "attachment_withheld": 3,
+        "tool_result_has_no_content": 12,
+        "unmodelled_content_type": 1,
+    }
+    assert occurrences["tool_result_has_no_content"] == 19
+    assert occurrences["unmodelled_content_type"] == 82
+    assert not report.complete
+    assert not report.faithful
+    assert report.unrecognised == []
+    assert len(report.findings_for(Aspect.COMPLETENESS)) == 15
+
+
+@pytest.mark.skipif(
+    not CAPTURE.exists(),
+    reason="local capture not present (see tests/fixtures/local/)",
+)
+def test_the_real_capture_keeps_what_the_envelope_carried() -> None:
+    """Including the fields naming who shared it, which nothing renders."""
+    result = parse(
+        RawSource(url=SHARE_URL, content=CAPTURE.read_text(encoding="utf-8"))
+    )
+    conversation = result.conversation
+
+    assert set(conversation.provider_metadata) == {
+        "conversation_uuid",
+        "created_by",
+        "creator",
+        "is_public",
+        "project_uuid",
+        "up_to_date",
+        "working_documents",
+    }
+    assert conversation.provider_metadata["up_to_date"] is True
+    assert sum(
+        1
+        for m in conversation.messages
+        for extras in m.provider_metadata.get("text_block_extras", {}).values()
+        if extras.get("citations")
+    ) == 3
