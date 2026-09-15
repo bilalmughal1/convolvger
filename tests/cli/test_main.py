@@ -369,3 +369,17 @@ def test_a_claude_url_without_a_file_is_told_how_to_supply_one() -> None:
 
     assert result.exit_code == 1
     assert "--from-file" in result.output
+
+
+def test_the_bookmarklet_command_prints_a_link() -> None:
+    result = runner.invoke(app, ["bookmarklet"])
+
+    assert result.exit_code == 0
+    assert "javascript:" in result.output
+
+
+def test_the_bookmarklet_command_honours_a_chosen_port() -> None:
+    result = runner.invoke(app, ["bookmarklet", "--port", "9999"])
+
+    assert result.exit_code == 0
+    assert "127.0.0.1:9999/" in result.output

@@ -7,6 +7,8 @@ from typing import Annotated
 
 import typer
 
+from convolvger.capture.bookmarklet import bookmarklet as _bookmarklet
+from convolvger.capture.server import DEFAULT_PORT
 from convolvger.core.archive import ArchiveError, load_archive
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding, Level
@@ -98,6 +100,20 @@ def providers() -> None:
     """List supported conversation providers."""
     for name in build_registry().names():
         typer.echo(name)
+
+
+@app.command()
+def bookmarklet(
+    port: Annotated[
+        int,
+        typer.Option("--port", help="Port the listener will wait on."),
+    ] = DEFAULT_PORT,
+) -> None:
+    """Print a link to drag to your bookmarks bar, for capturing a snapshot."""
+    _warn("Drag the line below onto your bookmarks bar, then click it on a")
+    _warn("share page while 'convolvger export <url> --capture' is waiting.")
+    _warn("")
+    typer.echo(_bookmarklet(port))
 
 
 @app.command()
