@@ -62,6 +62,10 @@ def archive_file(
 
 SNAPSHOT = Path(__file__).parent.parent / "fixtures" / "chatgpt" / "share-minimal.html"
 SHARE_URL = "https://chatgpt.com/share/abc123"
+CLAUDE_SNAPSHOT = (
+    Path(__file__).parent.parent / "fixtures" / "claude" / "share-minimal.json"
+)
+CLAUDE_URL = "https://claude.ai/share/00000000-0000-0000-0000-000000000000"
 
 
 def test_providers_lists_chatgpt() -> None:
@@ -334,3 +338,34 @@ def test_from_file_fails_when_the_file_is_missing(tmp_path: Path) -> None:
     )
 
     assert result.exit_code == 1
+
+
+def test_a_saved_claude_snapshot_is_archived_end_to_end(tmp_path: Path) -> None:
+    """The one path Claude has: a share URL for routing, a file for content."""
+    monkeypatched = tmp_path / "out.md"
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            CLAUDE_URL,
+            "--from-file",
+            str(CLAUDE_SNAPSHOT),
+            "-f",
+            "md",
+            "-o",
+            str(monkeypatched),
+        ],
+    )
+
+    assert result.exit_code == 2
+    written = monkeypatched.read_text(encoding="utf-8")
+    assert "Provider: claude" in written
+    assert "the shared snapshot carried no result" in written
+
+
+def test_a_claude_url_without_a_file_is_told_how_to_supply_one() -> None:
+    """Fetching is impossible, so the failure has to be actionable."""
+    result = runner.invoke(app, ["export", CLAUDE_URL, "-f", "json"])
+
+    assert result.exit_code == 1
+    assert "--from-file" in result.output
