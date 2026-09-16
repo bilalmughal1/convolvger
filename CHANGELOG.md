@@ -12,6 +12,14 @@ The project follows [Semantic Versioning](https://semver.org/).
   made. One decoder can meet the same unmodelled shape dozens of times in a
   single snapshot; collapsing those into one finding with a count keeps the
   report readable without losing how much of it there was
+- Claude conversations can be archived. A Claude share page cannot be fetched:
+  its conversation loads separately and the service refuses non-browser clients
+  whatever headers they send. Rather than impersonate a browser, `--capture` on
+  `export` and `inspect` waits for yours, and the new `convolvger bookmarklet`
+  command prints the bookmarklet that hands a snapshot over. The listener is on
+  loopback, takes one snapshot, and accepts it only when the browser's origin
+  matches the address the payload claims. Nothing is impersonated and nothing
+  leaves the machine
 - Tool calls and tool results are first-class content. A conversation that used
   tools now records each call with its arguments, and whatever result the
   snapshot carried, nested as canonical blocks. The Markdown export states
@@ -21,6 +29,11 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- A conversation carries `provider_metadata`, for envelope fields this version
+  does not model canonically. Claude's snapshot names the account that shared it
+  and says whether the snapshot still matches the conversation it came from; the
+  JSON archive keeps all of it and no renderer reads it. Schema 3 was not
+  released, so no reader exists that this could break
 - Archive schema version 3. An archive written by version 2 still loads: a
   version stays readable for as long as this tool can represent it truthfully,
   and a test reads a real archive produced by 0.1.1 to prove it. Version 1

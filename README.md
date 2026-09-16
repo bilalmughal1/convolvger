@@ -42,7 +42,7 @@ convolvger --help
 ## Usage
 
 Every command begins with `convolvger`, followed by a subcommand. There are
-four: `providers`, `inspect`, `export` and `verify`. Note that a bare
+five: `providers`, `bookmarklet`, `inspect`, `export` and `verify`. Note that a bare
 `export <url>` runs your shell's own `export` builtin rather than this tool.
 
 **See which providers are supported**
@@ -93,20 +93,55 @@ rather than claiming a false one.
 This is how to re-read a capture without asking the provider for it again, which
 matters because the answer may have changed since. It works with `inspect` too.
 
-**Parse a snapshot you already saved**
+**Archive a Claude conversation**
+
+A Claude share page cannot be fetched. The page loads its conversation
+separately, and the service refuses non-browser clients whatever headers they
+send. Rather than impersonate a browser, Convolvger waits for yours to hand the
+snapshot over. One-time setup:
 
 ```
-convolvger export https://chatgpt.com/share/SHARE_ID --from-file saved-page.html
+convolvger bookmarklet
 ```
 
-`--from-file` parses a saved copy of the share page instead of fetching the URL.
-The URL is still required: it routes the snapshot to the right provider, and it
-is the provenance the archive records. Because when a saved file was captured is
-not knowable from the file, an archive made this way records no retrieval time
-rather than claiming a false one.
+That prints a bookmarklet and how to save it. Then, for any Claude share link:
 
-This is how to re-read a capture without asking the provider for it again, which
-matters because the answer may have changed since. It works with `inspect` too.
+```
+convolvger export --capture
+```
+
+Open the share page and click the bookmark. The archive is written and named
+after the conversation's own title. No URL is typed: it arrives with the
+snapshot, from the page you clicked. `--capture` works with `inspect` too.
+
+Verified in Chrome, Edge and Firefox. Other browsers should work where they run
+bookmarklets and permit connections to localhost.
+
+If you would rather not run a listener, `convolvger export <claude-share-url>`
+prints the URL your browser can read the snapshot from. Open it, save the JSON,
+and pass it with `--from-file`. That path works in any browser.
+
+**What capturing does, and what it does not**
+
+While the command waits it listens on `127.0.0.1:23477` — loopback only, not
+reachable from your network. It takes one snapshot and then stops, and gives up
+after three minutes. It accepts a payload only when the browser's origin matches
+the address the payload claims to come from, so a page on another site cannot
+post a forged conversation.
+
+Two things it does not defend against, stated plainly: any page on the
+provider's own domain could reach the listener during the seconds it runs, and
+so could another program on your machine — though such a program could write the
+archive file directly anyway. Nothing is transmitted anywhere else. Your browser
+talks to the provider using the session it already has, and to loopback.
+
+**What a Claude archive contains**
+
+Claude's snapshot names the account that shared it, so a Claude JSON archive
+carries `created_by` and `creator` — a display name and an account id — under
+`provider_metadata`. They are kept because the JSON is the archival record and
+drops nothing the provider served. No renderer reads `provider_metadata`, so
+the Markdown export does not contain them.
 
 Markdown omits provider-hidden messages and deactivated branches by default and
 reports each omission in its header. `--include-hidden` and
@@ -152,10 +187,11 @@ Convolvger does not recover private conversations, hidden model state, chain-of-
 
 Initial providers:
 
-- ChatGPT
-- Claude
-- Gemini
-- Grok
+- ChatGPT — fetched directly from a share link
+- Claude — captured from your own browser, since its share pages cannot be
+  fetched
+- Gemini — not implemented yet
+- Grok — not implemented yet
 
 Additional providers will be added as their public sharing formats are supported and tested.
 
@@ -165,7 +201,9 @@ Convolvger is under active development and not yet ready for general use.
 
 Every command shown under Usage above works today.
 
-ChatGPT share links can be fetched, parsed, and exported. Markdown is a reader-facing document that may omit content and reports every omission in its header; JSON is the complete archival record and omits nothing the model holds. The remaining providers are not implemented yet.
+ChatGPT share links can be fetched, parsed, and exported. Markdown is a reader-facing document that may omit content and reports every omission in its header; JSON is the complete archival record and omits nothing the model holds.
+
+Claude share snapshots can be parsed and exported, but not fetched: the service refuses non-browser clients, so a snapshot is captured from your own browser as described under Usage. Gemini and Grok are not implemented yet.
 
 Extraction records structured findings, each with a stable code and a level. A note is recorded but does not change the exit status; a warning does. Both are written into the JSON archive either way, so nothing is withheld from the record because it was judged unremarkable.
 
