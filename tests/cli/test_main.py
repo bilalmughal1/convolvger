@@ -383,3 +383,12 @@ def test_the_bookmarklet_command_honours_a_chosen_port() -> None:
 
     assert result.exit_code == 0
     assert "127.0.0.1:9999/" in result.output
+
+
+def test_the_bookmarklet_command_explains_how_to_install_it() -> None:
+    """Dragging from a terminal is the hardest route; Add page is the one."""
+    result = runner.invoke(app, ["bookmarklet"])
+
+    assert "Add page" in result.output
+    assert "javascript:" in result.output
+    assert "star button" in result.output

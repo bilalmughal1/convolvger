@@ -92,3 +92,24 @@ def test_neither_a_url_nor_capture_is_refused_with_advice() -> None:
 
     assert result.exit_code == 1
     assert "--capture" in result.output
+
+
+def test_waiting_says_what_to_do_when_there_is_no_bookmark_yet() -> None:
+    """A first run would otherwise be three minutes of silence."""
+    poster = _post_when_ready()
+
+    result = runner.invoke(app, ["inspect", "--capture", "--port", str(PORT)])
+    poster.join(timeout=5)
+
+    assert "convolvger bookmarklet" in result.output
+    assert "one-time setup" in result.output.lower()
+
+
+def test_waiting_says_where_the_archive_will_land() -> None:
+    """No URL was typed, so nothing else on screen hints at the filename."""
+    poster = _post_when_ready()
+
+    result = runner.invoke(app, ["inspect", "--capture", "--port", str(PORT)])
+    poster.join(timeout=5)
+
+    assert "title" in result.output.lower()

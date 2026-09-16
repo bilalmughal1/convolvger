@@ -57,8 +57,14 @@ def _capture(port: int) -> tuple[RawSource, ParseResult]:
     page the bookmarklet was clicked on. Unlike a file on disk, a
     capture knows when it happened, so ``fetched_at`` is real here.
     """
-    _warn(f"Waiting on port {port}. Click the Convolvger bookmarklet on the")
-    _warn("share page you want to archive. Ctrl-C to stop waiting.")
+    _warn(f"Waiting on port {port}. Open the share page you want to archive")
+    _warn("and click your Convolvger bookmark. Ctrl-C to stop waiting.")
+    _warn("")
+    _warn("No bookmark yet? Stop, run 'convolvger bookmarklet', and follow")
+    _warn("the instructions it prints. That is a one-time setup.")
+    _warn("")
+    _warn("The archive is named after the conversation's own title unless")
+    _warn("you passed --output.")
     raw = wait_for_snapshot(port=port)
     provider = build_registry().detect(raw.url)
     return raw, provider.parse(raw)
@@ -149,9 +155,21 @@ def bookmarklet(
         typer.Option("--port", help="Port the listener will wait on."),
     ] = DEFAULT_PORT,
 ) -> None:
-    """Print a link to drag to your bookmarks bar, for capturing a snapshot."""
-    _warn("Drag the line below onto your bookmarks bar, then click it on a")
-    _warn("share page while 'convolvger export <url> --capture' is waiting.")
+    """Print a bookmarklet that hands a share page's snapshot to this tool."""
+    _warn("One-time setup. The line below is a bookmarklet: a bookmark whose")
+    _warn("address is a small program, which reads the snapshot behind a")
+    _warn("share page and passes it to 'convolvger export --capture'.")
+    _warn("")
+    _warn("To install it in Chrome, Edge or Firefox:")
+    _warn("  1. Copy the whole line below.")
+    _warn("  2. Right-click an empty part of the bookmarks bar.")
+    _warn("  3. Choose 'Add page' (Firefox: 'Add Bookmark').")
+    _warn("  4. Name it Convolvger and paste the line into the URL field.")
+    _warn("  5. Save, then edit it once and check the address still starts")
+    _warn("     with 'javascript:' -- some browsers drop that on paste, and")
+    _warn("     without it the bookmark does nothing at all.")
+    _warn("")
+    _warn("Do not use the star button: that bookmarks the page you are on.")
     _warn("")
     typer.echo(_bookmarklet(port))
 
