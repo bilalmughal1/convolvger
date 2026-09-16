@@ -8,7 +8,7 @@ from typing import Annotated
 import typer
 
 from convolvger.capture.bookmarklet import bookmarklet as _bookmarklet
-from convolvger.capture.server import DEFAULT_PORT
+from convolvger.capture.server import DEFAULT_PORT, wait_for_snapshot
 from convolvger.core.archive import ArchiveError, load_archive
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding, Level
@@ -48,6 +48,46 @@ def _retrieve(source: str) -> tuple[RawSource, ParseResult]:
     provider = registry.detect(source)
     raw = provider.fetch(source)
     return raw, provider.parse(raw)
+
+
+def _capture(port: int) -> tuple[RawSource, ParseResult]:
+    """Wait for a browser to hand over a snapshot, then parse it.
+
+    The URL is not asked for: it arrives with the snapshot, from the
+    page the bookmarklet was clicked on. Unlike a file on disk, a
+    capture knows when it happened, so ``fetched_at`` is real here.
+    """
+    _warn(f"Waiting on port {port}. Click the Convolvger bookmarklet on the")
+    _warn("share page you want to archive. Ctrl-C to stop waiting.")
+    raw = wait_for_snapshot(port=port)
+    provider = build_registry().detect(raw.url)
+    return raw, provider.parse(raw)
+
+
+def _chosen_input(
+    source: str | None, from_file: Path | None, capture: bool
+) -> None:
+    """Refuse combinations that cannot mean one thing."""
+    if capture and from_file is not None:
+        _warn("Error: --capture and --from-file are two different sources.")
+        raise typer.Exit(EXIT_FAILED)
+    if capture and source is not None:
+        _warn("Error: --capture takes no URL; it comes from the page you click.")
+        raise typer.Exit(EXIT_FAILED)
+    if not capture and source is None:
+        _warn("Error: give a conversation URL, or use --capture to wait for one.")
+        raise typer.Exit(EXIT_FAILED)
+
+
+def _select(
+    source: str | None, from_file: Path | None, capture: bool, port: int
+) -> tuple[RawSource, ParseResult]:
+    if capture:
+        return _capture(port)
+    assert source is not None, "validated by _chosen_input"
+    if from_file is not None:
+        return _reparse(source, from_file)
+    return _retrieve(source)
 
 
 def _reparse(source: str, path: Path) -> tuple[RawSource, ParseResult]:
@@ -119,9 +159,9 @@ def bookmarklet(
 @app.command()
 def inspect(
     source: Annotated[
-        str,
+        str | None,
         typer.Argument(help="Public conversation URL, or the URL a saved snapshot came from."),
-    ],
+    ] = None,
     from_file: Annotated[
         Path | None,
         typer.Option(
@@ -129,10 +169,19 @@ def inspect(
             help="Parse this saved snapshot instead of fetching the URL.",
         ),
     ] = None,
+    capture: Annotated[
+        bool,
+        typer.Option("--capture", help="Wait for a browser to hand over a snapshot."),
+    ] = False,
+    port: Annotated[
+        int,
+        typer.Option("--port", help="Port to wait on when capturing."),
+    ] = DEFAULT_PORT,
 ) -> None:
     """Inspect a conversation source without exporting it."""
+    _chosen_input(source, from_file, capture)
     try:
-        _, result = _reparse(source, from_file) if from_file else _retrieve(source)
+        _, result = _select(source, from_file, capture, port)
     except (ConvolvgerError, OSError) as error:
         _fail(error)
         return
@@ -152,9 +201,9 @@ def inspect(
 @app.command()
 def export(
     source: Annotated[
-        str,
+        str | None,
         typer.Argument(help="Public conversation URL, or the URL a saved snapshot came from."),
-    ],
+    ] = None,
     output: Annotated[
         Path | None,
         typer.Option("--output", "-o", help="Output path, or - for stdout."),
@@ -178,15 +227,24 @@ def export(
             help="Parse this saved snapshot instead of fetching the URL.",
         ),
     ] = None,
+    capture: Annotated[
+        bool,
+        typer.Option("--capture", help="Wait for a browser to hand over a snapshot."),
+    ] = False,
+    port: Annotated[
+        int,
+        typer.Option("--port", help="Port to wait on when capturing."),
+    ] = DEFAULT_PORT,
 ) -> None:
     """Export a conversation to a portable archive."""
+    _chosen_input(source, from_file, capture)
     if output_format not in FORMATS:
         _warn(f"Error: unsupported format: {output_format}")
         _warn(f"Supported formats: {', '.join(FORMATS)}")
         raise typer.Exit(EXIT_FAILED)
 
     try:
-        raw, result = _reparse(source, from_file) if from_file else _retrieve(source)
+        raw, result = _select(source, from_file, capture, port)
     except (ConvolvgerError, OSError) as error:
         _fail(error)
         return
