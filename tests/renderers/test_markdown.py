@@ -215,6 +215,87 @@ def test_unknown_block_is_flagged_not_silently_skipped() -> None:
     assert "**Unrendered content — `future_type`**" in output
 
 
+def test_an_unmodelled_block_that_carries_a_title_and_link_shows_them() -> None:
+    """A placeholder where the snapshot served a source loses the one
+
+    thing the reader could have used.
+    """
+    output = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[
+                    UnknownBlock(
+                        type="knowledge",
+                        raw={"title": "Amira AI | Dubai", "url": "https://example.com/a"},
+                    )
+                ],
+            )
+        )
+    )
+
+    assert "[Amira AI | Dubai](<https://example.com/a>)" in output
+    assert "> (preserved in the JSON export)" not in output
+
+
+def test_a_title_without_a_link_is_still_shown() -> None:
+    output = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[UnknownBlock(type="knowledge", raw={"title": "A source"})],
+            )
+        )
+    )
+
+    assert "> A source" in output
+
+
+def test_a_link_without_a_title_is_still_shown() -> None:
+    output = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[UnknownBlock(type="knowledge", raw={"url": "https://example.com/b"})],
+            )
+        )
+    )
+
+    assert "> https://example.com/b" in output
+
+
+def test_an_unmodelled_block_carrying_neither_keeps_its_placeholder() -> None:
+    """Nothing to show means show nothing, not a fabricated label."""
+    output = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[UnknownBlock(type="future_type", raw={"a": 1})],
+            )
+        )
+    )
+
+    assert "> (preserved in the JSON export)" in output
+
+
+def test_a_bracket_in_a_title_cannot_break_the_link() -> None:
+    output = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[
+                    UnknownBlock(
+                        type="knowledge",
+                        raw={"title": "A [draft] post", "url": "https://example.com/c"},
+                    )
+                ],
+            )
+        )
+    )
+
+    assert r"[A \[draft\] post](<https://example.com/c>)" in output
+
+
 def test_tool_recipient_is_shown_in_the_heading() -> None:
     output = render_markdown(
         conversation(

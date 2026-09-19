@@ -26,6 +26,7 @@ Nothing here is provider-specific.
 
 import json
 from datetime import datetime
+from typing import Any
 
 from convolvger.core.findings import Finding, Level, collapse
 from convolvger.core.models import (
@@ -49,6 +50,30 @@ ROLE_HEADINGS = {
     MessageRole.TOOL: "Tool",
     MessageRole.UNKNOWN: "Unknown",
 }
+
+
+def _reference(raw: dict[str, Any]) -> str | None:
+    """A readable label for an unmodelled block, from what it carries.
+
+    A block this version does not model may still hold a title and a
+    link the provider served, and dropping them leaves the reader a
+    placeholder where a source was. The keys are read generically
+    rather than per provider: nothing here knows what a ``knowledge``
+    block is, only that a string ``title`` or ``url`` is worth showing.
+    Neither present means there is nothing to say, and the block keeps
+    its placeholder rather than inventing one.
+    """
+    title = raw.get("title")
+    url = raw.get("url")
+    if isinstance(title, str) and title.strip():
+        title = " ".join(title.split())
+    else:
+        title = None
+    url = url.strip() if isinstance(url, str) and url.strip() else None
+    if title and url:
+        safe = title.replace("[", "\\[").replace("]", "\\]")
+        return f"[{safe}](<{url}>)"
+    return title or url
 
 
 def _quote(text: str) -> str:
@@ -83,6 +108,12 @@ def _render_block(block: ContentBlock) -> str:
         header = f"**Unrendered content — `{block.type}`**"
         if block.text:
             return f"{header}\n{_quote(block.text)}"
+        reference = _reference(block.raw)
+        if reference:
+            return (
+                f"{header}\n> {reference}\n"
+                "> (the full block is preserved in the JSON export)"
+            )
         return f"{header}\n> (preserved in the JSON export)"
     raise TypeError(f"Unsupported content block: {type(block).__name__}")
 
