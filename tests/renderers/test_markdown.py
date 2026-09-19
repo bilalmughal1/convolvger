@@ -268,6 +268,78 @@ def test_findings_are_counted_by_level() -> None:
     assert "Extraction notes: 2" in output
 
 
+def test_content_the_provider_did_not_serve_is_named_not_just_counted() -> None:
+    """The file most people read must say what the provider withheld."""
+    output = render_markdown(
+        conversation(text(MessageRole.USER, "hi")),
+        findings=[finding("attachment_withheld", "7 declared, none carried", "m1")],
+    )
+
+    assert "Referenced by the snapshot but not served:" in output
+    assert "attachment_withheld: 7 declared, none carried" in output
+
+
+def test_repeated_withholding_keeps_its_count() -> None:
+    """The number of observations is evidence and must survive rendering."""
+    withheld = finding(
+        "tool_result_has_no_content", "search result carried no payload", "m1"
+    ).model_copy(update={"occurrences": 19})
+
+    output = render_markdown(
+        conversation(text(MessageRole.USER, "hi")), findings=[withheld]
+    )
+
+    assert (
+        "tool_result_has_no_content: search result carried no payload (x19)"
+        in output
+    )
+
+
+def test_fidelity_findings_are_counted_but_not_named() -> None:
+    """What this tool could not model is the archive's business, not the
+
+    reader's: naming it here would put extraction detail in a
+    dissemination copy.
+    """
+    output = render_markdown(
+        conversation(text(MessageRole.USER, "hi")),
+        findings=[finding("unmodelled_content_type", "knowledge preserved verbatim")],
+    )
+
+    assert "Extraction warnings: 1" in output
+    assert "knowledge preserved verbatim" not in output
+    assert "Referenced by the snapshot but not served" not in output
+
+
+def test_a_snapshot_served_in_full_says_nothing_about_withholding() -> None:
+    """Silence is the correct output when the provider served everything."""
+    output = render_markdown(
+        conversation(text(MessageRole.USER, "hi")),
+        findings=[finding("literal_object_key", "kept as-is: title")],
+    )
+
+    assert "Referenced by the snapshot but not served" not in output
+    assert "Extraction notes: 1" in output
+
+
+def test_the_same_withholding_on_two_messages_is_merged_and_summed() -> None:
+    """Message ids separate them in the record, but this file shows no
+
+    ids, so two identical lines would read as a duplication bug. They
+    merge, and the counts add, so no observation is lost.
+    """
+    output = render_markdown(
+        conversation(text(MessageRole.USER, "hi")),
+        findings=[
+            finding("tool_result_has_no_content", "memory_read carried no payload", "m1"),
+            finding("tool_result_has_no_content", "memory_read carried no payload", "m2"),
+        ],
+    )
+
+    assert output.count("memory_read carried no payload") == 1
+    assert "memory_read carried no payload (x2)" in output
+
+
 def test_render_is_deterministic() -> None:
     conv = conversation(
         text(MessageRole.USER, "a"), text(MessageRole.ASSISTANT, "b")

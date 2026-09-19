@@ -7,13 +7,27 @@ dissemination package, it may omit content the provider itself withheld
 omission is reported in the provenance header, so the rendered file
 stays a trustworthy representation of what the snapshot contained.
 
+The header also names what the provider itself did not serve. Those
+are the findings bearing on completeness, and they answer the question
+a reader of this file actually has. Findings bearing on fidelity are
+counted rather than named: they record what this tool could not model,
+which is a fact about the extraction and belongs to the JSON archive.
+Observations are merged across messages for display, because the
+message id that keeps them apart in the record is not shown here and
+cannot be: this file has no anchor a reader could follow. The counts
+are summed, so nothing is lost -- only the attribution, which the JSON
+still carries.
+No verdict is rendered here -- ``convolvger verify`` recomputes one
+from the archive on demand, and a verdict written into a file would
+outlive the reasoning behind it.
+
 Nothing here is provider-specific.
 """
 
 import json
 from datetime import datetime
 
-from convolvger.core.findings import Finding, Level
+from convolvger.core.findings import Finding, Level, collapse
 from convolvger.core.models import (
     CodeBlock,
     ContentBlock,
@@ -26,6 +40,7 @@ from convolvger.core.models import (
     ToolUseBlock,
     UnknownBlock,
 )
+from convolvger.validation.aspects import ASPECTS, Aspect
 
 ROLE_HEADINGS = {
     MessageRole.USER: "User",
@@ -129,10 +144,22 @@ def _provenance(
         lines.append(
             "- Omitted messages are preserved in full in the JSON export."
         )
+    withheld = collapse(
+        item.model_copy(update={"message_id": None})
+        for item in findings or []
+        if ASPECTS.get(item.code) is Aspect.COMPLETENESS
+    )
+    if withheld:
+        lines.append("- Referenced by the snapshot but not served:")
+        for item in withheld:
+            seen = f" (x{item.occurrences})" if item.occurrences > 1 else ""
+            lines.append(f"  - {item.code}: {item.message}{seen}")
     for level in (Level.WARNING, Level.NOTE):
         count = sum(1 for item in findings or [] if item.level is level)
         if count:
             lines.append(f"- Extraction {level.value}s: {count}")
+    if findings:
+        lines.append("- Every finding is recorded in full in the JSON export.")
     lines.extend(
         [
             "",
