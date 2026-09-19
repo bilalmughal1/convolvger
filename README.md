@@ -148,6 +148,20 @@ reports each omission in its header. `--include-hidden` and
 `--include-inactive` keep them. Both flags are ignored for JSON, which never
 omits anything.
 
+The header also names what the provider itself did not serve: attachments a
+message declared but did not carry, and tool results the snapshot referenced
+and left empty. Observations of the same thing across messages are merged for
+display and their counts summed, since the message id that separates them in
+the record is not shown in a Markdown file. Findings about what this tool
+could not model are counted in the header rather than named, and every finding
+is recorded in full in the JSON export.
+
+Content whose type this version does not model is flagged rather than dropped,
+and where such a block carries a title and a link — a web result a search tool
+returned, for instance — the export shows them. The complete block stays in
+the JSON. Nothing is fetched to do this: the title and the link were served
+inside the snapshot, and Convolvger never dereferences a URL it archives.
+
 **Check an archive's integrity**
 
 ```
@@ -201,7 +215,7 @@ Convolvger is under active development and not yet ready for general use.
 
 Every command shown under Usage above works today.
 
-ChatGPT share links can be fetched, parsed, and exported. Markdown is a reader-facing document that may omit content and reports every omission in its header; JSON is the complete archival record and omits nothing the model holds.
+ChatGPT share links can be fetched, parsed, and exported. Markdown is a reader-facing document that may omit content, reports every omission in its header, and names what the provider did not serve; JSON is the complete archival record and omits nothing the model holds.
 
 Claude share snapshots can be parsed and exported, but not fetched: the service refuses non-browser clients, so a snapshot is captured from your own browser as described under Usage. Gemini and Grok are not implemented yet.
 
