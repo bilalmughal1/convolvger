@@ -4,6 +4,38 @@ All notable changes to Convolvger will be documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-09-19
+
+### Added
+
+- The Markdown header names what the provider did not serve, rather than only
+  counting it. A real Claude capture reported eleven withheld attachments on
+  the terminal and in the JSON while the file most people read said nothing
+  about them. Findings bearing on completeness are now listed there; findings
+  about what this tool could not model stay counted, because they describe the
+  extraction rather than the conversation and belong to the archival record.
+  Observations of the same thing on different messages are merged and their
+  counts summed, since the message id that separates them is not shown in a
+  Markdown file and two identical lines read as a duplication bug
+- Content whose type this version does not model shows the title and link it
+  carried, where it carried them. Claude serves each web result a search
+  returned as a block this version has no model for, and the export printed
+  eighty-two identical placeholders in place of eighty-two distinct sources.
+  No canonical block type was added: Grok's shared pages name the same field
+  differently and Gemini's expose nothing comparable, so a model built from
+  one provider's shape would be a guess with a schema bump attached. The
+  keys are read generically and the complete block stays in the JSON. Nothing
+  is fetched to do this
+
+### Changed
+
+- The terminal report prints how many times a collapsed finding was observed.
+  One line reading `knowledge preserved verbatim` said the same thing whether
+  it happened once or eighty-two times
+- Publishing is gated on the test suite running against the tagged commit, and
+  the build runs with no credential in scope. A tag can point at any commit,
+  so the checks that ran on `main` verified a release only by coincidence
+
 ## [0.2.0] - 2026-09-16
 
 ### Added
