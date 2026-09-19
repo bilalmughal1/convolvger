@@ -83,6 +83,32 @@ def test_inspect_reports_a_summary(clean: None) -> None:
     assert "Messages:  2" in result.stdout
 
 
+def test_a_collapsed_finding_reports_how_many_times_it_was_seen(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """One line standing for eighty-two observations must say so."""
+    collapsed = finding("unmodelled_content_type", "knowledge preserved verbatim")
+
+    def _retrieve(source: str) -> tuple[RawSource, ParseResult]:
+        return (
+            RawSource(url=source, content="<html></html>"),
+            fake_result([collapsed.model_copy(update={"occurrences": 82})]),
+        )
+
+    monkeypatch.setattr("convolvger.cli.main._retrieve", _retrieve)
+    result = runner.invoke(app, ["inspect", URL])
+
+    assert "knowledge preserved verbatim (x82)" in result.output
+
+
+def test_a_single_observation_carries_no_count(warned: None) -> None:
+    """A count on every line would be noise where it says nothing."""
+    result = runner.invoke(app, ["inspect", URL])
+
+    assert "something was skipped" in result.output
+    assert "(x1)" not in result.output
+
+
 def test_inspect_exits_two_when_warnings_present(warned: None) -> None:
     result = runner.invoke(app, ["inspect", URL])
 

@@ -118,6 +118,13 @@ def _report_findings(findings: list[Finding]) -> None:
     Notes are printed as well as warnings: a note does not change the
     exit status, but it is still something the snapshot did not carry
     and the operator should be able to see it.
+
+    A finding carries how many times it was observed, and a collapsed
+    finding can stand for dozens. The count is printed because without
+    it one line reading "knowledge preserved verbatim" says the same
+    thing whether it happened once or eighty-two times. The leading
+    totals count findings, not observations, and the two differ
+    whenever anything collapsed.
     """
     if not findings:
         return
@@ -131,7 +138,8 @@ def _report_findings(findings: list[Finding]) -> None:
     _warn(f"\n{', '.join(counts)}:")
     for item in warnings + notes:
         where = f" ({item.message_id})" if item.message_id else ""
-        _warn(f"  - [{item.level.value}] {item.code}{where}: {item.message}")
+        seen = f" (x{item.occurrences})" if item.occurrences > 1 else ""
+        _warn(f"  - [{item.level.value}] {item.code}{where}: {item.message}{seen}")
 
 
 def _fail(error: Exception) -> None:
