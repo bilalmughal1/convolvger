@@ -1,10 +1,13 @@
 import json
+import platform
 from pathlib import Path
 
+import httpx
 import pytest
 from typer.testing import CliRunner
 
 from convolvger.cli.main import app
+from convolvger.core.archive import READABLE_VERSIONS, SCHEMA_VERSION, ArchiveEnvelope
 from convolvger.core.errors import ProviderNotFoundError
 from convolvger.core.findings import Finding, finding
 from convolvger.core.models import Conversation, Message, MessageRole, TextBlock
@@ -503,3 +506,59 @@ def test_a_shortened_gemini_url_is_routed_from_a_saved_response(tmp_path: Path) 
 
     assert result.exit_code == 0
     assert "gemini" in result.stdout
+
+
+def test_version_exits_zero_and_names_the_package() -> None:
+    result = runner.invoke(app, ["--version"])
+
+    assert result.exit_code == 0
+    assert result.stdout.startswith("convolvger ")
+
+
+def test_version_reports_what_an_archive_would_record() -> None:
+    """A version quoted in a bug report must match the user's own files."""
+    envelope = ArchiveEnvelope(conversation=fake_result().conversation)
+    result = runner.invoke(app, ["--version"])
+
+    assert f"convolvger {envelope.tool_version}" in result.stdout
+
+
+def test_version_names_the_interpreter_it_is_running_on() -> None:
+    result = runner.invoke(app, ["--version"])
+
+    assert platform.python_version() in result.stdout
+
+
+def test_version_reports_which_archives_it_can_read() -> None:
+    result = runner.invoke(app, ["--version"])
+
+    assert f"Archive schema {SCHEMA_VERSION}" in result.stdout
+    for readable in READABLE_VERSIONS:
+        assert str(readable) in result.stdout
+
+
+def test_version_lists_the_providers_this_build_supports() -> None:
+    result = runner.invoke(app, ["--version"])
+
+    for name in ("chatgpt", "claude", "gemini"):
+        assert name in result.stdout
+
+
+def test_version_contacts_nothing(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A local-first tool must not phone home to report its own version."""
+
+    def forbidden(*args: object, **kwargs: object) -> None:
+        raise AssertionError("--version must not make a network request")
+
+    monkeypatch.setattr(httpx.Client, "request", forbidden)
+    monkeypatch.setattr(httpx.Client, "send", forbidden)
+
+    assert runner.invoke(app, ["--version"]).exit_code == 0
+
+
+def test_bare_invocation_still_shows_usage() -> None:
+    """Adding a callback must not turn a bare call into an error."""
+    result = runner.invoke(app, [])
+
+    assert "Usage:" in result.output
+    assert "convolvger" in result.output

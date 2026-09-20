@@ -1,5 +1,6 @@
 """Command line interface for Convolvger."""
 
+import platform
 import re
 import sys
 from pathlib import Path
@@ -9,7 +10,13 @@ import typer
 
 from convolvger.capture.bookmarklet import bookmarklet as _bookmarklet
 from convolvger.capture.server import DEFAULT_PORT, wait_for_snapshot
-from convolvger.core.archive import ArchiveError, load_archive
+from convolvger.core.archive import (
+    READABLE_VERSIONS,
+    SCHEMA_VERSION,
+    ArchiveError,
+    load_archive,
+    tool_version,
+)
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding, Level
 from convolvger.core.results import ParseError, ParseResult
@@ -30,6 +37,35 @@ app = typer.Typer(
     help="Archive public AI conversations into portable, provider-independent formats.",
     no_args_is_help=True,
 )
+
+
+def _version_lines() -> list[str]:
+    """Everything a useful bug report needs, and nothing that phones home."""
+    readable = ", ".join(str(item) for item in sorted(READABLE_VERSIONS))
+    return [
+        f"convolvger {tool_version()}",
+        f"Python {platform.python_version()} ({platform.python_implementation()})",
+        f"Archive schema {SCHEMA_VERSION} (reads {readable})",
+        f"Providers: {', '.join(build_registry().names())}",
+    ]
+
+
+@app.callback(invoke_without_command=True)
+def main(
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            help="Show version, schema and provider information, then exit.",
+            is_eager=True,
+        ),
+    ] = False,
+) -> None:
+    """Archive public AI conversations into portable formats."""
+    if version:
+        for line in _version_lines():
+            typer.echo(line)
+        raise typer.Exit(EXIT_OK)
 
 
 def _slug(title: str | None, fallback: str) -> str:

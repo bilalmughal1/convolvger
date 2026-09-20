@@ -56,7 +56,12 @@ class ArchiveError(ConvolvgerError):
     """
 
 
-def _tool_version() -> str:
+def tool_version() -> str:
+    """Return the installed version, or "unknown" outside an installation.
+
+    Public because the CLI reports the same value: a version a user
+    quotes in a bug report should be the one their archives record.
+    """
     try:
         return version("convolvger")
     except PackageNotFoundError:
@@ -79,7 +84,7 @@ class ArchiveEnvelope(BaseModel):
 
     schema_version: int = SCHEMA_VERSION
     tool: str = "convolvger"
-    tool_version: str = Field(default_factory=_tool_version)
+    tool_version: str = Field(default_factory=tool_version)
     retrieved_at: datetime | None = None
     findings: list[Finding] = Field(default_factory=list)
     conversation: Conversation
