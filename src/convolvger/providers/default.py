@@ -6,6 +6,7 @@ discovery. Detection order follows registration order.
 
 from convolvger.providers.chatgpt import ChatGPTProvider
 from convolvger.providers.claude import ClaudeProvider
+from convolvger.providers.gemini import GeminiProvider
 from convolvger.providers.registry import ProviderRegistry
 
 
@@ -14,4 +15,5 @@ def build_registry() -> ProviderRegistry:
     registry = ProviderRegistry()
     registry.register(ChatGPTProvider())
     registry.register(ClaudeProvider())
+    registry.register(GeminiProvider())
     return registry
