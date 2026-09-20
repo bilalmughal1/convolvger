@@ -68,11 +68,12 @@ CLAUDE_SNAPSHOT = (
 CLAUDE_URL = "https://claude.ai/share/00000000-0000-0000-0000-000000000000"
 
 
-def test_providers_lists_chatgpt() -> None:
+def test_providers_lists_every_bundled_provider() -> None:
     result = runner.invoke(app, ["providers"])
 
     assert result.exit_code == 0
-    assert "chatgpt" in result.stdout
+    for name in ("chatgpt", "claude", "gemini"):
+        assert name in result.stdout
 
 
 def test_inspect_reports_a_summary(clean: None) -> None:
@@ -418,3 +419,87 @@ def test_the_bookmarklet_command_explains_how_to_install_it() -> None:
     assert "Add page" in result.output
     assert "javascript:" in result.output
     assert "star button" in result.output
+
+
+GEMINI_URL = "https://gemini.google.com/share/0000000000ab"
+GEMINI_PAYLOAD = (
+    Path(__file__).parent.parent / "fixtures" / "gemini" / "share-minimal.json"
+)
+
+
+def gemini_response(tmp_path: Path) -> Path:
+    """Wrap the payload fixture in the envelope the endpoint serves.
+
+    Built here rather than committed twice: the same bytes as an
+    already-committed fixture, in the outer form a saved response takes.
+    """
+    inner = GEMINI_PAYLOAD.read_text(encoding="utf-8").strip()
+    frame = json.dumps(
+        [["wrb.fr", "ujx1Bf", inner, None, None, None, "generic"]], ensure_ascii=False
+    )
+    saved = tmp_path / "gemini-response.txt"
+    saved.write_text(f")]}}'\n\n{frame}", encoding="utf-8")
+    return saved
+
+
+def test_a_saved_gemini_response_is_archived_end_to_end(tmp_path: Path) -> None:
+    """Gemini fetches, but a saved response must still archive offline."""
+    written = tmp_path / "out.md"
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            GEMINI_URL,
+            "--from-file",
+            str(gemini_response(tmp_path)),
+            "-f",
+            "md",
+            "-o",
+            str(written),
+        ],
+    )
+
+    assert result.exit_code == 0
+    document = written.read_text(encoding="utf-8")
+    assert "Provider: gemini" in document
+    assert "Example conversation" in document
+    assert "| Component | Cost |" in document
+
+
+def test_a_saved_gemini_response_keeps_metadata_out_of_the_document(
+    tmp_path: Path,
+) -> None:
+    written = tmp_path / "out.md"
+    runner.invoke(
+        app,
+        [
+            "export",
+            GEMINI_URL,
+            "--from-file",
+            str(gemini_response(tmp_path)),
+            "-f",
+            "md",
+            "-o",
+            str(written),
+        ],
+    )
+
+    document = written.read_text(encoding="utf-8")
+    for leaked in ("citations", "search_queries", "response_content_id", "sp_"):
+        assert leaked not in document
+
+
+def test_a_shortened_gemini_url_is_routed_from_a_saved_response(tmp_path: Path) -> None:
+    """The shortener needs no redirect when the content is already on disk."""
+    result = runner.invoke(
+        app,
+        [
+            "inspect",
+            "https://share.gemini.google/94ESiKYXbGiV",
+            "--from-file",
+            str(gemini_response(tmp_path)),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "gemini" in result.stdout
