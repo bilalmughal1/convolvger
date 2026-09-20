@@ -126,6 +126,12 @@ def parse(source: RawSource) -> ParseResult:
         )
     findings.extend(result.findings)
 
+    if payloads[0] is None:
+        raise ParseError(
+            "Share carried no conversation (deleted, never existed, or made private)",
+            findings=findings,
+        )
+
     root = _at(payloads[0], 0)
     turns = _at(root, 1)
     if not isinstance(turns, list) or not turns:

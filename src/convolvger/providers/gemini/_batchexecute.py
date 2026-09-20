@@ -111,7 +111,17 @@ def decode(raw: str) -> DecodeResult:
                     finding("unrecognised_stream_line", f"frame row tagged {tag!r}")
                 )
                 continue
-            if len(row) < 3 or not isinstance(row[1], str) or not isinstance(row[2], str):
+            if len(row) < 3 or not isinstance(row[1], str):
+                raise BatchExecuteError(f"Malformed {ENVELOPE_TAG} row: {row[:2]}")
+
+            if row[2] is None:
+                # Measured: an unknown or malformed share id returns 200 with
+                # exactly this shape. The envelope is well formed and carries
+                # nothing, which is a fact about the conversation rather than
+                # about the encoding, so it is passed on rather than raised.
+                envelopes.append(Envelope(rpc_id=row[1], payload=None))
+                continue
+            if not isinstance(row[2], str):
                 raise BatchExecuteError(f"Malformed {ENVELOPE_TAG} row: {row[:2]}")
 
             try:

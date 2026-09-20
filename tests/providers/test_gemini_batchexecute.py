@@ -121,3 +121,18 @@ def test_a_response_carrying_only_trailers_is_refused() -> None:
 def test_an_empty_body_is_refused() -> None:
     with pytest.raises(_batchexecute.BatchExecuteError, match="no frames"):
         _batchexecute.decode(")]}'\n\n")
+
+
+MISSING_SHARE = (
+    ")]}'\n\n"
+    '[["wrb.fr","ujx1Bf",null,null,null,[5],"generic"],'
+    '["di",172],["af.httprm",172,"-1490094734237710798",11]]'
+)
+"""Measured: what the endpoint returns for an unknown share id, at 200."""
+
+
+def test_an_empty_payload_is_an_envelope_not_a_malformed_row() -> None:
+    result = _batchexecute.decode(MISSING_SHARE)
+    assert [item.rpc_id for item in result.envelopes] == ["ujx1Bf"]
+    assert result.envelopes[0].payload is None
+    assert result.findings == []

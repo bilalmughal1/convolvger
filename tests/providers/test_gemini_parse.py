@@ -168,3 +168,16 @@ def test_the_real_capture_parses_into_four_exchanges() -> None:
         311, 4331, 33, 5396, 28, 1896, 41, 3500,
     ]
     assert result.findings == []
+
+
+MISSING_SHARE = (
+    ")]}'\n\n"
+    '[["wrb.fr","ujx1Bf",null,null,null,[5],"generic"],'
+    '["di",172],["af.httprm",172,"-1490094734237710798",11]]'
+)
+
+
+def test_a_share_that_carries_nothing_says_so() -> None:
+    """A deleted or unknown share returns 200 with a null payload."""
+    with pytest.raises(ParseError, match="carried no conversation"):
+        _parse.parse(RawSource(url=SHARE_URL, content=MISSING_SHARE))
