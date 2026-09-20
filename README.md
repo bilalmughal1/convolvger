@@ -37,7 +37,33 @@ Check the install:
 
 ```
 convolvger --help
+convolvger --version
 ```
+
+`--version` reports the installed version, the interpreter it runs on, the
+archive schema it writes and the ones it can read, and the providers this build
+supports. It is the quickest thing to include in a bug report, because the
+version it prints is the one your archives record.
+
+## Upgrade
+
+Convolvger never updates itself and never checks for a new release. A tool that
+keeps your conversations on your machine has no business contacting an index to
+ask about itself, so upgrading is something you do deliberately, with whichever
+tool installed it:
+
+```
+uv tool upgrade convolvger      # if you installed with uv
+pipx upgrade convolvger         # if you installed with pipx
+pip install -U convolvger       # inside a virtual environment
+```
+
+Then run `convolvger --version` to confirm which copy you now have. Releases are
+listed at [github.com/bilalmughal1/convolvger/releases](https://github.com/bilalmughal1/convolvger/releases).
+
+Archives written by an older version stay readable: each one records the schema
+it was written against, and a newer Convolvger reads the versions it lists under
+`--version` rather than assuming.
 
 ## Usage
 
@@ -92,6 +118,35 @@ rather than claiming a false one.
 
 This is how to re-read a capture without asking the provider for it again, which
 matters because the answer may have changed since. It works with `inspect` too.
+
+**Archive a Gemini conversation**
+
+```
+convolvger export https://gemini.google.com/share/SHARE_ID
+```
+
+Gemini share pages are fetched directly, with no browser involved. The page
+itself carries no conversation — it is an application shell that loads one
+afterwards — so Convolvger asks for the same data the page does. All three link
+forms work:
+
+```
+https://gemini.google.com/share/SHARE_ID
+https://g.co/gemini/share/SHARE_ID
+https://share.gemini.google/TOKEN
+```
+
+The first two carry the conversation id. The third is a shortener whose token is
+not the id, so that form costs one extra request to resolve.
+
+A Gemini conversation may cite web pages and record the searches the model ran.
+Neither appears in the answer text the provider serves, so both are kept in the
+JSON archive under `provider_metadata`, alongside the response ids. As with
+Claude, no renderer reads `provider_metadata` and none of it reaches Markdown.
+
+A deleted or unknown Gemini share answers with a success status and an empty
+payload rather than an error, so Convolvger reports it as a missing share
+instead of passing an empty conversation off as a real one.
 
 **Archive a Claude conversation**
 
@@ -204,7 +259,7 @@ Initial providers:
 - ChatGPT — fetched directly from a share link
 - Claude — captured from your own browser, since its share pages cannot be
   fetched
-- Gemini — not implemented yet
+- Gemini — fetched directly from a share link
 - Grok — not implemented yet
 
 Additional providers will be added as their public sharing formats are supported and tested.
@@ -217,7 +272,9 @@ Every command shown under Usage above works today.
 
 ChatGPT share links can be fetched, parsed, and exported. Markdown is a reader-facing document that may omit content, reports every omission in its header, and names what the provider did not serve; JSON is the complete archival record and omits nothing the model holds.
 
-Claude share snapshots can be parsed and exported, but not fetched: the service refuses non-browser clients, so a snapshot is captured from your own browser as described under Usage. Gemini and Grok are not implemented yet.
+Claude share snapshots can be parsed and exported, but not fetched: the service refuses non-browser clients, so a snapshot is captured from your own browser as described under Usage.
+
+Gemini share links can be fetched, parsed and exported, in all three of the link forms Google issues. Citations and search queries are preserved in the JSON archive rather than rendered into the document. Grok is not implemented yet.
 
 Extraction records structured findings, each with a stable code and a level. A note is recorded but does not change the exit status; a warning does. Both are written into the JSON archive either way, so nothing is withheld from the record because it was judged unremarkable.
 
