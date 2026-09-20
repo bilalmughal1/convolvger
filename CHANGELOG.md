@@ -4,6 +4,60 @@ All notable changes to Convolvger will be documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-09-21
+
+### Added
+
+- Gemini conversations can be archived from a share link. The share page turned
+  out to carry no conversation at all: it is an application shell whose only
+  prose is Google's own marketing examples, so a text scrape of it returns a
+  plausible archive of the wrong conversation. Convolvger asks the endpoint the
+  page itself asks, and sends only the one query parameter that proved
+  necessary. The build identifier a browser sends is deliberately not pinned,
+  since it names a Google build and would rot on their schedule. No cookie is
+  sent and no token is needed: the request succeeds with this tool's own
+  User-Agent, so nothing impersonates a browser
+- All three link forms Google issues are accepted. Two carry the conversation
+  id in the path and cost nothing extra; the third is a shortener whose token
+  is not the id, and it is resolved from its redirect rather than by
+  downloading the page behind it
+- A Gemini answer arrives as flat Markdown, and the payload also carries a
+  block tree that re-decomposes the same text for the web UI. Every heading,
+  bullet and table cell of a real conversation was found present in the flat
+  string, so the tree is passed over: nothing is lost by ignoring a second copy
+  of content already kept in full. Citations and the searches the model ran are
+  a different matter, appearing nowhere in that text, and are preserved in the
+  JSON archive. No renderer reads them, so the document a reader sees stays
+  clean while the archive stays complete
+- A missing Gemini share answers with a success status and a null payload
+  rather than an error, so the status code alone cannot tell a deleted
+  conversation from a present one. Convolvger reports it as a missing share
+  instead of passing an empty conversation off as a real one
+- `convolvger --version` reports the installed version, the interpreter, the
+  archive schema it writes and the ones it can read, and the providers the
+  build supports. Every archive already recorded the version that wrote it
+  while nothing let a user ask which version they were running. Nothing is
+  fetched to answer: a tool that keeps conversations on your machine has no
+  business contacting an index to describe itself, and a test fails the build
+  if it tries
+
+### Changed
+
+- The test suite, linting and type checking run on every Python version the
+  package claims rather than only the one pinned for development. Two of the
+  three advertised versions had never been run
+- A scheduled job asks the live provider weekly whether it still serves what
+  this version reads. Every other provider test uses a fixture or a mock, so
+  all of them would keep passing if the format changed and the failure would
+  reach a user before it reached the repository. It is excluded from the
+  ordinary suite, so running the tests never depends on a network or on someone
+  else's service being up
+
+### Documented
+
+- How to upgrade, which was never written down, and that upgrading is something
+  you do rather than something that happens to you
+
 ## [0.3.0] - 2026-09-19
 
 ### Added
