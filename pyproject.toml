@@ -63,3 +63,13 @@ dev = [
     "pytest-cov>=7.1.0",
     "ruff>=0.16.7",
 ]
+
+[tool.pytest.ini_options]
+# Contract tests call the live provider. They are excluded by default so
+# that running the suite never depends on a network, on a share link
+# staying published, or on someone else's service being up. The scheduled
+# contract workflow selects them explicitly with -m contract.
+addopts = "-m 'not contract'"
+markers = [
+    "contract: verifies a live provider still serves what this version expects",
+]
