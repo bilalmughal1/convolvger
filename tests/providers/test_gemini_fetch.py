@@ -115,6 +115,14 @@ def test_a_short_link_redirecting_elsewhere_is_refused() -> None:
     ],
 )
 def test_status_codes_map_to_distinct_errors(status: int, expected: type) -> None:
+    """Defensive, not observed.
+
+    Gemini was measured to answer 200 for a share that does not exist,
+    so none of these codes is known to arrive from it. The mapping is
+    kept because a provider may start sending them, but a reader should
+    not take this table for evidence of what Gemini does --
+    test_a_missing_share_is_reported_despite_a_200 is that evidence.
+    """
     client, _ = recording_client(status=status)
     with pytest.raises(expected):
         _fetch.fetch(CANONICAL, client=client)

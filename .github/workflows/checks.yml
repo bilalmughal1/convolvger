@@ -8,14 +8,22 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    strategy:
+      # Every version is worth a full result: a failure on one should not
+      # hide whether the others pass.
+      fail-fast: false
+      matrix:
+        # The package declares requires-python >=3.12, so every version it
+        # claims gets checked rather than only the one pinned for development.
+        python: ["3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           enable-cache: true
-      # Respects the 3.12 pin in .python-version
-      - run: uv python install
-      - run: uv sync --locked --dev
-      - run: uv run pytest
-      - run: uv run ruff check .
-      - run: uv run mypy src tests
+      - run: uv python install ${{ matrix.python }}
+      - run: uv sync --locked --dev --python ${{ matrix.python }}
+      - run: uv run --python ${{ matrix.python }} pytest
+      - run: uv run --python ${{ matrix.python }} ruff check .
+      # mypy reads the target version, so this is not a repeat of one result.
+      - run: uv run --python ${{ matrix.python }} mypy src tests
