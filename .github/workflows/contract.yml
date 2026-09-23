@@ -16,8 +16,10 @@ permissions:
 
 jobs:
   gemini:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
+      - name: Which image is this
+        run: grep -E '^(PRETTY_NAME|VERSION_ID)=' /etc/os-release; uname -r
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:

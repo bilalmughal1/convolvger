@@ -7,7 +7,7 @@ on:
 
 jobs:
   checks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       # Every version is worth a full result: a failure on one should not
       # hide whether the others pass.
@@ -17,6 +17,8 @@ jobs:
         # claims gets checked rather than only the one pinned for development.
         python: ["3.12", "3.13", "3.14"]
     steps:
+      - name: Which image is this
+        run: grep -E '^(PRETTY_NAME|VERSION_ID)=' /etc/os-release; uname -r
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
@@ -27,3 +29,21 @@ jobs:
       - run: uv run --python ${{ matrix.python }} ruff check .
       # mypy reads the target version, so this is not a repeat of one result.
       - run: uv run --python ${{ matrix.python }} mypy src tests
+
+  # PROBE ONLY, not for merge: release.yml's build job, step for step,
+  # because that job cannot otherwise run without publishing.
+  probe-build:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - name: Which image is this
+        run: grep -E '^(PRETTY_NAME|VERSION_ID)=' /etc/os-release; uname -r
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+      - run: uv build
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
