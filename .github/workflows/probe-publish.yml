@@ -1,0 +1,50 @@
+name: probe-publish
+
+# PROBE ONLY, not for merge. Rehearses release.yml's build and publish
+# jobs on ubuntu-26.04 against TestPyPI. The jobs are copied from
+# release.yml; the differences are the runner, the image probe step,
+# the environment name and the upload URL.
+on:
+  push:
+    branches: [probe/ubuntu-26.04]
+
+jobs:
+  # Builds with no credential in scope: this job cannot mint a PyPI token,
+  # so the build backend and every dependency it runs cannot reach one.
+  build:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    steps:
+      - name: Which image is this
+        run: grep -E '^(PRETTY_NAME|VERSION_ID)=' /etc/os-release; uname -r
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+      - run: uv build
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  # Publishes the artifact built above rather than rebuilding, so the bytes
+  # on PyPI are the bytes that were built and checked.
+  publish:
+    needs: build
+    runs-on: ubuntu-26.04
+    environment: testpypi
+    permissions:
+      # Mandatory for trusted publishing: lets the job mint a short-lived
+      # PyPI credential from GitHub's OIDC token. No API token is stored.
+      id-token: write
+      contents: read
+    steps:
+      - name: Which image is this
+        run: grep -E '^(PRETTY_NAME|VERSION_ID)=' /etc/os-release; uname -r
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist/
+      - run: uv publish --publish-url https://test.pypi.org/legacy/ --trusted-publishing always
