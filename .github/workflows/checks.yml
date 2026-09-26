@@ -28,5 +28,6 @@ jobs:
       - run: uv sync --locked --dev --python ${{ matrix.python }}
       - run: uv run --python ${{ matrix.python }} pytest
       - run: uv run --python ${{ matrix.python }} ruff check .
+      - run: uv run --python ${{ matrix.python }} ruff format --check .
       # mypy reads the target version, so this is not a repeat of one result.
       - run: uv run --python ${{ matrix.python }} mypy src tests
