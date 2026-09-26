@@ -96,9 +96,7 @@ def to_blocks(
     if content_type == "reasoning_recap":
         return _recap_blocks(content)
 
-    remainder = {
-        key: value for key, value in content.items() if key != "content_type"
-    }
+    remainder = {key: value for key, value in content.items() if key != "content_type"}
     if not any(value not in (None, "", [], {}) for value in remainder.values()):
         return []
 

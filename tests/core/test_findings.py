@@ -40,9 +40,13 @@ def test_every_code_used_in_the_source_is_in_the_table() -> None:
     """Keeps the KeyError above unreachable outside of tests."""
     used = set()
     for path in SRC.rglob("*.py"):
-        used.update(re.findall(r'finding\(\s*"([a-z_]+)"', path.read_text(encoding="utf-8")))
+        used.update(
+            re.findall(r'finding\(\s*"([a-z_]+)"', path.read_text(encoding="utf-8"))
+        )
 
-    assert used <= set(LEVELS), f"codes missing from LEVELS: {sorted(used - set(LEVELS))}"
+    assert used <= set(LEVELS), (
+        f"codes missing from LEVELS: {sorted(used - set(LEVELS))}"
+    )
 
 
 def test_identical_observations_collapse_into_one_counted_finding() -> None:

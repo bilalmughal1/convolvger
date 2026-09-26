@@ -121,8 +121,7 @@ def load_archive(text: str) -> ArchiveEnvelope:
     if declared not in READABLE_VERSIONS:
         readable = ", ".join(str(item) for item in sorted(READABLE_VERSIONS))
         raise ArchiveError(
-            f"Archive declares schema version {declared}; "
-            f"this version reads {readable}"
+            f"Archive declares schema version {declared}; this version reads {readable}"
         )
 
     try:

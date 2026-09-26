@@ -31,7 +31,9 @@ ROLES = {"human": MessageRole.USER, "assistant": MessageRole.ASSISTANT}
 ENVELOPE_MAPPED_KEYS = frozenset(
     {"uuid", "snapshot_name", "created_at", "updated_at", "chat_messages"}
 )
-MESSAGE_MAPPED_KEYS = frozenset({"uuid", "sender", "created_at", "content", "stop_reason"})
+MESSAGE_MAPPED_KEYS = frozenset(
+    {"uuid", "sender", "created_at", "content", "stop_reason"}
+)
 
 
 def _extras(source: dict[str, Any], mapped: frozenset[str]) -> dict[str, Any]:

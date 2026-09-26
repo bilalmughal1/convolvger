@@ -16,7 +16,9 @@ SHARE_URL = "https://gemini.google.com/share/0000000000ab"
 
 def body(payload: object) -> str:
     inner = json.dumps(payload, ensure_ascii=False)
-    frame = json.dumps([["wrb.fr", "ujx1Bf", inner, None, None, None, "generic"]], ensure_ascii=False)
+    frame = json.dumps(
+        [["wrb.fr", "ujx1Bf", inner, None, None, None, "generic"]], ensure_ascii=False
+    )
     return f")]}}'\n{len(frame.encode('utf-16-le')) // 2 + 2}\n{frame}"
 
 
@@ -165,7 +167,14 @@ def test_the_real_capture_parses_into_four_exchanges() -> None:
     assert len(messages) == 8
     assert result.conversation.title == "Solar System Installation Guide Pakistan"
     assert [len(text_of(message)) for message in messages] == [
-        311, 4331, 33, 5396, 28, 1896, 41, 3500,
+        311,
+        4331,
+        33,
+        5396,
+        28,
+        1896,
+        41,
+        3500,
     ]
     assert result.findings == []
 

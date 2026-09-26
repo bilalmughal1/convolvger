@@ -79,9 +79,7 @@ def test_capturing_and_a_url_together_are_refused() -> None:
 
 
 def test_capturing_and_a_saved_file_together_are_refused() -> None:
-    result = runner.invoke(
-        app, ["export", "--capture", "--from-file", str(SNAPSHOT)]
-    )
+    result = runner.invoke(app, ["export", "--capture", "--from-file", str(SNAPSHOT)])
 
     assert result.exit_code == 1
     assert "two different sources" in result.output

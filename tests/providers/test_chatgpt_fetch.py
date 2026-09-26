@@ -66,7 +66,10 @@ def test_404_raises_share_not_found() -> None:
 
 @pytest.mark.parametrize("status", [401, 403])
 def test_denied_statuses_raise_access_denied(status: int) -> None:
-    with client_returning(status=status) as client, pytest.raises(ShareAccessDeniedError):
+    with (
+        client_returning(status=status) as client,
+        pytest.raises(ShareAccessDeniedError),
+    ):
         fetch(URL, client=client)
 
 

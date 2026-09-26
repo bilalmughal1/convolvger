@@ -28,9 +28,7 @@ class Report(BaseModel):
 
     def findings_for(self, aspect: Aspect) -> list[Finding]:
         """Every finding bearing on one question, in the order recorded."""
-        return [
-            item for item in self.findings if ASPECTS.get(item.code) is aspect
-        ]
+        return [item for item in self.findings if ASPECTS.get(item.code) is aspect]
 
     @property
     def unrecognised(self) -> list[Finding]:

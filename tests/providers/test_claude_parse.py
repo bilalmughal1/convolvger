@@ -23,7 +23,9 @@ CAPTURE = LOCAL / "snapshot-2026-09-13.json"
 
 def _parse(payload: Any) -> ParseResult:
     text = payload if isinstance(payload, str) else json.dumps(payload)
-    return parse(RawSource(url=SHARE_URL, content=text, content_type="application/json"))
+    return parse(
+        RawSource(url=SHARE_URL, content=text, content_type="application/json")
+    )
 
 
 def _fixture() -> ParseResult:
@@ -282,9 +284,12 @@ def test_the_real_capture_keeps_what_the_envelope_carried() -> None:
         "working_documents",
     }
     assert conversation.provider_metadata["up_to_date"] is True
-    assert sum(
-        1
-        for m in conversation.messages
-        for extras in m.provider_metadata.get("text_block_extras", {}).values()
-        if extras.get("citations")
-    ) == 3
+    assert (
+        sum(
+            1
+            for m in conversation.messages
+            for extras in m.provider_metadata.get("text_block_extras", {}).values()
+            if extras.get("citations")
+        )
+        == 3
+    )

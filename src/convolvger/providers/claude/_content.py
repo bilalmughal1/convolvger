@@ -27,9 +27,7 @@ from convolvger.core.models import (
 
 TEXT_KEYS = frozenset({"type", "text"})
 TOOL_USE_KEYS = frozenset({"type", "name", "id", "input"})
-TOOL_RESULT_KEYS = frozenset(
-    {"type", "tool_use_id", "name", "is_error", "content"}
-)
+TOOL_RESULT_KEYS = frozenset({"type", "tool_use_id", "name", "is_error", "content"})
 
 TEXT_EXTRAS_KEY = "text_block_extras"
 """Where a text block's unmodelled fields land in ``provider_metadata``.
@@ -47,9 +45,7 @@ def _extras(block: dict[str, Any], consumed: frozenset[str]) -> dict[str, Any]:
 def _unknown(block: dict[str, Any], findings: list[Finding]) -> ContentBlock:
     kind = block.get("type")
     text = block.get("text")
-    findings.append(
-        finding("unmodelled_content_type", f"{kind} preserved verbatim")
-    )
+    findings.append(finding("unmodelled_content_type", f"{kind} preserved verbatim"))
     return UnknownBlock(
         type=kind if isinstance(kind, str) else "content_block",
         text=text if isinstance(text, str) else None,
@@ -175,9 +171,7 @@ def to_blocks(
                     f"{type(block).__name__} preserved verbatim",
                 )
             )
-            mapped.append(
-                UnknownBlock(type="content_block", raw={"block": block})
-            )
+            mapped.append(UnknownBlock(type="content_block", raw={"block": block}))
             continue
 
         kind = block.get("type")
@@ -186,9 +180,7 @@ def to_blocks(
         elif kind == "tool_use":
             mapped.append(_tool_use(block))
         elif kind == "tool_result":
-            mapped.append(
-                _tool_result(block, findings, metadata, message_id, path)
-            )
+            mapped.append(_tool_result(block, findings, metadata, message_id, path))
         else:
             mapped.append(_unknown(block, findings))
     return mapped

@@ -172,9 +172,7 @@ def _provenance(
     if omitted_empty:
         lines.append(f"- Omitted as carrying no renderable content: {omitted_empty}")
     if omitted_hidden or omitted_inactive or omitted_empty:
-        lines.append(
-            "- Omitted messages are preserved in full in the JSON export."
-        )
+        lines.append("- Omitted messages are preserved in full in the JSON export.")
     withheld = collapse(
         item.model_copy(update={"message_id": None})
         for item in findings or []

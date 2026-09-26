@@ -68,7 +68,9 @@ def _messages(turn: Any, index: int, findings: list[Finding]) -> list[Message]:
     built: list[Message] = []
     if isinstance(prompt, str) and prompt:
         built.append(
-            Message(role=MessageRole.USER, timestamp=when, content=[TextBlock(text=prompt)])
+            Message(
+                role=MessageRole.USER, timestamp=when, content=[TextBlock(text=prompt)]
+            )
         )
     else:
         findings.append(
@@ -118,7 +120,9 @@ def parse(source: RawSource) -> ParseResult:
     except BatchExecuteError as error:
         raise ParseError(str(error), findings=findings) from error
 
-    payloads = [item.payload for item in result.envelopes if item.rpc_id == CONVERSATION_RPC]
+    payloads = [
+        item.payload for item in result.envelopes if item.rpc_id == CONVERSATION_RPC
+    ]
     if not payloads:
         raise ParseError(
             f"Response carried no {CONVERSATION_RPC} conversation payload",
@@ -141,7 +145,9 @@ def parse(source: RawSource) -> ParseResult:
     for index, turn in enumerate(turns):
         messages.extend(_messages(turn, index, findings))
 
-    stamps = [message.timestamp for message in messages if message.timestamp is not None]
+    stamps = [
+        message.timestamp for message in messages if message.timestamp is not None
+    ]
     title = _at(root, 2, 1)
     share_id = _at(root, 3)
     model = _at(root, 2, 7, 2)

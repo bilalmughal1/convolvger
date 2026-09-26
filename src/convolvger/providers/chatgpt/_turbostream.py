@@ -45,7 +45,9 @@ def extract_payloads(html: str) -> list[str]:
 def parse_stream(payloads: list[str]) -> tuple[list[Any], list[Finding]]:
     """Split chunks into the leading flat array and any deferred lines."""
     findings: list[Finding] = []
-    lines = [line for payload in payloads for line in payload.split("\n") if line.strip()]
+    lines = [
+        line for payload in payloads for line in payload.split("\n") if line.strip()
+    ]
     if not lines:
         raise TurboStreamError("Turbo-stream payload is empty")
 
@@ -62,7 +64,9 @@ def parse_stream(payloads: list[str]) -> tuple[list[Any], list[Finding]]:
     try:
         flat = json.loads(lines[0], parse_constant=note_constant)
     except json.JSONDecodeError as exc:
-        raise TurboStreamError(f"Leading turbo-stream line is not JSON: {exc.msg}") from exc
+        raise TurboStreamError(
+            f"Leading turbo-stream line is not JSON: {exc.msg}"
+        ) from exc
 
     if not isinstance(flat, list):
         raise TurboStreamError(f"Expected a flat array, got {type(flat).__name__}")
@@ -77,9 +81,7 @@ def parse_stream(payloads: list[str]) -> tuple[list[Any], list[Finding]]:
                 )
             )
         else:
-            findings.append(
-                finding("unrecognised_stream_line", "line ignored")
-            )
+            findings.append(finding("unrecognised_stream_line", "line ignored"))
 
     return flat, findings
 
@@ -114,22 +116,21 @@ def decode(flat: list[Any]) -> DecodeResult:
     def key_name(key: str) -> str:
         if key.startswith("_"):
             return str(at(int(key[1:])))
-        findings.append(
-            finding("literal_object_key", f"kept as-is: {key}")
-        )
+        findings.append(finding("literal_object_key", f"kept as-is: {key}"))
         return key
 
     def marker(node: list[Any]) -> Any:
         if node[0] == "P":
-            findings.append(
-                finding("deferred_value_unresolved", f"value {node[1:]}")
-            )
+            findings.append(finding("deferred_value_unresolved", f"value {node[1:]}"))
             return None
         raise TurboStreamError(f"Unsupported turbo-stream marker: {node[0]!r}")
 
     def convert(node: Any) -> Any:
         if isinstance(node, dict):
-            return {key_name(key): at(ref) if _is_ref(ref) else ref for key, ref in node.items()}
+            return {
+                key_name(key): at(ref) if _is_ref(ref) else ref
+                for key, ref in node.items()
+            }
         if isinstance(node, list):
             if node and node[0] == "P" and len(node) == 2 and _is_ref(node[1]):
                 return marker(node)
@@ -143,6 +144,4 @@ def decode_html(html: str) -> DecodeResult:
     """Extract and decode the turbo-stream payload from an HTML page."""
     flat, findings = parse_stream(extract_payloads(html))
     result = decode(flat)
-    return DecodeResult(
-        value=result.value, findings=findings + result.findings
-    )
+    return DecodeResult(value=result.value, findings=findings + result.findings)

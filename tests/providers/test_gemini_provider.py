@@ -62,15 +62,14 @@ def test_parsing_is_delegated_to_the_payload_parser() -> None:
 
 def test_a_snapshot_that_is_not_a_gemini_response_is_refused() -> None:
     with pytest.raises(ParseError):
-        GeminiProvider().parse(RawSource(url=CANONICAL, content=json.dumps({"mapping": {}})))
+        GeminiProvider().parse(
+            RawSource(url=CANONICAL, content=json.dumps({"mapping": {}}))
+        )
 
 
 def test_a_missing_share_is_refused_at_fetch() -> None:
     """Gemini answers 200 for an unknown id, so the provider must still refuse."""
-    empty = (
-        ")]}'\n\n"
-        '[["wrb.fr","ujx1Bf",null,null,null,[5],"generic"]]'
-    )
+    empty = ')]}\'\n\n[["wrb.fr","ujx1Bf",null,null,null,[5],"generic"]]'
 
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, text=empty)

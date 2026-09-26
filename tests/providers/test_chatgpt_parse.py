@@ -41,9 +41,11 @@ def test_walks_nodes_into_messages() -> None:
             "title": "T",
             "linear_conversation": [
                 {"id": "root", "children": ["a"]},
-                node(id="a", author={"role": "user"}, content={
-                    "content_type": "text", "parts": ["hi"]
-                }),
+                node(
+                    id="a",
+                    author={"role": "user"},
+                    content={"content_type": "text", "parts": ["hi"]},
+                ),
             ],
         }
     )
@@ -61,9 +63,11 @@ def test_root_node_without_message_is_skipped() -> None:
         {
             "linear_conversation": [
                 {"id": "root", "children": []},
-                node(id="a", author={"role": "user"}, content={
-                    "content_type": "text", "parts": ["hi"]
-                }),
+                node(
+                    id="a",
+                    author={"role": "user"},
+                    content={"content_type": "text", "parts": ["hi"]},
+                ),
             ]
         }
     )
@@ -146,9 +150,7 @@ def test_unexpected_weight_warns_and_stays_active() -> None:
     result = parse(source)
 
     assert result.conversation.messages[0].active is True
-    assert any(
-        item.code == "unexpected_message_weight" for item in result.findings
-    )
+    assert any(item.code == "unexpected_message_weight" for item in result.findings)
 
 
 def test_absent_weight_is_noted_not_warned() -> None:
@@ -189,18 +191,18 @@ def test_explicit_null_weight_still_warns() -> None:
     )
     result = parse(source)
 
-    assert any(
-        item.code == "unexpected_message_weight" for item in result.findings
-    )
+    assert any(item.code == "unexpected_message_weight" for item in result.findings)
 
 
 def test_unrecognised_role_becomes_unknown_with_a_finding() -> None:
     source = snapshot(
         {
             "linear_conversation": [
-                node(id="a", author={"role": "oracle"}, content={
-                    "content_type": "text", "parts": ["x"]
-                })
+                node(
+                    id="a",
+                    author={"role": "oracle"},
+                    content={"content_type": "text", "parts": ["x"]},
+                )
             ]
         }
     )
@@ -257,9 +259,11 @@ def test_empty_content_is_recorded_not_silently_dropped() -> None:
     source = snapshot(
         {
             "linear_conversation": [
-                node(id="a", author={"role": "user"}, content={
-                    "content_type": "text", "parts": [""]
-                })
+                node(
+                    id="a",
+                    author={"role": "user"},
+                    content={"content_type": "text", "parts": [""]},
+                )
             ]
         }
     )

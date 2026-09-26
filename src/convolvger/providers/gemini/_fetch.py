@@ -35,7 +35,9 @@ from convolvger.providers.gemini._batchexecute import BatchExecuteError, decode
 from convolvger.providers.gemini._parse import CONVERSATION_RPC
 from convolvger.providers.gemini._urls import share_id
 
-USER_AGENT = f"convolvger/{version('convolvger')} (+https://github.com/bilalmughal1/convolvger)"
+USER_AGENT = (
+    f"convolvger/{version('convolvger')} (+https://github.com/bilalmughal1/convolvger)"
+)
 TIMEOUT = httpx.Timeout(30.0)
 
 ENDPOINT = "https://gemini.google.com/_/BardChatUi/data/batchexecute"
@@ -75,7 +77,9 @@ def _request_body(conversation_id: str) -> str:
     not established, so it is reproduced rather than reinterpreted.
     """
     inner = json.dumps([None, conversation_id, [4]], separators=COMPACT)
-    outer = json.dumps([[[CONVERSATION_RPC, inner, None, "generic"]]], separators=COMPACT)
+    outer = json.dumps(
+        [[[CONVERSATION_RPC, inner, None, "generic"]]], separators=COMPACT
+    )
     return urlencode({"f.req": outer, "at": ""})
 
 
@@ -91,7 +95,9 @@ def _is_empty(body: str) -> bool:
     except BatchExecuteError:
         return False
     return all(
-        item.payload is None for item in result.envelopes if item.rpc_id == CONVERSATION_RPC
+        item.payload is None
+        for item in result.envelopes
+        if item.rpc_id == CONVERSATION_RPC
     )
 
 
@@ -116,11 +122,15 @@ def _resolve(url: str, client: httpx.Client) -> str:
 
     location = response.headers.get("location")
     if not location:
-        raise ShareNotFoundError(f"Share link did not redirect to a conversation: {url}")
+        raise ShareNotFoundError(
+            f"Share link did not redirect to a conversation: {url}"
+        )
 
     resolved = share_id(location)
     if resolved is None:
-        raise ShareNotFoundError(f"Share link resolved to an unrecognised target: {location}")
+        raise ShareNotFoundError(
+            f"Share link resolved to an unrecognised target: {location}"
+        )
     return resolved
 
 
@@ -140,7 +150,9 @@ def fetch(url: str, *, client: httpx.Client | None = None) -> RawSource:
                 ENDPOINT,
                 params={"rpcids": CONVERSATION_RPC},
                 content=_request_body(conversation_id),
-                headers={"Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"},
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+                },
             )
         except httpx.TimeoutException as exc:
             raise TransientFetchError(f"Request timed out: {url}") from exc

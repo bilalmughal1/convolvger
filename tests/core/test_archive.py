@@ -234,9 +234,7 @@ def test_an_archive_written_by_an_earlier_release_still_loads() -> None:
     still accepts what an earlier writer actually wrote, as opposed to
     what this version believes an earlier writer would have written.
     """
-    envelope = load_archive(
-        (ARCHIVES / "v2-minimal.json").read_text(encoding="utf-8")
-    )
+    envelope = load_archive((ARCHIVES / "v2-minimal.json").read_text(encoding="utf-8"))
 
     assert envelope.schema_version == 2
     assert envelope.tool_version == "0.1.1"
@@ -250,9 +248,7 @@ def test_an_archive_written_by_an_earlier_release_still_loads() -> None:
 
 def test_a_finding_written_before_the_count_existed_reads_as_one() -> None:
     """Version 2 predates ``occurrences``; the default has to fill it."""
-    envelope = load_archive(
-        (ARCHIVES / "v2-minimal.json").read_text(encoding="utf-8")
-    )
+    envelope = load_archive((ARCHIVES / "v2-minimal.json").read_text(encoding="utf-8"))
 
     assert [item.occurrences for item in envelope.findings] == [1, 1]
 

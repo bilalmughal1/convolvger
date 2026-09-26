@@ -85,7 +85,9 @@ def test_empty_thought_produces_no_block() -> None:
     blocks, _ = convert(
         {
             "content_type": "thoughts",
-            "thoughts": [{"summary": "", "content": "", "chunks": [], "finished": True}],
+            "thoughts": [
+                {"summary": "", "content": "", "chunks": [], "finished": True}
+            ],
         }
     )
 

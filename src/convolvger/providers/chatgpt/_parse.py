@@ -34,9 +34,7 @@ def _role(raw: Any, findings: list[Finding]) -> MessageRole:
     try:
         return MessageRole(raw)
     except ValueError:
-        findings.append(
-            finding("unrecognised_role", f"{raw!r} preserved as unknown")
-        )
+        findings.append(finding("unrecognised_role", f"{raw!r} preserved as unknown"))
         return MessageRole.UNKNOWN
 
 
@@ -66,16 +64,12 @@ def _active(
     if weight in (1, 1.0):
         return True
     findings.append(
-        finding(
-            "unexpected_message_weight", f"{weight!r} treated as active"
-        )
+        finding("unexpected_message_weight", f"{weight!r} treated as active")
     )
     return True
 
 
-def _share_payload(
-    decoded: dict[str, Any], findings: list[Finding]
-) -> dict[str, Any]:
+def _share_payload(decoded: dict[str, Any], findings: list[Finding]) -> dict[str, Any]:
     loader = decoded.get("loaderData")
     if not isinstance(loader, dict):
         raise ParseError("Snapshot has no loaderData", findings)

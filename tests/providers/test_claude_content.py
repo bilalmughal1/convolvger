@@ -75,9 +75,7 @@ def test_a_tool_call_maps_its_name_identifier_and_arguments() -> None:
         ]
     )
 
-    assert mapped == [
-        ToolUseBlock(name="web_search", id="u1", input={"query": "x"})
-    ]
+    assert mapped == [ToolUseBlock(name="web_search", id="u1", input={"query": "x"})]
     assert findings == []
 
 
@@ -109,7 +107,15 @@ def test_an_omitted_field_stays_omitted_rather_than_becoming_null() -> None:
     """Half this provider's tool blocks carry tool_origin and half do not."""
     without, _, _ = _map([{"type": "tool_use", "name": "a", "id": "u1", "input": {}}])
     with_null, _, _ = _map(
-        [{"type": "tool_use", "name": "a", "id": "u1", "input": {}, "tool_origin": None}]
+        [
+            {
+                "type": "tool_use",
+                "name": "a",
+                "id": "u1",
+                "input": {},
+                "tool_origin": None,
+            }
+        ]
     )
 
     first, second = without[0], with_null[0]
@@ -120,7 +126,9 @@ def test_an_omitted_field_stays_omitted_rather_than_becoming_null() -> None:
 
 
 def test_an_unexpectedly_shaped_argument_survives_in_raw() -> None:
-    mapped, _, _ = _map([{"type": "tool_use", "name": "a", "input": ["not", "a", "map"]}])
+    mapped, _, _ = _map(
+        [{"type": "tool_use", "name": "a", "input": ["not", "a", "map"]}]
+    )
 
     block = mapped[0]
     assert isinstance(block, ToolUseBlock)

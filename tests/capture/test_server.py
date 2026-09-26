@@ -70,7 +70,9 @@ def _post(body: Any, origin: str, raw: bytes | None = None) -> int:
 
 def test_a_posted_snapshot_becomes_a_source() -> None:
     with Listener() as listener:
-        assert _post({"url": SHARE, "content": '{"uuid":"x"}'}, "https://claude.ai") == 200
+        assert (
+            _post({"url": SHARE, "content": '{"uuid":"x"}'}, "https://claude.ai") == 200
+        )
 
     assert listener.source is not None
     assert listener.source.url == SHARE

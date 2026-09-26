@@ -64,7 +64,9 @@ def test_trailers_are_skipped_without_comment() -> None:
 
 
 def test_every_envelope_in_a_batch_is_returned() -> None:
-    body = build(envelope("ujx1Bf", ["first"]), envelope("Te6DCf", ["second"]), *TRAILERS)
+    body = build(
+        envelope("ujx1Bf", ["first"]), envelope("Te6DCf", ["second"]), *TRAILERS
+    )
     result = _batchexecute.decode(body)
     assert [item.rpc_id for item in result.envelopes] == ["ujx1Bf", "Te6DCf"]
 

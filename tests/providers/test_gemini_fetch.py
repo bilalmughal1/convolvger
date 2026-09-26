@@ -8,7 +8,7 @@ from convolvger.providers.gemini import _fetch
 CANONICAL = "https://gemini.google.com/share/09bcf760b07b"
 ALIAS = "https://g.co/gemini/share/09bcf760b07b"
 SHORT = "https://share.gemini.google/94ESiKYXbGiV"
-BODY = ")]}'\n\n[[\"wrb.fr\",\"ujx1Bf\",\"[]\",null,null,null,\"generic\"]]"
+BODY = ')]}\'\n\n[["wrb.fr","ujx1Bf","[]",null,null,null,"generic"]]'
 
 
 def recording_client(

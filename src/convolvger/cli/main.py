@@ -106,9 +106,7 @@ def _capture(port: int) -> tuple[RawSource, ParseResult]:
     return raw, provider.parse(raw)
 
 
-def _chosen_input(
-    source: str | None, from_file: Path | None, capture: bool
-) -> None:
+def _chosen_input(source: str | None, from_file: Path | None, capture: bool) -> None:
     """Refuse combinations that cannot mean one thing."""
     if capture and from_file is not None:
         _warn("Error: --capture and --from-file are two different sources.")
@@ -222,7 +220,9 @@ def bookmarklet(
 def inspect(
     source: Annotated[
         str | None,
-        typer.Argument(help="Public conversation URL, or the URL a saved snapshot came from."),
+        typer.Argument(
+            help="Public conversation URL, or the URL a saved snapshot came from."
+        ),
     ] = None,
     from_file: Annotated[
         Path | None,
@@ -264,7 +264,9 @@ def inspect(
 def export(
     source: Annotated[
         str | None,
-        typer.Argument(help="Public conversation URL, or the URL a saved snapshot came from."),
+        typer.Argument(
+            help="Public conversation URL, or the URL a saved snapshot came from."
+        ),
     ] = None,
     output: Annotated[
         Path | None,
@@ -380,9 +382,7 @@ def verify(
         typer.echo(f"Unknown:   {len(report.unrecognised)} unclassifiable code(s)")
 
     _report_findings(envelope.findings)
-    raise typer.Exit(
-        EXIT_OK if report.complete and report.faithful else EXIT_WARNINGS
-    )
+    raise typer.Exit(EXIT_OK if report.complete and report.faithful else EXIT_WARNINGS)
 
 
 if __name__ == "__main__":

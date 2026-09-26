@@ -102,9 +102,7 @@ def test_deferred_marker_resolves_to_none_with_warning() -> None:
     result = decode(flat)
 
     assert result.value == {"pending": None}
-    assert any(
-        item.code == "deferred_value_unresolved" for item in result.findings
-    )
+    assert any(item.code == "deferred_value_unresolved" for item in result.findings)
 
 
 def test_unknown_sentinel_raises() -> None:

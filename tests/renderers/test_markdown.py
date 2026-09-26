@@ -51,9 +51,7 @@ def text(
 
 
 def test_header_reports_source_and_counts() -> None:
-    output = render_markdown(
-        conversation(text(MessageRole.USER, "hi"), title="Chat")
-    )
+    output = render_markdown(conversation(text(MessageRole.USER, "hi"), title="Chat"))
 
     assert output.startswith("# Chat")
     assert "https://chatgpt.com/share/abc" in output
@@ -227,7 +225,10 @@ def test_an_unmodelled_block_that_carries_a_title_and_link_shows_them() -> None:
                 content=[
                     UnknownBlock(
                         type="knowledge",
-                        raw={"title": "Amira AI | Dubai", "url": "https://example.com/a"},
+                        raw={
+                            "title": "Amira AI | Dubai",
+                            "url": "https://example.com/a",
+                        },
                     )
                 ],
             )
@@ -256,7 +257,9 @@ def test_a_link_without_a_title_is_still_shown() -> None:
         conversation(
             Message(
                 role=MessageRole.ASSISTANT,
-                content=[UnknownBlock(type="knowledge", raw={"url": "https://example.com/b"})],
+                content=[
+                    UnknownBlock(type="knowledge", raw={"url": "https://example.com/b"})
+                ],
             )
         )
     )
@@ -371,8 +374,7 @@ def test_repeated_withholding_keeps_its_count() -> None:
     )
 
     assert (
-        "tool_result_has_no_content: search result carried no payload (x19)"
-        in output
+        "tool_result_has_no_content: search result carried no payload (x19)" in output
     )
 
 
@@ -412,8 +414,12 @@ def test_the_same_withholding_on_two_messages_is_merged_and_summed() -> None:
     output = render_markdown(
         conversation(text(MessageRole.USER, "hi")),
         findings=[
-            finding("tool_result_has_no_content", "memory_read carried no payload", "m1"),
-            finding("tool_result_has_no_content", "memory_read carried no payload", "m2"),
+            finding(
+                "tool_result_has_no_content", "memory_read carried no payload", "m1"
+            ),
+            finding(
+                "tool_result_has_no_content", "memory_read carried no payload", "m2"
+            ),
         ],
     )
 
@@ -422,9 +428,7 @@ def test_the_same_withholding_on_two_messages_is_merged_and_summed() -> None:
 
 
 def test_render_is_deterministic() -> None:
-    conv = conversation(
-        text(MessageRole.USER, "a"), text(MessageRole.ASSISTANT, "b")
-    )
+    conv = conversation(text(MessageRole.USER, "a"), text(MessageRole.ASSISTANT, "b"))
 
     assert render_markdown(conv) == render_markdown(conv)
 
