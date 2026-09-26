@@ -1,0 +1,292 @@
+{
+  "conversation": {
+    "conversationId": "00000000-0000-4000-8000-000000000001",
+    "title": "Example Grok conversation",
+    "starred": false,
+    "createTime": "2026-01-01T10:00:00.000Z",
+    "modifyTime": "2026-01-02T12:00:05.000Z",
+    "systemPromptName": "",
+    "temporary": false,
+    "mediaTypes": [],
+    "workspaces": [],
+    "taskResult": null,
+    "latestAssetMetadata": null,
+    "kind": "CONVERSATION_KIND_UNSPECIFIED"
+  },
+  "responses": [
+    {
+      "cardAttachmentsJson": [],
+      "citedCollectionSearchResults": [],
+      "citedConnectorSearchResults": [],
+      "citedRagResults": [],
+      "citedWebSearchResults": [],
+      "citedXposts": [],
+      "collectionSearchResults": [],
+      "connectorSearchResults": [],
+      "createTime": "2026-01-01T10:00:00.100Z",
+      "fileAttachmentAssetMetadata": [],
+      "fileAttachments": [],
+      "fileAttachmentsMetadata": [],
+      "fileIds": [],
+      "fileUris": [],
+      "generatedImageUrls": [],
+      "imageAttachments": [],
+      "imageEditUris": [],
+      "inputChunks": [],
+      "isControl": false,
+      "manual": false,
+      "mediaTypes": [],
+      "message": "First question from the user.",
+      "model": "",
+      "outputChunks": [],
+      "parentResponseId": "00000000-0000-4000-8000-000000000009",
+      "partial": false,
+      "query": "",
+      "queryType": "",
+      "ragResults": [],
+      "responseId": "00000000-0000-4000-8000-000000000010",
+      "searchProductResults": [],
+      "sender": "human",
+      "shared": false,
+      "steps": [],
+      "streamErrors": [],
+      "toolResponses": [],
+      "webSearchResults": [],
+      "webpageUrls": [],
+      "xpostIds": [],
+      "xposts": []
+    },
+    {
+      "cardAttachmentsJson": [],
+      "citedCollectionSearchResults": [],
+      "citedConnectorSearchResults": [],
+      "citedRagResults": [],
+      "citedWebSearchResults": [],
+      "citedXposts": [],
+      "collectionSearchResults": [],
+      "connectorSearchResults": [],
+      "createTime": "2026-01-01T10:00:03.000Z",
+      "fileAttachmentAssetMetadata": [],
+      "fileAttachments": [],
+      "fileAttachmentsMetadata": [],
+      "fileIds": [],
+      "fileUris": [],
+      "generatedImageUrls": [],
+      "imageAttachments": [],
+      "imageEditUris": [],
+      "inputChunks": [],
+      "isControl": false,
+      "manual": false,
+      "mediaTypes": [],
+      "message": "First answer, served with an upper-case sender.",
+      "metadata": {
+        "deepsearchPreset": ""
+      },
+      "model": "",
+      "outputChunks": [],
+      "parentResponseId": "00000000-0000-4000-8000-000000000010",
+      "partial": false,
+      "query": "",
+      "queryType": "",
+      "ragResults": [],
+      "responseId": "00000000-0000-4000-8000-000000000011",
+      "searchProductResults": [],
+      "sender": "ASSISTANT",
+      "shared": false,
+      "steps": [],
+      "streamErrors": [],
+      "toolResponses": [],
+      "webSearchResults": [],
+      "webpageUrls": [],
+      "xpostIds": [],
+      "xposts": []
+    },
+    {
+      "cardAttachmentsJson": [],
+      "citedCollectionSearchResults": [],
+      "citedConnectorSearchResults": [],
+      "citedRagResults": [],
+      "citedWebSearchResults": [],
+      "citedXposts": [],
+      "collectionSearchResults": [],
+      "connectorSearchResults": [],
+      "createTime": "2026-01-02T12:00:00.000Z",
+      "fileAttachmentAssetMetadata": [],
+      "fileAttachments": [],
+      "fileAttachmentsMetadata": [],
+      "fileIds": [],
+      "fileUris": [],
+      "generatedImageUrls": [],
+      "imageAttachments": [],
+      "imageEditUris": [],
+      "inputChunks": [],
+      "isControl": false,
+      "manual": false,
+      "mediaTypes": [],
+      "message": "Second question from the user.",
+      "metadata": {},
+      "model": "",
+      "outputChunks": [],
+      "parentResponseId": "00000000-0000-4000-8000-000000000011",
+      "partial": false,
+      "query": "",
+      "queryType": "",
+      "ragResults": [],
+      "responseId": "00000000-0000-4000-8000-000000000012",
+      "searchProductResults": [],
+      "sender": "human",
+      "shared": false,
+      "steps": [],
+      "streamErrors": [],
+      "toolResponses": [],
+      "webSearchResults": [],
+      "webpageUrls": [],
+      "xpostIds": [],
+      "xposts": []
+    },
+    {
+      "cardAttachmentsJson": [
+        "{\"id\":\"a1b2c3\",\"type\":\"render_inline_citation\",\"cardType\":\"citation_card\",\"url\":\"https://example.com/source-1\",\"kind\":1}",
+        "{\"id\":\"d4e5f6\",\"type\":\"render_inline_citation\",\"cardType\":\"citation_card\",\"url\":\"https://example.com/source-2\",\"kind\":1}"
+      ],
+      "citedCollectionSearchResults": [],
+      "citedConnectorSearchResults": [],
+      "citedRagResults": [],
+      "citedWebSearchResults": [],
+      "citedXposts": [],
+      "collectionSearchResults": [],
+      "connectorSearchResults": [],
+      "createTime": "2026-01-02T12:00:05.000Z",
+      "fileAttachmentAssetMetadata": [],
+      "fileAttachments": [],
+      "fileAttachmentsMetadata": [],
+      "fileIds": [],
+      "fileUris": [],
+      "generatedImageUrls": [],
+      "imageAttachments": [],
+      "imageEditUris": [],
+      "inputChunks": [],
+      "isControl": false,
+      "manual": false,
+      "mediaTypes": [],
+      "message": "Kettles boil water by passing current through a heating element.<grok:render card_id=\"a1b2c3\" card_type=\"citation_card\" type=\"render_inline_citation\"><argument name=\"citation_id\">0</argument></grok:render>\n\n### How it works\n1. The **element** heats.\n2. A thermostat switches it off.<grok:render card_id=\"d4e5f6\" card_type=\"citation_card\" type=\"render_inline_citation\"><argument name=\"citation_id\">1</argument></grok:render>\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n",
+      "metadata": {
+        "request_metadata": {
+          "model": "fast"
+        },
+        "ui_layout": {
+          "effort": null,
+          "reasoning_ui_layout": "UNIFIED",
+          "rollout_ids": [],
+          "steer_model_id": null,
+          "will_think_long": false
+        }
+      },
+      "model": "grok-3",
+      "outputChunks": [],
+      "parentResponseId": "00000000-0000-4000-8000-000000000012",
+      "partial": false,
+      "query": "",
+      "queryType": "",
+      "ragResults": [],
+      "requestMetadata": {
+        "model": "fast"
+      },
+      "responseId": "00000000-0000-4000-8000-000000000013",
+      "searchProductResults": [],
+      "sender": "assistant",
+      "shared": false,
+      "steps": [
+        {
+          "text": [
+            "Thinking about kettles"
+          ],
+          "tags": [
+            "header"
+          ],
+          "webSearchResults": [],
+          "xpostIds": [],
+          "xposts": [],
+          "toolUsageResults": [],
+          "ragResults": [],
+          "connectorSearchResults": [],
+          "collectionSearchResults": [],
+          "toolUsageCards": []
+        },
+        {
+          "text": [
+            "Searching for how an electric kettle works."
+          ],
+          "tags": [
+            "tool_usage_card"
+          ],
+          "webSearchResults": [],
+          "xpostIds": [],
+          "xposts": [],
+          "toolUsageResults": [
+            {
+              "toolUsageCardId": "00000000-0000-4000-8000-000000000900",
+              "webSearchResults": {
+                "results": [
+                  {
+                    "url": "https://example.com/source-1",
+                    "title": "Example source 1",
+                    "preview": "Invented preview text for source 1."
+                  },
+                  {
+                    "url": "https://example.com/source-2",
+                    "title": "Example source 2",
+                    "preview": "Invented preview text for source 2."
+                  }
+                ]
+              }
+            }
+          ],
+          "ragResults": [],
+          "connectorSearchResults": [],
+          "collectionSearchResults": [],
+          "toolUsageCards": [
+            {
+              "toolUsageCardId": "00000000-0000-4000-8000-000000000900",
+              "webSearch": {
+                "args": {
+                  "query": "how does an electric kettle work"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "streamErrors": [],
+      "thinkingEndTime": "2026-01-02T12:00:04.000Z",
+      "thinkingStartTime": "2026-01-02T12:00:01.000Z",
+      "toolResponses": [],
+      "uiLayout": {
+        "reasoningUiLayout": "UNIFIED",
+        "willThinkLong": false,
+        "rolloutIds": []
+      },
+      "webSearchResults": [
+        {
+          "url": "https://example.com/source-1",
+          "title": "Example source 1",
+          "preview": "Invented preview text for source 1."
+        },
+        {
+          "url": "https://example.com/source-2",
+          "title": "Example source 2",
+          "preview": "Invented preview text for source 2."
+        }
+      ],
+      "webpageUrls": [],
+      "xpostIds": [],
+      "xposts": []
+    }
+  ],
+  "teamSwitchPrompt": null,
+  "allowIndexing": true,
+  "isPublic": true,
+  "workspacePreviewPublic": false,
+  "workspacePreviewAvailable": false,
+  "sharedSubagents": []
+}

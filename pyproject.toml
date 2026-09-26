@@ -17,6 +17,7 @@ keywords = [
     "conversations",
     "digital-preservation",
     "gemini",
+    "grok",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",

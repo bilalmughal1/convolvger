@@ -4,6 +4,39 @@ All notable changes to Convolvger will be documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Grok conversations can be archived from a share link. The page is an
+  application shell that loads its conversation as JSON, so Convolvger asks
+  that endpoint directly: no browser, no cookie, no token, and this tool's own
+  User-Agent. The share id is kept whole whatever its prefix, since what the
+  prefix means is Grok's business and a new one should not make a working link
+  look foreign
+- A Grok answer carries its citations as inline markup that would otherwise
+  land in the Markdown as raw tags. Each one whose card the payload carries is
+  lifted out of the visible text, and the message exactly as served is kept
+  beside it in the JSON, so nothing the provider sent is lost. Markup of any
+  other shape is left in the text and flagged, because text this version
+  cannot account for should be shown rather than hidden
+- Search results, X posts, citation cards, model names and response ids are
+  kept in the JSON archive under `provider_metadata`, and none reaches
+  Markdown. The payload is keyed, so every field is kept by construction rather
+  than enumerated by hand. That includes the sender exactly as served: it
+  arrived as `human`, `ASSISTANT` and `assistant` within one conversation, and
+  folding it into a role should not erase which casing the provider sent
+- The reasoning trace Grok shows beside a thinking answer is kept whole but
+  reported as unmodelled content, since its shape has been seen in only one
+  conversation. Files and images a response names but does not carry are
+  reported as withheld, and nothing is fetched to fill the gap
+- A missing Grok share is reported as one, whether the provider says so with a
+  404, rejects a malformed id with a 400, or answers 200 with a title and no
+  messages. That last case was seen on a real public share, and exporting it
+  would have passed an empty conversation off as a real one
+- A weekly contract check for Grok, against a share made for the purpose, in
+  its own job so a failure names the provider that changed
+
 ## [0.4.0] - 2026-09-21
 
 ### Added

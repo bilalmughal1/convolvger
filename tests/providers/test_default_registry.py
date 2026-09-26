@@ -3,6 +3,7 @@ from convolvger.providers.chatgpt import ChatGPTProvider
 from convolvger.providers.claude import ClaudeProvider
 from convolvger.providers.default import build_registry
 from convolvger.providers.gemini import GeminiProvider
+from convolvger.providers.grok import GrokProvider
 
 
 def test_chatgpt_provider_satisfies_the_protocol() -> None:
@@ -12,7 +13,7 @@ def test_chatgpt_provider_satisfies_the_protocol() -> None:
 
 
 def test_registry_contains_chatgpt() -> None:
-    assert build_registry().names() == ["chatgpt", "claude", "gemini"]
+    assert build_registry().names() == ["chatgpt", "claude", "gemini", "grok"]
 
 
 def test_registry_detects_a_chatgpt_share_url() -> None:
@@ -58,3 +59,16 @@ def test_registry_detects_a_shortened_gemini_share_url() -> None:
     registry = build_registry()
 
     assert registry.detect("https://share.gemini.google/94ESiKYXbGiV").name == "gemini"
+
+
+def test_grok_provider_satisfies_the_protocol() -> None:
+    provider: Provider = GrokProvider()
+
+    assert provider.name == "grok"
+
+
+def test_registry_detects_a_grok_share_url() -> None:
+    registry = build_registry()
+    url = "https://grok.com/share/bGVnYWN5_00000000-0000-4000-8000-000000000001"
+
+    assert registry.detect(url).name == "grok"

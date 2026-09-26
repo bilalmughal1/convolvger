@@ -51,9 +51,7 @@ def warned(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("convolvger.cli.main._retrieve", _retrieve)
 
 
-def archive_file(
-    tmp_path: Path, findings: list[Finding] | None = None
-) -> Path:
+def archive_file(tmp_path: Path, findings: list[Finding] | None = None) -> Path:
     """Write a real archive, exactly as ``export --format json`` would."""
     path = tmp_path / "archive.json"
     path.write_text(
@@ -75,7 +73,7 @@ def test_providers_lists_every_bundled_provider() -> None:
     result = runner.invoke(app, ["providers"])
 
     assert result.exit_code == 0
-    for name in ("chatgpt", "claude", "gemini"):
+    for name in ("chatgpt", "claude", "gemini", "grok"):
         assert name in result.stdout
 
 
@@ -307,9 +305,7 @@ def test_export_from_file_does_not_fetch(
     def boom(self: object, url: str) -> RawSource:
         raise AssertionError("fetch must not be called for --from-file")
 
-    monkeypatch.setattr(
-        "convolvger.providers.chatgpt.ChatGPTProvider.fetch", boom
-    )
+    monkeypatch.setattr("convolvger.providers.chatgpt.ChatGPTProvider.fetch", boom)
     monkeypatch.chdir(tmp_path)
 
     result = runner.invoke(
@@ -344,9 +340,7 @@ def test_from_file_records_no_retrieval_time(tmp_path: Path) -> None:
 
 
 def test_inspect_from_file_reports_the_snapshot() -> None:
-    result = runner.invoke(
-        app, ["inspect", SHARE_URL, "--from-file", str(SNAPSHOT)]
-    )
+    result = runner.invoke(app, ["inspect", SHARE_URL, "--from-file", str(SNAPSHOT)])
 
     assert result.exit_code == 0
     assert "A Saved Snapshot" in result.stdout
@@ -508,6 +502,71 @@ def test_a_shortened_gemini_url_is_routed_from_a_saved_response(tmp_path: Path) 
     assert "gemini" in result.stdout
 
 
+GROK_URL = "https://grok.com/share/bGVnYWN5_00000000-0000-4000-8000-000000000001"
+GROK_PAYLOAD = Path(__file__).parent.parent / "fixtures" / "grok" / "share-minimal.json"
+
+
+def test_a_saved_grok_response_is_archived_end_to_end(tmp_path: Path) -> None:
+    """Grok fetches, but a saved response must still archive offline.
+
+    Exit 2 because the fixture carries a reasoning trace, which is kept
+    and flagged rather than modelled.
+    """
+    written = tmp_path / "out.md"
+    result = runner.invoke(
+        app,
+        ["export", GROK_URL, "--from-file", str(GROK_PAYLOAD), "-o", str(written)],
+    )
+
+    assert result.exit_code == 2
+    assert "unmodelled_content_type" in result.output
+    document = written.read_text(encoding="utf-8")
+    assert "Provider: grok" in document
+    assert "Example Grok conversation" in document
+    assert "| Element | Heats |" in document
+    for leaked in ("<grok:", "citation_card", "example.com/source", "grok-3"):
+        assert leaked not in document
+
+
+def test_a_saved_grok_response_round_trips_through_json(tmp_path: Path) -> None:
+    written = tmp_path / "out.json"
+    runner.invoke(
+        app,
+        [
+            "export",
+            GROK_URL,
+            "--from-file",
+            str(GROK_PAYLOAD),
+            "-f",
+            "json",
+            "-o",
+            str(written),
+        ],
+    )
+
+    envelope = ArchiveEnvelope.model_validate_json(written.read_text(encoding="utf-8"))
+    assert envelope.retrieved_at is None
+    assert envelope.conversation.provider == "grok"
+    assert len(envelope.conversation.messages) == 4
+    assert [item.code for item in envelope.findings] == ["unmodelled_content_type"]
+
+    verdict = runner.invoke(app, ["verify", str(written)])
+    assert "Complete:  yes" in verdict.stdout
+    assert "Faithful:  no" in verdict.stdout
+
+
+def test_a_saved_grok_share_with_no_responses_is_refused(tmp_path: Path) -> None:
+    saved = tmp_path / "empty.json"
+    saved.write_text(
+        json.dumps({"conversation": {}, "responses": []}), encoding="utf-8"
+    )
+
+    result = runner.invoke(app, ["inspect", GROK_URL, "--from-file", str(saved)])
+
+    assert result.exit_code == 1
+    assert "carried no conversation" in result.output
+
+
 def test_version_exits_zero_and_names_the_package() -> None:
     result = runner.invoke(app, ["--version"])
 
@@ -540,7 +599,7 @@ def test_version_reports_which_archives_it_can_read() -> None:
 def test_version_lists_the_providers_this_build_supports() -> None:
     result = runner.invoke(app, ["--version"])
 
-    for name in ("chatgpt", "claude", "gemini"):
+    for name in ("chatgpt", "claude", "gemini", "grok"):
         assert name in result.stdout
 
 

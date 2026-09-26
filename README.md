@@ -148,6 +148,31 @@ A deleted or unknown Gemini share answers with a success status and an empty
 payload rather than an error, so Convolvger reports it as a missing share
 instead of passing an empty conversation off as a real one.
 
+**Archive a Grok conversation**
+
+```
+convolvger export https://grok.com/share/SHARE_ID
+```
+
+Grok share pages are fetched directly, with no browser involved. Like Gemini's,
+the page loads its conversation separately, so Convolvger asks for the same
+JSON the page does. No cookie or account is needed. The share id is taken as
+it appears in the link, whatever its prefix.
+
+A Grok answer marks its citations inline. Those markers are lifted out of the
+text so they do not clutter the document; the JSON archive keeps the message
+exactly as served, alongside the web results, X posts, citation cards and
+model name the provider served. None of it reaches Markdown. The reasoning
+trace Grok shows beside a thinking answer is kept in the JSON too, but this
+version does not model it, so it is reported as a warning rather than passed
+over. Files and images a message names are reported as not carried: the
+share lists them without serving them, and Convolvger does not follow their
+links to fetch them.
+
+A Grok share that no longer exists answers with an error, but a share can also
+answer successfully with its title and no messages. Both are reported as a
+missing share rather than exported as an empty conversation.
+
 **Archive a Claude conversation**
 
 A Claude share page cannot be fetched. The page loads its conversation
@@ -260,7 +285,7 @@ Initial providers:
 - Claude — captured from your own browser, since its share pages cannot be
   fetched
 - Gemini — fetched directly from a share link
-- Grok — not implemented yet
+- Grok — fetched directly from a share link
 
 Additional providers will be added as their public sharing formats are supported and tested.
 
@@ -274,7 +299,9 @@ ChatGPT share links can be fetched, parsed, and exported. Markdown is a reader-f
 
 Claude share snapshots can be parsed and exported, but not fetched: the service refuses non-browser clients, so a snapshot is captured from your own browser as described under Usage.
 
-Gemini share links can be fetched, parsed and exported, in all three of the link forms Google issues. Citations and search queries are preserved in the JSON archive rather than rendered into the document. Grok is not implemented yet.
+Gemini share links can be fetched, parsed and exported, in all three of the link forms Google issues. Citations and search queries are preserved in the JSON archive rather than rendered into the document.
+
+Grok share links can be fetched, parsed and exported. Inline citations, search results and X posts are preserved in the JSON archive rather than rendered into the document; the reasoning trace is preserved but not yet modelled, and is reported as such.
 
 Extraction records structured findings, each with a stable code and a level. A note is recorded but does not change the exit status; a warning does. Both are written into the JSON archive either way, so nothing is withheld from the record because it was judged unremarkable.
 

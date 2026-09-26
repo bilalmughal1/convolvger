@@ -4,6 +4,9 @@ name: contract
 # network hiccup or an outage on Google's side would block work that has
 # nothing to do with it. They run on a schedule instead, where a failure
 # is a signal about the provider rather than about the change in hand.
+#
+# One job per provider, each selecting its own file, so a failure names
+# the provider that changed and one outage does not hide another.
 on:
   schedule:
     # Mondays, early. Weekly is often enough to catch a format change
@@ -26,4 +29,15 @@ jobs:
       # what the interpreter does with it.
       - run: uv python install
       - run: uv sync --locked --dev
-      - run: uv run pytest -m contract -v
+      - run: uv run pytest -m contract -v tests/contract/test_gemini_live.py
+
+  grok:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          enable-cache: true
+      - run: uv python install
+      - run: uv sync --locked --dev
+      - run: uv run pytest -m contract -v tests/contract/test_grok_live.py
