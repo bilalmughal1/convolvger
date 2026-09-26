@@ -22,6 +22,7 @@ directly, so the listener grants it nothing it did not already have.
 """
 
 import json
+import sys
 from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any
@@ -55,6 +56,22 @@ def _origin_of(url: str) -> str | None:
     if not parts.scheme or not parts.hostname:
         return None
     return f"{parts.scheme}://{parts.netloc}".lower()
+
+
+class _Server(HTTPServer):
+    """An ``HTTPServer`` that refuses a busy port on every platform.
+
+    ``HTTPServer`` sets ``SO_REUSEADDR``, and the option means different
+    things in different places. On Linux and macOS it only lets a new
+    socket bind over connections left in ``TIME_WAIT``, which is wanted:
+    a capture run straight after another would otherwise fail for a
+    minute or so. On Windows it lets a second socket bind a port another
+    process is actively listening on, so a collision goes unreported and
+    the snapshot may be delivered to whichever listener Windows picks.
+    It is kept where it is harmless and turned off where it is not.
+    """
+
+    allow_reuse_address = sys.platform != "win32"
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -150,7 +167,7 @@ def wait_for_snapshot(
     _Handler.rejected = None
 
     try:
-        server = HTTPServer(("127.0.0.1", port), _Handler)
+        server = _Server(("127.0.0.1", port), _Handler)
     except OSError as error:
         raise CaptureError(
             f"Cannot listen on 127.0.0.1:{port}: {error}. "

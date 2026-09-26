@@ -37,6 +37,14 @@ The project follows [Semantic Versioning](https://semver.org/).
 - A weekly contract check for Grok, against a share made for the purpose, in
   its own job so a failure names the provider that changed
 
+### Fixed
+
+- A busy capture port is reported on Windows. The listener allowed address
+  reuse, which on Linux only skips the wait after a previous run, but on
+  Windows lets a second socket bind a port another program is listening on.
+  The collision went unreported there, and the test that says so failed on
+  native Windows. The test suite now runs on Windows in CI as well as Linux
+
 ## [0.4.0] - 2026-09-21
 
 ### Added

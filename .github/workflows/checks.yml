@@ -7,7 +7,7 @@ on:
 
 jobs:
   checks:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       # Every version is worth a full result: a failure on one should not
       # hide whether the others pass.
@@ -16,6 +16,9 @@ jobs:
         # The package declares requires-python >=3.12, so every version it
         # claims gets checked rather than only the one pinned for development.
         python: ["3.12", "3.13", "3.14"]
+        # Windows is listed because the capture listener behaves differently
+        # there: address reuse lets a second socket take a busy port.
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
