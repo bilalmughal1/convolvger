@@ -1,0 +1,171 @@
+{
+  "code": 0,
+  "msg": "",
+  "data": {
+    "biz_code": 0,
+    "biz_msg": "",
+    "biz_data": {
+      "title": "Shared Conversation",
+      "messages": [
+        {
+          "message_id": 1,
+          "parent_id": null,
+          "model": "",
+          "role": "USER",
+          "thinking_enabled": false,
+          "ban_edit": false,
+          "ban_regenerate": false,
+          "status": "FINISHED",
+          "incomplete_message": null,
+          "accumulated_token_usage": 10,
+          "feedback": null,
+          "inserted_at": 1767261600.081,
+          "search_enabled": true,
+          "fragments": [
+            {
+              "id": 1,
+              "type": "REQUEST",
+              "content": "How does a kettle work?"
+            }
+          ],
+          "has_pending_fragment": false,
+          "auto_continue": false,
+          "extra_search_providers": []
+        },
+        {
+          "message_id": 2,
+          "parent_id": 1,
+          "model": "",
+          "role": "ASSISTANT",
+          "thinking_enabled": false,
+          "ban_edit": false,
+          "ban_regenerate": false,
+          "status": "FINISHED",
+          "incomplete_message": null,
+          "accumulated_token_usage": 20,
+          "feedback": null,
+          "inserted_at": 1767261600.078,
+          "search_enabled": true,
+          "fragments": [
+            {
+              "id": 1,
+              "type": "SEARCH",
+              "content": "Found 3 web pages",
+              "queries": [
+                {
+                  "query": "how does a kettle work"
+                }
+              ],
+              "results": [
+                {
+                  "url": "https://example.com/source-1",
+                  "title": "Example source 1",
+                  "snippet": "Invented snippet 1.",
+                  "cite_index": 1,
+                  "published_at": null,
+                  "site_icon": "https://example.com/icon-1.png",
+                  "site_name": null,
+                  "query_indexes": [
+                    0
+                  ],
+                  "provider": null
+                },
+                {
+                  "url": "https://example.com/source-2",
+                  "title": "Example source 2",
+                  "snippet": "Invented snippet 2.",
+                  "cite_index": 2,
+                  "published_at": null,
+                  "site_icon": "https://example.com/icon-2.png",
+                  "site_name": null,
+                  "query_indexes": [
+                    0
+                  ],
+                  "provider": null
+                },
+                {
+                  "url": "https://example.com/source-3",
+                  "title": "Example source 3",
+                  "snippet": "Invented snippet 3.",
+                  "cite_index": 3,
+                  "published_at": null,
+                  "site_icon": "https://example.com/icon-3.png",
+                  "site_name": null,
+                  "query_indexes": [
+                    0
+                  ],
+                  "provider": null
+                }
+              ],
+              "status": "FINISHED"
+            },
+            {
+              "id": 2,
+              "type": "RESPONSE",
+              "content": "Kettles heat water with an element.[citation:1][citation:2]\n\n```python\nx = [citation:1]\n```\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n",
+              "references": [],
+              "stage_id": 2
+            }
+          ],
+          "has_pending_fragment": false,
+          "auto_continue": false,
+          "extra_search_providers": [],
+          "conversation_mode": "SEARCH"
+        },
+        {
+          "message_id": 3,
+          "parent_id": 2,
+          "model": "",
+          "role": "USER",
+          "thinking_enabled": false,
+          "ban_edit": false,
+          "ban_regenerate": false,
+          "status": "FINISHED",
+          "incomplete_message": null,
+          "accumulated_token_usage": 30,
+          "feedback": null,
+          "inserted_at": 1767261660.32,
+          "search_enabled": true,
+          "fragments": [
+            {
+              "id": 1,
+              "type": "REQUEST",
+              "content": "What switches it off?"
+            }
+          ],
+          "has_pending_fragment": false,
+          "auto_continue": false,
+          "extra_search_providers": []
+        },
+        {
+          "message_id": 4,
+          "parent_id": 3,
+          "model": "",
+          "role": "ASSISTANT",
+          "thinking_enabled": false,
+          "ban_edit": false,
+          "ban_regenerate": false,
+          "status": "FINISHED",
+          "incomplete_message": null,
+          "accumulated_token_usage": 40,
+          "feedback": null,
+          "inserted_at": 1767261660.316,
+          "search_enabled": true,
+          "fragments": [
+            {
+              "id": 1,
+              "type": "RESPONSE",
+              "content": "A thermostat switches it off.",
+              "references": [],
+              "stage_id": 1
+            }
+          ],
+          "has_pending_fragment": false,
+          "auto_continue": false,
+          "extra_search_providers": []
+        }
+      ],
+      "model_type": "default"
+    }
+  }
+}
