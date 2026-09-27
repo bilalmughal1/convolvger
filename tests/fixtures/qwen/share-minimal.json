@@ -1,0 +1,684 @@
+{
+  "success": true,
+  "request_id": "00000000-0000-4000-8000-000000000099",
+  "data": {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "user_id": "shared-000000000000000000000000000000000000",
+    "title": "Example Qwen conversation",
+    "chat": {
+      "history": {
+        "messages": {
+          "00000000-0000-4000-8000-000000000010": {
+            "id": "00000000-0000-4000-8000-000000000010",
+            "parentId": null,
+            "childrenIds": [
+              "00000000-0000-4000-8000-000000000011"
+            ],
+            "role": "user",
+            "content": "How does a kettle work?",
+            "files": [],
+            "timestamp": 1767261600,
+            "models": [
+              "qwen3.7-plus"
+            ],
+            "chat_type": "t2t",
+            "feature_config": {
+              "thinking_enabled": true
+            },
+            "extra": {
+              "meta": {
+                "subChatType": "t2t"
+              }
+            },
+            "sub_chat_type": "t2t",
+            "edited": false,
+            "error": null,
+            "turn_id": null
+          },
+          "00000000-0000-4000-8000-000000000011": {
+            "id": "00000000-0000-4000-8000-000000000011",
+            "parentId": "00000000-0000-4000-8000-000000000010",
+            "childrenIds": [
+              "00000000-0000-4000-8000-000000000012"
+            ],
+            "role": "assistant",
+            "content": "",
+            "reasoning_content": null,
+            "chat_type": "t2t",
+            "sub_chat_type": "t2t",
+            "model": "qwen3.7-plus",
+            "modelName": "Qwen3.7-Plus",
+            "modelIdx": 0,
+            "timestamp": 1767261600,
+            "done": true,
+            "is_stop": false,
+            "error": null,
+            "edited": false,
+            "feedbackId": null,
+            "turn_id": null,
+            "annotation": null,
+            "info": null,
+            "meta": {},
+            "extra": {
+              "meta": {
+                "subChatType": "t2t"
+              },
+              "endTime": 1767261610
+            },
+            "feature_config": {
+              "thinking_enabled": true
+            },
+            "content_list": [
+              {
+                "content": "",
+                "phase": "thinking_summary",
+                "status": "finished",
+                "extra": {
+                  "summary_title": {
+                    "content": [
+                      "Planning the answer"
+                    ]
+                  },
+                  "summary_thought": {
+                    "content": [
+                      "Invented summary of the reasoning."
+                    ]
+                  }
+                },
+                "role": "assistant",
+                "response_id": "00000000-0000-4000-8000-000000000011",
+                "usage": {
+                  "input_tokens": 0,
+                  "output_tokens": 0,
+                  "characters": 0,
+                  "total_tokens": 0,
+                  "input_tokens_details": {},
+                  "output_tokens_details": {}
+                },
+                "timestamp": 1767261601
+              },
+              {
+                "content": "",
+                "phase": "web_search",
+                "status": "finished",
+                "extra": {
+                  "display_position": "think",
+                  "web_search_info": [
+                    {
+                      "url": "https://example.com/source-1",
+                      "title": "Example source 1",
+                      "snippet": "Invented snippet 1.",
+                      "hostname": "",
+                      "hostlogo": "",
+                      "date": "Jan 1, 2026"
+                    },
+                    {
+                      "url": "https://example.com/source-2",
+                      "title": "Example source 2",
+                      "snippet": "Invented snippet 2.",
+                      "hostname": "",
+                      "hostlogo": "",
+                      "date": "Jan 1, 2026"
+                    }
+                  ],
+                  "tool_result": {
+                    "docs": [
+                      {
+                        "url": "https://example.com/source-1",
+                        "title": "Example source 1",
+                        "snippet": "Invented snippet 1.",
+                        "hostname": "",
+                        "hostlogo": "",
+                        "date": "Jan 1, 2026"
+                      },
+                      {
+                        "url": "https://example.com/source-2",
+                        "title": "Example source 2",
+                        "snippet": "Invented snippet 2.",
+                        "hostname": "",
+                        "hostlogo": "",
+                        "date": "Jan 1, 2026"
+                      }
+                    ],
+                    "used_id": 3,
+                    "tool_call_metrics": {
+                      "success": [
+                        1
+                      ]
+                    },
+                    "tool_observation": "[1] Example source 1\n[2] Example source 2"
+                  }
+                },
+                "role": "function",
+                "name": "web_search",
+                "function_id": "call_1",
+                "function_call": {
+                  "name": "web_search",
+                  "arguments": "{\"queries\": [\"kettle\"]}"
+                },
+                "response_id": "00000000-0000-4000-8000-000000000011",
+                "usage": {}
+              },
+              {
+                "content": "",
+                "phase": "web_search",
+                "status": "finished",
+                "extra": {
+                  "display_position": "think",
+                  "web_search_info": [
+                    {
+                      "url": "https://example.com/source-3",
+                      "title": "Example source 3",
+                      "snippet": "Invented snippet 3.",
+                      "hostname": "",
+                      "hostlogo": "",
+                      "date": "Jan 1, 2026"
+                    }
+                  ],
+                  "tool_result": {
+                    "docs": [
+                      {
+                        "url": "https://example.com/source-3",
+                        "title": "Example source 3",
+                        "snippet": "Invented snippet 3.",
+                        "hostname": "",
+                        "hostlogo": "",
+                        "date": "Jan 1, 2026"
+                      }
+                    ],
+                    "used_id": 4,
+                    "tool_call_metrics": {
+                      "success": [
+                        1
+                      ]
+                    },
+                    "tool_observation": "[3] Example source 3"
+                  }
+                },
+                "role": "function",
+                "name": "web_search",
+                "function_id": "call_2",
+                "function_call": {
+                  "name": "web_search",
+                  "arguments": "{\"queries\": [\"kettle\"]}"
+                },
+                "response_id": "00000000-0000-4000-8000-000000000011",
+                "usage": {}
+              },
+              {
+                "content": "Kettles heat water with an element.[[1]][[3]]\n\n```python\nx = [[1]]\n```\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n",
+                "phase": "answer",
+                "status": "finished",
+                "extra": null,
+                "role": "assistant",
+                "response_id": "00000000-0000-4000-8000-000000000011",
+                "usage": {
+                  "input_tokens": 0,
+                  "output_tokens": 0,
+                  "characters": 0,
+                  "total_tokens": 0,
+                  "input_tokens_details": {},
+                  "output_tokens_details": {}
+                },
+                "timestamp": 1767261605
+              }
+            ]
+          },
+          "00000000-0000-4000-8000-000000000012": {
+            "id": "00000000-0000-4000-8000-000000000012",
+            "parentId": "00000000-0000-4000-8000-000000000011",
+            "childrenIds": [
+              "00000000-0000-4000-8000-000000000013"
+            ],
+            "role": "user",
+            "content": "What switches it off?",
+            "files": [],
+            "timestamp": 1767261700,
+            "models": [
+              "qwen3.7-plus"
+            ],
+            "chat_type": "t2t",
+            "feature_config": {
+              "thinking_enabled": true
+            },
+            "extra": {
+              "meta": {
+                "subChatType": "t2t"
+              }
+            },
+            "sub_chat_type": "t2t",
+            "edited": false,
+            "error": null,
+            "turn_id": null
+          },
+          "00000000-0000-4000-8000-000000000013": {
+            "id": "00000000-0000-4000-8000-000000000013",
+            "parentId": "00000000-0000-4000-8000-000000000012",
+            "childrenIds": [],
+            "role": "assistant",
+            "content": "",
+            "reasoning_content": null,
+            "chat_type": "t2t",
+            "sub_chat_type": "t2t",
+            "model": "qwen3.7-plus",
+            "modelName": "Qwen3.7-Plus",
+            "modelIdx": 0,
+            "timestamp": 1767261700,
+            "done": true,
+            "is_stop": false,
+            "error": null,
+            "edited": false,
+            "feedbackId": null,
+            "turn_id": null,
+            "annotation": null,
+            "info": null,
+            "meta": {},
+            "extra": {
+              "meta": {
+                "subChatType": "t2t"
+              },
+              "endTime": 1767261710
+            },
+            "feature_config": {
+              "thinking_enabled": true
+            },
+            "content_list": [
+              {
+                "content": "",
+                "phase": "thinking_summary",
+                "status": "finished",
+                "extra": {
+                  "summary_title": {
+                    "content": [
+                      "Planning the answer"
+                    ]
+                  },
+                  "summary_thought": {
+                    "content": [
+                      "Invented summary of the reasoning."
+                    ]
+                  }
+                },
+                "role": "assistant",
+                "response_id": "00000000-0000-4000-8000-000000000013",
+                "usage": {
+                  "input_tokens": 0,
+                  "output_tokens": 0,
+                  "characters": 0,
+                  "total_tokens": 0,
+                  "input_tokens_details": {},
+                  "output_tokens_details": {}
+                },
+                "timestamp": 1767261701
+              },
+              {
+                "content": "A thermostat switches it off.",
+                "phase": "answer",
+                "status": "finished",
+                "extra": null,
+                "role": "assistant",
+                "response_id": "00000000-0000-4000-8000-000000000013",
+                "usage": {
+                  "input_tokens": 0,
+                  "output_tokens": 0,
+                  "characters": 0,
+                  "total_tokens": 0,
+                  "input_tokens_details": {},
+                  "output_tokens_details": {}
+                },
+                "timestamp": 1767261705
+              }
+            ]
+          }
+        },
+        "currentId": "00000000-0000-4000-8000-000000000013",
+        "currentResponseIds": [
+          "00000000-0000-4000-8000-000000000013"
+        ],
+        "pagination": null
+      },
+      "models": [
+        "qwen3.7-plus"
+      ],
+      "messages": [
+        {
+          "id": "00000000-0000-4000-8000-000000000010",
+          "parentId": null,
+          "childrenIds": [
+            "00000000-0000-4000-8000-000000000011"
+          ],
+          "role": "user",
+          "content": "How does a kettle work?",
+          "files": [],
+          "timestamp": 1767261600,
+          "models": [
+            "qwen3.7-plus"
+          ],
+          "chat_type": "t2t",
+          "feature_config": {
+            "thinking_enabled": true
+          },
+          "extra": {
+            "meta": {
+              "subChatType": "t2t"
+            }
+          },
+          "sub_chat_type": "t2t",
+          "edited": false,
+          "error": null,
+          "turn_id": null
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000011",
+          "parentId": "00000000-0000-4000-8000-000000000010",
+          "childrenIds": [
+            "00000000-0000-4000-8000-000000000012"
+          ],
+          "role": "assistant",
+          "content": "",
+          "reasoning_content": null,
+          "chat_type": "t2t",
+          "sub_chat_type": "t2t",
+          "model": "qwen3.7-plus",
+          "modelName": "Qwen3.7-Plus",
+          "modelIdx": 0,
+          "timestamp": 1767261600,
+          "done": true,
+          "is_stop": false,
+          "error": null,
+          "edited": false,
+          "feedbackId": null,
+          "turn_id": null,
+          "annotation": null,
+          "info": null,
+          "meta": {},
+          "extra": {
+            "meta": {
+              "subChatType": "t2t"
+            },
+            "endTime": 1767261610
+          },
+          "feature_config": {
+            "thinking_enabled": true
+          },
+          "content_list": [
+            {
+              "content": "",
+              "phase": "thinking_summary",
+              "status": "finished",
+              "extra": {
+                "summary_title": {
+                  "content": [
+                    "Planning the answer"
+                  ]
+                },
+                "summary_thought": {
+                  "content": [
+                    "Invented summary of the reasoning."
+                  ]
+                }
+              },
+              "role": "assistant",
+              "response_id": "00000000-0000-4000-8000-000000000011",
+              "usage": {
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "characters": 0,
+                "total_tokens": 0,
+                "input_tokens_details": {},
+                "output_tokens_details": {}
+              },
+              "timestamp": 1767261601
+            },
+            {
+              "content": "",
+              "phase": "web_search",
+              "status": "finished",
+              "extra": {
+                "display_position": "think",
+                "web_search_info": [
+                  {
+                    "url": "https://example.com/source-1",
+                    "title": "Example source 1",
+                    "snippet": "Invented snippet 1.",
+                    "hostname": "",
+                    "hostlogo": "",
+                    "date": "Jan 1, 2026"
+                  },
+                  {
+                    "url": "https://example.com/source-2",
+                    "title": "Example source 2",
+                    "snippet": "Invented snippet 2.",
+                    "hostname": "",
+                    "hostlogo": "",
+                    "date": "Jan 1, 2026"
+                  }
+                ],
+                "tool_result": {
+                  "docs": [
+                    {
+                      "url": "https://example.com/source-1",
+                      "title": "Example source 1",
+                      "snippet": "Invented snippet 1.",
+                      "hostname": "",
+                      "hostlogo": "",
+                      "date": "Jan 1, 2026"
+                    },
+                    {
+                      "url": "https://example.com/source-2",
+                      "title": "Example source 2",
+                      "snippet": "Invented snippet 2.",
+                      "hostname": "",
+                      "hostlogo": "",
+                      "date": "Jan 1, 2026"
+                    }
+                  ],
+                  "used_id": 3,
+                  "tool_call_metrics": {
+                    "success": [
+                      1
+                    ]
+                  },
+                  "tool_observation": "[1] Example source 1\n[2] Example source 2"
+                }
+              },
+              "role": "function",
+              "name": "web_search",
+              "function_id": "call_1",
+              "function_call": {
+                "name": "web_search",
+                "arguments": "{\"queries\": [\"kettle\"]}"
+              },
+              "response_id": "00000000-0000-4000-8000-000000000011",
+              "usage": {}
+            },
+            {
+              "content": "",
+              "phase": "web_search",
+              "status": "finished",
+              "extra": {
+                "display_position": "think",
+                "web_search_info": [
+                  {
+                    "url": "https://example.com/source-3",
+                    "title": "Example source 3",
+                    "snippet": "Invented snippet 3.",
+                    "hostname": "",
+                    "hostlogo": "",
+                    "date": "Jan 1, 2026"
+                  }
+                ],
+                "tool_result": {
+                  "docs": [
+                    {
+                      "url": "https://example.com/source-3",
+                      "title": "Example source 3",
+                      "snippet": "Invented snippet 3.",
+                      "hostname": "",
+                      "hostlogo": "",
+                      "date": "Jan 1, 2026"
+                    }
+                  ],
+                  "used_id": 4,
+                  "tool_call_metrics": {
+                    "success": [
+                      1
+                    ]
+                  },
+                  "tool_observation": "[3] Example source 3"
+                }
+              },
+              "role": "function",
+              "name": "web_search",
+              "function_id": "call_2",
+              "function_call": {
+                "name": "web_search",
+                "arguments": "{\"queries\": [\"kettle\"]}"
+              },
+              "response_id": "00000000-0000-4000-8000-000000000011",
+              "usage": {}
+            },
+            {
+              "content": "Kettles heat water with an element.[[1]][[3]]\n\n```python\nx = [[1]]\n```\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n",
+              "phase": "answer",
+              "status": "finished",
+              "extra": null,
+              "role": "assistant",
+              "response_id": "00000000-0000-4000-8000-000000000011",
+              "usage": {
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "characters": 0,
+                "total_tokens": 0,
+                "input_tokens_details": {},
+                "output_tokens_details": {}
+              },
+              "timestamp": 1767261605
+            }
+          ]
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000012",
+          "parentId": "00000000-0000-4000-8000-000000000011",
+          "childrenIds": [
+            "00000000-0000-4000-8000-000000000013"
+          ],
+          "role": "user",
+          "content": "What switches it off?",
+          "files": [],
+          "timestamp": 1767261700,
+          "models": [
+            "qwen3.7-plus"
+          ],
+          "chat_type": "t2t",
+          "feature_config": {
+            "thinking_enabled": true
+          },
+          "extra": {
+            "meta": {
+              "subChatType": "t2t"
+            }
+          },
+          "sub_chat_type": "t2t",
+          "edited": false,
+          "error": null,
+          "turn_id": null
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000013",
+          "parentId": "00000000-0000-4000-8000-000000000012",
+          "childrenIds": [],
+          "role": "assistant",
+          "content": "",
+          "reasoning_content": null,
+          "chat_type": "t2t",
+          "sub_chat_type": "t2t",
+          "model": "qwen3.7-plus",
+          "modelName": "Qwen3.7-Plus",
+          "modelIdx": 0,
+          "timestamp": 1767261700,
+          "done": true,
+          "is_stop": false,
+          "error": null,
+          "edited": false,
+          "feedbackId": null,
+          "turn_id": null,
+          "annotation": null,
+          "info": null,
+          "meta": {},
+          "extra": {
+            "meta": {
+              "subChatType": "t2t"
+            },
+            "endTime": 1767261710
+          },
+          "feature_config": {
+            "thinking_enabled": true
+          },
+          "content_list": [
+            {
+              "content": "",
+              "phase": "thinking_summary",
+              "status": "finished",
+              "extra": {
+                "summary_title": {
+                  "content": [
+                    "Planning the answer"
+                  ]
+                },
+                "summary_thought": {
+                  "content": [
+                    "Invented summary of the reasoning."
+                  ]
+                }
+              },
+              "role": "assistant",
+              "response_id": "00000000-0000-4000-8000-000000000013",
+              "usage": {
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "characters": 0,
+                "total_tokens": 0,
+                "input_tokens_details": {},
+                "output_tokens_details": {}
+              },
+              "timestamp": 1767261701
+            },
+            {
+              "content": "A thermostat switches it off.",
+              "phase": "answer",
+              "status": "finished",
+              "extra": null,
+              "role": "assistant",
+              "response_id": "00000000-0000-4000-8000-000000000013",
+              "usage": {
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "characters": 0,
+                "total_tokens": 0,
+                "input_tokens_details": {},
+                "output_tokens_details": {}
+              },
+              "timestamp": 1767261705
+            }
+          ]
+        }
+      ]
+    },
+    "updated_at": 1767261710,
+    "created_at": 1767261600,
+    "share_id": null,
+    "archived": false,
+    "pinned": false,
+    "meta": {},
+    "folder_id": null,
+    "currentResponseIds": [
+      "00000000-0000-4000-8000-000000000013"
+    ],
+    "currentId": "00000000-0000-4000-8000-000000000013",
+    "chat_type": null,
+    "models": null,
+    "project_id": null,
+    "data_source": null
+  }
+}
