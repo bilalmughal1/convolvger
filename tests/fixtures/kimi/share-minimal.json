@@ -1,0 +1,276 @@
+{
+  "share": {
+    "id": "00000000-0000-4000-8000-000000000002",
+    "chat": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "Example Kimi conversation",
+      "createTime": "2026-01-01T10:00:00.650352Z",
+      "updateTime": "2026-01-01T10:00:09.709660Z"
+    },
+    "messages": [
+      {
+        "id": "00000000-0000-4000-8000-000000000010",
+        "parentId": "00000000-0000-4000-8000-000000000001",
+        "childrenMessageIds": [
+          "00000000-0000-4000-8000-000000000011"
+        ],
+        "role": "user",
+        "status": "MESSAGE_STATUS_COMPLETED",
+        "blocks": [
+          {
+            "messageId": "",
+            "text": {
+              "content": "How does a kettle work?"
+            }
+          }
+        ],
+        "scenario": "SCENARIO_CHAT",
+        "createTime": "2026-01-01T10:00:01.123456789Z",
+        "isGoal": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000011",
+        "parentId": "00000000-0000-4000-8000-000000000010",
+        "childrenMessageIds": [
+          "00000000-0000-4000-8000-000000000012"
+        ],
+        "role": "assistant",
+        "status": "MESSAGE_STATUS_COMPLETED",
+        "blocks": [
+          {
+            "id": "1",
+            "parentId": "",
+            "messageId": "00000000-0000-4000-8000-000000000011",
+            "createTime": "2026-01-01T10:00:02.123456789Z",
+            "multiStage": {
+              "stages": [
+                {
+                  "name": "STAGE_NAME_THINKING",
+                  "createTime": "2026-01-01T10:00:02.123456789Z",
+                  "status": "STAGE_STATUS_END"
+                }
+              ]
+            }
+          },
+          {
+            "id": "2",
+            "parentId": "1",
+            "messageId": "00000000-0000-4000-8000-000000000011",
+            "createTime": "2026-01-01T10:00:02.123456789Z",
+            "stage": {
+              "name": "STAGE_NAME_THINKING",
+              "createTime": "2026-01-01T10:00:02.123456789Z",
+              "status": "STAGE_STATUS_END"
+            }
+          },
+          {
+            "id": "3",
+            "parentId": "2",
+            "messageId": "00000000-0000-4000-8000-000000000011",
+            "createTime": "2026-01-01T10:00:02.123456789Z",
+            "think": {
+              "content": "A simple question; answer directly."
+            }
+          },
+          {
+            "id": "4",
+            "parentId": "",
+            "messageId": "00000000-0000-4000-8000-000000000011",
+            "createTime": "2026-01-01T10:00:03.123456789Z",
+            "text": {
+              "content": "Kettles heat water with an element under the base.\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n"
+            }
+          }
+        ],
+        "scenario": "SCENARIO_CHAT",
+        "createTime": "2026-01-01T10:00:02.123456789Z",
+        "isGoal": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000012",
+        "parentId": "00000000-0000-4000-8000-000000000011",
+        "childrenMessageIds": [
+          "00000000-0000-4000-8000-000000000013"
+        ],
+        "role": "user",
+        "status": "MESSAGE_STATUS_COMPLETED",
+        "blocks": [
+          {
+            "messageId": "",
+            "text": {
+              "content": "What switches it off?"
+            }
+          }
+        ],
+        "scenario": "SCENARIO_CHAT",
+        "createTime": "2026-01-01T10:00:04.123456789Z",
+        "isGoal": false
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000013",
+        "parentId": "00000000-0000-4000-8000-000000000012",
+        "role": "assistant",
+        "status": "MESSAGE_STATUS_COMPLETED",
+        "blocks": [
+          {
+            "id": "1",
+            "parentId": "",
+            "messageId": "00000000-0000-4000-8000-000000000013",
+            "createTime": "2026-01-01T10:00:05.123456789Z",
+            "multiStage": {
+              "stages": [
+                {
+                  "name": "STAGE_NAME_THINKING",
+                  "createTime": "2026-01-01T10:00:05.123456789Z",
+                  "status": "STAGE_STATUS_END"
+                }
+              ]
+            }
+          },
+          {
+            "id": "2",
+            "parentId": "1",
+            "messageId": "00000000-0000-4000-8000-000000000013",
+            "createTime": "2026-01-01T10:00:05.123456789Z",
+            "stage": {
+              "name": "STAGE_NAME_THINKING",
+              "createTime": "2026-01-01T10:00:05.123456789Z",
+              "status": "STAGE_STATUS_END"
+            }
+          },
+          {
+            "id": "3",
+            "parentId": "2",
+            "messageId": "00000000-0000-4000-8000-000000000013",
+            "createTime": "2026-01-01T10:00:05.123456789Z",
+            "think": {
+              "content": "Search to confirm how the switch works.",
+              "summary": "Checking the switch"
+            }
+          },
+          {
+            "id": "4",
+            "parentId": "2",
+            "messageId": "00000000-0000-4000-8000-000000000013",
+            "createTime": "2026-01-01T10:00:06.123456789Z",
+            "tool": {
+              "toolCallId": "web_search:1",
+              "name": "web_search",
+              "args": "{\"queries\":[\"kettle thermostat\"]}",
+              "contents": [
+                {
+                  "searchResult": {
+                    "id": "1",
+                    "base": {
+                      "title": "Example source 1",
+                      "url": "https://example.com/source-1",
+                      "siteName": "example.com",
+                      "iconUrl": "https://example.com/icon-1.png",
+                      "coverUrl": "https://example.com/cover-1.png",
+                      "snippet": "Invented snippet 1."
+                    },
+                    "refIndex": "web_search:1#0"
+                  }
+                },
+                {
+                  "searchResult": {
+                    "id": "2",
+                    "base": {
+                      "title": "Example source 2",
+                      "url": "https://example.com/source-2",
+                      "siteName": "example.com",
+                      "iconUrl": "https://example.com/icon-2.png",
+                      "coverUrl": "https://example.com/cover-2.png",
+                      "snippet": "Invented snippet 2."
+                    },
+                    "refIndex": "web_search:1#1"
+                  }
+                },
+                {
+                  "searchResult": {
+                    "id": "3",
+                    "base": {
+                      "title": "Example source 3",
+                      "url": "https://example.com/source-3",
+                      "siteName": "example.com",
+                      "iconUrl": "https://example.com/icon-3.png",
+                      "coverUrl": "https://example.com/cover-3.png",
+                      "snippet": "Invented snippet 3."
+                    }
+                  }
+                }
+              ],
+              "status": "STATUS_DONE"
+            }
+          },
+          {
+            "id": "5",
+            "parentId": "2",
+            "messageId": "00000000-0000-4000-8000-000000000013",
+            "createTime": "2026-01-01T10:00:07.123456789Z",
+            "think": {
+              "content": "Answer with the thermostat."
+            }
+          },
+          {
+            "id": "6",
+            "parentId": "",
+            "messageId": "00000000-0000-4000-8000-000000000013",
+            "createTime": "2026-01-01T10:00:08.123456789Z",
+            "text": {
+              "content": "A thermostat switches the kettle off once the water boils. Some kettles also use a steam sensor."
+            }
+          }
+        ],
+        "scenario": "SCENARIO_CHAT",
+        "createTime": "2026-01-01T10:00:05.123456789Z",
+        "isGoal": false,
+        "references": [
+          {
+            "matchedText": "A thermostat switches the kettle off once the water boils.",
+            "type": "TYPE_CITE",
+            "items": [
+              {
+                "search": {
+                  "id": "2",
+                  "base": {
+                    "title": "Example source 2",
+                    "url": "https://example.com/source-2",
+                    "siteName": "example.com",
+                    "iconUrl": "https://example.com/icon-2.png",
+                    "coverUrl": "https://example.com/cover-2.png",
+                    "snippet": "Invented snippet 2.",
+                    "highlight": "Invented highlight.",
+                    "textFragment": "Invented fragment."
+                  },
+                  "refIndex": "web_search:1#1"
+                }
+              }
+            ]
+          }
+        ],
+        "refs": {
+          "searchChunks": [
+            {
+              "id": "1",
+              "base": {
+                "title": "Example source 1",
+                "url": "https://example.com/source-1",
+                "siteName": "example.com",
+                "iconUrl": "https://example.com/icon-1.png",
+                "coverUrl": "https://example.com/cover-1.png",
+                "snippet": "Invented snippet 1."
+              },
+              "refIndex": "web_search:1#0"
+            }
+          ]
+        }
+      }
+    ],
+    "creator": {
+      "name": "Example Sharer",
+      "avatarUrl": "https://example.com/avatar.png"
+    },
+    "createTime": "2026-01-01T10:01:00.206467Z"
+  }
+}
