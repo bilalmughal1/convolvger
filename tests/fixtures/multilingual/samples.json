@@ -1,0 +1,1181 @@
+{
+  "note": "Short neutral phrases: 141 samples in 138 languages across Asia, Africa, Europe and the Americas, written in 62 scripts. Mongolian, Tagalog and Somali each appear once in each of two scripts. Each sample lists every script it uses; Japanese uses three. This is a broad sample, not complete coverage: many languages written in these scripts are absent, and so are some scripts in current use. The phrases are illustrative and not vetted by native speakers. Edge cases are Unicode shapes rather than languages. Nothing here is a real conversation.",
+  "samples": [
+    {
+      "continent": "Asia",
+      "language": "Arabic",
+      "scripts": [
+        "Arabic"
+      ],
+      "text": "مرحبا، كيف حالك اليوم؟"
+    },
+    {
+      "continent": "Asia",
+      "language": "Persian",
+      "scripts": [
+        "Arabic"
+      ],
+      "text": "می‌خواهم این متن را بررسی کنم."
+    },
+    {
+      "continent": "Asia",
+      "language": "Urdu",
+      "scripts": [
+        "Arabic"
+      ],
+      "text": "آپ کیسے ہیں؟ یہ ایک آزمائش ہے۔"
+    },
+    {
+      "continent": "Asia",
+      "language": "Pashto",
+      "scripts": [
+        "Arabic"
+      ],
+      "text": "سلام، څنګه یې؟"
+    },
+    {
+      "continent": "Asia",
+      "language": "Uyghur",
+      "scripts": [
+        "Arabic"
+      ],
+      "text": "ياخشىمۇسىز؟"
+    },
+    {
+      "continent": "Asia",
+      "language": "Hebrew",
+      "scripts": [
+        "Hebrew"
+      ],
+      "text": "שלום, מה שלומך?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Assyrian Neo-Aramaic",
+      "scripts": [
+        "Syriac"
+      ],
+      "text": "ܫܠܡܐ ܥܠܡܐ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Dhivehi",
+      "scripts": [
+        "Thaana"
+      ],
+      "text": "ދިވެހި ބަސް"
+    },
+    {
+      "continent": "Asia",
+      "language": "Mandarin (Simplified)",
+      "scripts": [
+        "Han"
+      ],
+      "text": "你好，今天怎么样？"
+    },
+    {
+      "continent": "Asia",
+      "language": "Mandarin (Traditional)",
+      "scripts": [
+        "Han"
+      ],
+      "text": "你好，今天過得怎麼樣？"
+    },
+    {
+      "continent": "Asia",
+      "language": "Japanese",
+      "scripts": [
+        "Hiragana",
+        "Katakana",
+        "Han"
+      ],
+      "text": "こんにちは、お元気ですか？カタカナ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Korean",
+      "scripts": [
+        "Hangul"
+      ],
+      "text": "안녕하세요, 잘 지내세요?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Hindi",
+      "scripts": [
+        "Devanagari"
+      ],
+      "text": "नमस्ते, आप कैसे हैं?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Nepali",
+      "scripts": [
+        "Devanagari"
+      ],
+      "text": "नमस्कार, तपाईंलाई कस्तो छ?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Bengali",
+      "scripts": [
+        "Bengali"
+      ],
+      "text": "হ্যালো, আপনি কেমন আছেন?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Punjabi",
+      "scripts": [
+        "Gurmukhi"
+      ],
+      "text": "ਸਤ ਸ੍ਰੀ ਅਕਾਲ, ਕੀ ਹਾਲ ਹੈ?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Gujarati",
+      "scripts": [
+        "Gujarati"
+      ],
+      "text": "નમસ્તે, કેમ છો?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Odia",
+      "scripts": [
+        "Odia"
+      ],
+      "text": "ନମସ୍କାର, ଆପଣ କେମିତି ଅଛନ୍ତି?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Tamil",
+      "scripts": [
+        "Tamil"
+      ],
+      "text": "வணக்கம், எப்படி இருக்கிறீர்கள்?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Telugu",
+      "scripts": [
+        "Telugu"
+      ],
+      "text": "నమస్కారం, మీరు ఎలా ఉన్నారు?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Kannada",
+      "scripts": [
+        "Kannada"
+      ],
+      "text": "ನಮಸ್ಕಾರ, ಹೇಗಿದ್ದೀರಿ?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Malayalam",
+      "scripts": [
+        "Malayalam"
+      ],
+      "text": "നമസ്കാരം, സുഖമാണോ?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Sinhala",
+      "scripts": [
+        "Sinhala"
+      ],
+      "text": "ආයුබෝවන්, කොහොමද?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Santali",
+      "scripts": [
+        "Ol Chiki"
+      ],
+      "text": "ᱡᱚᱦᱟᱨ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Thai",
+      "scripts": [
+        "Thai"
+      ],
+      "text": "สวัสดีครับ สบายดีไหม"
+    },
+    {
+      "continent": "Asia",
+      "language": "Lao",
+      "scripts": [
+        "Lao"
+      ],
+      "text": "ສະບາຍດີ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Khmer",
+      "scripts": [
+        "Khmer"
+      ],
+      "text": "សួស្តី សុខសប្បាយទេ?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Burmese",
+      "scripts": [
+        "Myanmar"
+      ],
+      "text": "မင်္ဂလာပါ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Tibetan",
+      "scripts": [
+        "Tibetan"
+      ],
+      "text": "བཀྲ་ཤིས་བདེ་ལེགས།"
+    },
+    {
+      "continent": "Asia",
+      "language": "Mongolian",
+      "scripts": [
+        "Cyrillic"
+      ],
+      "text": "Сайн байна уу?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Mongolian",
+      "scripts": [
+        "Mongolian"
+      ],
+      "text": "ᠰᠠᠶᠢᠨ ᠪᠠᠶᠢᠨ᠎ᠠ ᠤᠤ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Kazakh",
+      "scripts": [
+        "Cyrillic"
+      ],
+      "text": "Сәлеметсіз бе? Қалыңыз қалай?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Uzbek",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Assalomu alaykum, Oʻzbekiston"
+    },
+    {
+      "continent": "Asia",
+      "language": "Georgian",
+      "scripts": [
+        "Georgian"
+      ],
+      "text": "გამარჯობა, როგორ ხარ?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Armenian",
+      "scripts": [
+        "Armenian"
+      ],
+      "text": "Բարեւ, ինչպե՞ս ես:"
+    },
+    {
+      "continent": "Asia",
+      "language": "Vietnamese",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Xin chào, bạn có khỏe không?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Indonesian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Halo, apa kabar?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Tagalog",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Kumusta ka?"
+    },
+    {
+      "continent": "Asia",
+      "language": "Nuosu (Yi)",
+      "scripts": [
+        "Yi"
+      ],
+      "text": "ꆈꌠꁱꂷ ꀉꂿ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Manipuri",
+      "scripts": [
+        "Meetei Mayek"
+      ],
+      "text": "ꯃꯤꯇꯩꯂꯣꯟ ꯈꯨꯔꯨꯝꯖꯔꯤ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Javanese",
+      "scripts": [
+        "Javanese"
+      ],
+      "text": "ꦱꦸꦒꦼꦁ ꦫꦮꦸꦃ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Balinese",
+      "scripts": [
+        "Balinese"
+      ],
+      "text": "ᬒᬁ ᬲ᭄ᬯᬲ᭄ᬢ᭄ᬬᬲ᭄ᬢᬸ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Sundanese",
+      "scripts": [
+        "Sundanese"
+      ],
+      "text": "ᮞᮙ᮪ᮕᮥᮛᮞᮥᮔ᮪"
+    },
+    {
+      "continent": "Asia",
+      "language": "Buginese",
+      "scripts": [
+        "Buginese"
+      ],
+      "text": "ᨅᨔ ᨕᨘᨁᨗ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Batak Toba",
+      "scripts": [
+        "Batak"
+      ],
+      "text": "ᯂᯬᯒᯘ᯲"
+    },
+    {
+      "continent": "Asia",
+      "language": "Tagalog",
+      "scripts": [
+        "Tagalog (Baybayin)"
+      ],
+      "text": "ᜃᜓᜋᜓᜐ᜔ᜆ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Chakma",
+      "scripts": [
+        "Chakma"
+      ],
+      "text": "𑄌𑄋𑄴𑄟𑄳𑄦"
+    },
+    {
+      "continent": "Asia",
+      "language": "Northern Thai",
+      "scripts": [
+        "Tai Tham"
+      ],
+      "text": "ᩈ᩠ᩅᩢᩔ᩠ᨯᩦ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Tai Nua",
+      "scripts": [
+        "Tai Le"
+      ],
+      "text": "ᥖᥭᥰ ᥘᥫᥴ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Tai Lue",
+      "scripts": [
+        "New Tai Lue"
+      ],
+      "text": "ᦟᦹᧉ ᦺᦑ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Rohingya",
+      "scripts": [
+        "Hanifi Rohingya"
+      ],
+      "text": "𐴌𐴟𐴇𐴥𐴝𐴚𐴒𐴙𐴝"
+    },
+    {
+      "continent": "Asia",
+      "language": "Limbu",
+      "scripts": [
+        "Limbu"
+      ],
+      "text": "ᤕᤠᤰᤌᤢᤱ ᤐᤠᤴ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Lepcha",
+      "scripts": [
+        "Lepcha"
+      ],
+      "text": "ᰛᰩᰵᰛᰧᰶᰵ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Hmong",
+      "scripts": [
+        "Pahawh Hmong"
+      ],
+      "text": "𖬌𖬣𖬵 𖬖𖬰𖬝𖬵"
+    },
+    {
+      "continent": "Asia",
+      "language": "Kayah",
+      "scripts": [
+        "Kayah Li"
+      ],
+      "text": "ꤊꤢ꤬ꤛꤢ꤭ ꤜꤟꤤ꤬"
+    },
+    {
+      "continent": "Asia",
+      "language": "Cham",
+      "scripts": [
+        "Cham"
+      ],
+      "text": "ꨌꩌ ꨆꨪꨚꨳ"
+    },
+    {
+      "continent": "Asia",
+      "language": "Tai Dam",
+      "scripts": [
+        "Tai Viet"
+      ],
+      "text": "ꪼꪕ ꪒꪾ"
+    },
+    {
+      "continent": "Africa",
+      "language": "Amharic",
+      "scripts": [
+        "Ethiopic"
+      ],
+      "text": "ሰላም፣ እንዴት ነህ?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Tigrinya",
+      "scripts": [
+        "Ethiopic"
+      ],
+      "text": "ሰላም፣ ከመይ ኣለኻ?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Egyptian Arabic",
+      "scripts": [
+        "Arabic"
+      ],
+      "text": "إزيك؟ عامل إيه؟"
+    },
+    {
+      "continent": "Africa",
+      "language": "Tamazight",
+      "scripts": [
+        "Tifinagh"
+      ],
+      "text": "ⴰⵣⵓⵍ ⴼⵍⵍⴰⴽ"
+    },
+    {
+      "continent": "Africa",
+      "language": "Manding",
+      "scripts": [
+        "N'Ko"
+      ],
+      "text": "ߌ ߣߌ߫ ߛߐ߲߬ߞߐ߲߬"
+    },
+    {
+      "continent": "Africa",
+      "language": "Vai",
+      "scripts": [
+        "Vai"
+      ],
+      "text": "ꕙꔤ ꕞꕌꖝ"
+    },
+    {
+      "continent": "Africa",
+      "language": "Fula",
+      "scripts": [
+        "Adlam"
+      ],
+      "text": "𞤀𞤣𞤤𞤢𞤥 𞤆𞤵𞤤𞤢𞤪"
+    },
+    {
+      "continent": "Africa",
+      "language": "Swahili",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Habari yako? Karibu sana."
+    },
+    {
+      "continent": "Africa",
+      "language": "Hausa",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Ina kwana? ɗaki, ƙofa, ɓera"
+    },
+    {
+      "continent": "Africa",
+      "language": "Yoruba",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Ẹ káàárọ̀, ṣé dáadáa ni?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Igbo",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Ndewo, kedụ ka ị mere?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Akan (Twi)",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Wo ho te sɛn? Ɔyɛ"
+    },
+    {
+      "continent": "Africa",
+      "language": "Ewe",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Ŋdi na wò, ɖe èfɔ nyuiea?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Zulu",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Sawubona, unjani?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Xhosa",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Molo, unjani?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Afrikaans",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Hallo, hoe gaan dit?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Somali",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Iska warran? Waan fiicanahay."
+    },
+    {
+      "continent": "Africa",
+      "language": "Malagasy",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Manao ahoana ianao?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Kinyarwanda",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Muraho, amakuru?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Lingala",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Mbote, ozali malamu?"
+    },
+    {
+      "continent": "Africa",
+      "language": "Wolof",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Na nga def? Maa ngi fi rekk."
+    },
+    {
+      "continent": "Africa",
+      "language": "Bassa",
+      "scripts": [
+        "Bassa Vah"
+      ],
+      "text": "𖫢𖫧𖫳𖫫𖫨"
+    },
+    {
+      "continent": "Africa",
+      "language": "Mende",
+      "scripts": [
+        "Mende Kikakui"
+      ],
+      "text": "𞠀𞠁𞠂 𞠃𞠄"
+    },
+    {
+      "continent": "Africa",
+      "language": "Somali",
+      "scripts": [
+        "Osmanya"
+      ],
+      "text": "𐒈𐒝𐒑𐒛𐒐𐒘𐒕𐒖"
+    },
+    {
+      "continent": "Africa",
+      "language": "Bamum",
+      "scripts": [
+        "Bamum"
+      ],
+      "text": "ꚠꚡꚢ ꚣꚤ"
+    },
+    {
+      "continent": "Africa",
+      "language": "Coptic (liturgical)",
+      "scripts": [
+        "Coptic"
+      ],
+      "text": "ⲛⲟⲩⲧⲉ ⲡⲉ"
+    },
+    {
+      "continent": "Europe",
+      "language": "English",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Hello, how are you?"
+    },
+    {
+      "continent": "Europe",
+      "language": "French",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Bonjour, ça va ? Œuvre, élève, garçon"
+    },
+    {
+      "continent": "Europe",
+      "language": "German",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Grüß Gott! Straße, Äpfel, Öl"
+    },
+    {
+      "continent": "Europe",
+      "language": "Spanish",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "¿Cómo estás? ¡Mañana!"
+    },
+    {
+      "continent": "Europe",
+      "language": "Portuguese",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Olá, como está? Ação, coração"
+    },
+    {
+      "continent": "Europe",
+      "language": "Italian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Ciao, come stai? Perché no"
+    },
+    {
+      "continent": "Europe",
+      "language": "Dutch",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Hoe gaat het? IJsselmeer"
+    },
+    {
+      "continent": "Europe",
+      "language": "Polish",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Cześć! Zażółć gęślą jaźń"
+    },
+    {
+      "continent": "Europe",
+      "language": "Czech",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Ahoj! Příliš žluťoučký kůň"
+    },
+    {
+      "continent": "Europe",
+      "language": "Slovak",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Ďakujem, ľúbim ťa"
+    },
+    {
+      "continent": "Europe",
+      "language": "Hungarian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Szia! Árvíztűrő tükörfúrógép"
+    },
+    {
+      "continent": "Europe",
+      "language": "Romanian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Bună ziua! Țară, școală"
+    },
+    {
+      "continent": "Europe",
+      "language": "Turkish",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Merhaba! İstanbul, ılık, ĞÜŞÖÇ"
+    },
+    {
+      "continent": "Europe",
+      "language": "Greek",
+      "scripts": [
+        "Greek"
+      ],
+      "text": "Γειά σου, τι κάνεις;"
+    },
+    {
+      "continent": "Europe",
+      "language": "Russian",
+      "scripts": [
+        "Cyrillic"
+      ],
+      "text": "Привет, как дела? Ёлка"
+    },
+    {
+      "continent": "Europe",
+      "language": "Ukrainian",
+      "scripts": [
+        "Cyrillic"
+      ],
+      "text": "Привіт, як справи? Їжак, ґанок, є"
+    },
+    {
+      "continent": "Europe",
+      "language": "Belarusian",
+      "scripts": [
+        "Cyrillic"
+      ],
+      "text": "Прывітанне, як ты? Ўсё добра"
+    },
+    {
+      "continent": "Europe",
+      "language": "Serbian",
+      "scripts": [
+        "Cyrillic"
+      ],
+      "text": "Здраво! Ђорђе, љубав, њива, џеп"
+    },
+    {
+      "continent": "Europe",
+      "language": "Croatian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Bok! Đakovo, čćžšđ"
+    },
+    {
+      "continent": "Europe",
+      "language": "Bulgarian",
+      "scripts": [
+        "Cyrillic"
+      ],
+      "text": "Здравей, как си?"
+    },
+    {
+      "continent": "Europe",
+      "language": "Macedonian",
+      "scripts": [
+        "Cyrillic"
+      ],
+      "text": "Здраво! ѓ, ќ, ѕ"
+    },
+    {
+      "continent": "Europe",
+      "language": "Slovenian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Živjo, kako si?"
+    },
+    {
+      "continent": "Europe",
+      "language": "Lithuanian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Labas! ąčęėįšųūž"
+    },
+    {
+      "continent": "Europe",
+      "language": "Latvian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Sveiki, kā iet? ģķļņ"
+    },
+    {
+      "continent": "Europe",
+      "language": "Estonian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Tere, kuidas läheb? Õun"
+    },
+    {
+      "continent": "Europe",
+      "language": "Finnish",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Hei, mitä kuuluu?"
+    },
+    {
+      "continent": "Europe",
+      "language": "Swedish",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Hej, hur mår du? Åsa"
+    },
+    {
+      "continent": "Europe",
+      "language": "Norwegian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Hei, hvordan går det? Ærlig, søt"
+    },
+    {
+      "continent": "Europe",
+      "language": "Danish",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Hej, hvordan har du det? Rødgrød"
+    },
+    {
+      "continent": "Europe",
+      "language": "Icelandic",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Halló, hvað segirðu? Þjóð"
+    },
+    {
+      "continent": "Europe",
+      "language": "Irish",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Dia duit, conas atá tú?"
+    },
+    {
+      "continent": "Europe",
+      "language": "Welsh",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Shwmae, sut wyt ti? Dŵr, tŷ"
+    },
+    {
+      "continent": "Europe",
+      "language": "Scottish Gaelic",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Halò, ciamar a tha thu?"
+    },
+    {
+      "continent": "Europe",
+      "language": "Basque",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Kaixo, zer moduz?"
+    },
+    {
+      "continent": "Europe",
+      "language": "Catalan",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Hola, com estàs? Col·lecció"
+    },
+    {
+      "continent": "Europe",
+      "language": "Maltese",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Bonġu, kif int? Ħobż, żebbuġ, għasel"
+    },
+    {
+      "continent": "Europe",
+      "language": "Albanian",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Përshëndetje, si je?"
+    },
+    {
+      "continent": "Europe",
+      "language": "Northern Sami",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Buorre beaivi! Ŋ, š, đ, ŧ"
+    },
+    {
+      "continent": "Europe",
+      "language": "Yiddish",
+      "scripts": [
+        "Hebrew"
+      ],
+      "text": "װאָס מאַכסטו?"
+    },
+    {
+      "continent": "Americas",
+      "language": "English (US)",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Hi, how's it going?"
+    },
+    {
+      "continent": "Americas",
+      "language": "Spanish (Mexico)",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "¿Qué tal? Ñandú, pingüino"
+    },
+    {
+      "continent": "Americas",
+      "language": "Portuguese (Brazil)",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Oi, tudo bem? Não, coração"
+    },
+    {
+      "continent": "Americas",
+      "language": "French (Quebec)",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Allô, ça va-tu?"
+    },
+    {
+      "continent": "Americas",
+      "language": "Haitian Creole",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Bonjou, kijan ou ye?"
+    },
+    {
+      "continent": "Americas",
+      "language": "Quechua",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Allillanchu? Imaynalla kachkanki?"
+    },
+    {
+      "continent": "Americas",
+      "language": "Aymara",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Kamisaki? Jikisiñkama"
+    },
+    {
+      "continent": "Americas",
+      "language": "Guarani",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Mba'éichapa reiko? g̃uyra, ẽ, ỹ"
+    },
+    {
+      "continent": "Americas",
+      "language": "Nahuatl",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Niltze, quen timotlaneltoquia?"
+    },
+    {
+      "continent": "Americas",
+      "language": "K'iche'",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Saqarik, la utz awach? utz ukʼuʼx"
+    },
+    {
+      "continent": "Americas",
+      "language": "Yucatec Maya",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Bix a beel?"
+    },
+    {
+      "continent": "Americas",
+      "language": "Mapudungun",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Mari mari, chumleymi?"
+    },
+    {
+      "continent": "Americas",
+      "language": "Navajo",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Yáʼátʼééh! ą́, ł"
+    },
+    {
+      "continent": "Americas",
+      "language": "Lakota",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Háu kȟolá"
+    },
+    {
+      "continent": "Americas",
+      "language": "Greenlandic",
+      "scripts": [
+        "Latin"
+      ],
+      "text": "Aluu, qanoq ippit?"
+    },
+    {
+      "continent": "Americas",
+      "language": "Cherokee",
+      "scripts": [
+        "Cherokee"
+      ],
+      "text": "ᎣᏏᏲ, ᏙᎯᏧ?"
+    },
+    {
+      "continent": "Americas",
+      "language": "Inuktitut",
+      "scripts": [
+        "Canadian Syllabics"
+      ],
+      "text": "ᐊᐃ, ᖃᓄᐃᓕᖓᐱᑦ?"
+    },
+    {
+      "continent": "Americas",
+      "language": "Plains Cree",
+      "scripts": [
+        "Canadian Syllabics"
+      ],
+      "text": "ᑕᓂᓯ"
+    },
+    {
+      "continent": "Americas",
+      "language": "Osage",
+      "scripts": [
+        "Osage"
+      ],
+      "text": "𐓏𐓘𐓻𐓘𐓻𐓟"
+    }
+  ],
+  "edge_cases": [
+    {
+      "case": "emoji sequences",
+      "text": "Family 👨‍👩‍👧‍👦, flag 🇵🇰, wave 👋🏽, keycap 1️⃣"
+    },
+    {
+      "case": "characters outside the basic plane",
+      "text": "𝔘𝔫𝔦 𝟙𝟚 and 𐍈 Gothic, 𠮷 CJK Ext B"
+    },
+    {
+      "case": "explicit direction marks",
+      "text": "abc‏مرحبا‎123‫embedded‬"
+    },
+    {
+      "case": "non-breaking and ideographic spaces",
+      "text": "a b　c"
+    },
+    {
+      "case": "right-to-left text around inline code",
+      "text": "استخدم `print(\"hello\")` في بايثون"
+    },
+    {
+      "case": "right-to-left Markdown table",
+      "text": "| العمود | القيمة |\n| --- | --- |\n| أ | ١٢٣ |"
+    },
+    {
+      "case": "Arabic-Indic and Persian digits",
+      "text": "٠١٢٣٤٥٦٧٨٩ و ۰۱۲۳۴"
+    },
+    {
+      "case": "decomposed accents (NFD)",
+      "text": "Tiếng Việt, café"
+    },
+    {
+      "case": "stacked combining marks",
+      "text": "Z͑͆àĺĝo"
+    },
+    {
+      "case": "Unicode line and paragraph separators",
+      "text": "first second third"
+    },
+    {
+      "case": "a byte-order mark inside the text",
+      "text": "﻿starts with a BOM"
+    }
+  ]
+}

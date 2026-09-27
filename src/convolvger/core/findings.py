@@ -42,6 +42,7 @@ LEVELS: dict[str, Level] = {
     "non_standard_json_constant": Level.WARNING,
     "tool_result_has_no_content": Level.WARNING,
     "unexpected_message_weight": Level.WARNING,
+    "unpaired_surrogate_replaced": Level.WARNING,
     "unmodelled_content_type": Level.WARNING,
     "unrecognised_role": Level.WARNING,
     "unrecognised_stream_line": Level.WARNING,
@@ -66,6 +67,10 @@ declaring a file count while carrying no files says so itself, and a
 tool result addressed by a tool call but holding no payload is the same
 shape. That a provider withholds them deliberately makes them expected,
 not present.
+
+``unpaired_surrogate_replaced`` is a warning because a character was
+changed: the provider served half of one, which cannot be written as
+UTF-8, and U+FFFD now stands where it was.
 """
 
 

@@ -4,6 +4,7 @@ import httpx
 
 from convolvger.core.results import ParseResult
 from convolvger.core.source import RawSource
+from convolvger.core.text import replace_unpaired_surrogates
 from convolvger.providers.grok import _fetch, _parse, _urls
 
 
@@ -19,4 +20,4 @@ class GrokProvider:
         return _fetch.fetch(url, client=client)
 
     def parse(self, source: RawSource) -> ParseResult:
-        return _parse.parse(source)
+        return replace_unpaired_surrogates(_parse.parse(source))

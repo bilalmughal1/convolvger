@@ -1,7 +1,6 @@
 """Command line interface for Convolvger."""
 
 import platform
-import re
 import sys
 from pathlib import Path
 from typing import Annotated
@@ -10,6 +9,13 @@ import typer
 
 from convolvger.capture.bookmarklet import bookmarklet as _bookmarklet
 from convolvger.capture.server import DEFAULT_PORT, wait_for_snapshot
+from convolvger.cli._output import (
+    file_stem,
+    use_utf8,
+    write_new,
+    write_stdout,
+    write_to,
+)
 from convolvger.core.archive import (
     READABLE_VERSIONS,
     SCHEMA_VERSION,
@@ -21,6 +27,7 @@ from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding, Level
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
+from convolvger.core.text import TextEncodingError, decode_text
 from convolvger.providers.default import build_registry
 from convolvger.renderers import render_json, render_markdown
 from convolvger.validation.report import Report
@@ -62,16 +69,11 @@ def main(
     ] = False,
 ) -> None:
     """Archive public AI conversations into portable formats."""
+    use_utf8(sys.stdout, sys.stderr)
     if version:
         for line in _version_lines():
             typer.echo(line)
         raise typer.Exit(EXIT_OK)
-
-
-def _slug(title: str | None, fallback: str) -> str:
-    base = (title or fallback).lower()
-    base = re.sub(r"[^a-z0-9]+", "-", base).strip("-")
-    return base[:60] or fallback
 
 
 def _warn(message: str) -> None:
@@ -142,7 +144,7 @@ def _reparse(source: str, path: Path) -> tuple[RawSource, ParseResult]:
     time into an archive.
     """
     provider = build_registry().detect(source)
-    raw = RawSource(url=source, content=path.read_text(encoding="utf-8"))
+    raw = RawSource(url=source, content=decode_text(path.read_bytes()))
     return raw, provider.parse(raw)
 
 
@@ -330,14 +332,21 @@ def export(
             fetched_at=raw.fetched_at,
         )
 
-    if output is not None and str(output) == "-":
-        sys.stdout.write(rendered)
-    else:
-        destination = output or Path(
-            f"{_slug(result.conversation.title, result.conversation.provider)}.{output_format}"
-        )
-        destination.write_text(rendered, encoding="utf-8")
-        _warn(f"Wrote {destination}")
+    try:
+        if output is not None and str(output) == "-":
+            write_stdout(sys.stdout, rendered)
+        else:
+            if output is not None:
+                destination = write_to(output, rendered)
+            else:
+                stem = file_stem(
+                    result.conversation.title, result.conversation.provider
+                )
+                destination = write_new(stem, output_format, rendered)
+            _warn(f"Wrote {destination}")
+    except (ConvolvgerError, OSError) as error:
+        _fail(error)
+        return
 
     _report_findings(result.findings)
     raise typer.Exit(EXIT_WARNINGS if result.warned else EXIT_OK)
@@ -361,8 +370,8 @@ def verify(
     a file and reports what it records.
     """
     try:
-        envelope = load_archive(archive.read_text(encoding="utf-8"))
-    except (ArchiveError, OSError) as error:
+        envelope = load_archive(decode_text(archive.read_bytes()))
+    except (ArchiveError, TextEncodingError, OSError) as error:
         _fail(error)
         return
 

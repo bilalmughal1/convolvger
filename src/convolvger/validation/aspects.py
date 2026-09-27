@@ -59,6 +59,7 @@ ASPECTS: dict[str, Aspect] = {
     "non_standard_json_constant": Aspect.FIDELITY,
     "tool_result_has_no_content": Aspect.COMPLETENESS,
     "unexpected_message_weight": Aspect.FIDELITY,
+    "unpaired_surrogate_replaced": Aspect.FIDELITY,
     "unmodelled_content_type": Aspect.FIDELITY,
     "unrecognised_role": Aspect.FIDELITY,
     "unrecognised_stream_line": Aspect.FIDELITY,
@@ -73,5 +74,7 @@ provider that withheld it.
 verbatim, so nothing is lost and neither check is answered.
 ``non_standard_json_constant`` is fidelity rather than completeness --
 the provider served the value, and what was lost was lost converting it
-here.
+here. ``unpaired_surrogate_replaced`` is fidelity for the same reason:
+the half character was served, and it is replaced here because it
+cannot be written.
 """

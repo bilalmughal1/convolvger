@@ -92,8 +92,13 @@ exits without writing a file.
 convolvger export https://chatgpt.com/share/SHARE_ID
 ```
 
-Writes Markdown to a filename derived from the conversation title, in the
-current directory. To choose the format or the destination:
+Writes Markdown to a file named after the conversation's title, in the
+current directory. The name keeps the letters, digits and accents of the
+title in any script, so a conversation titled in Arabic, Chinese or Hindi is
+named in Arabic, Chinese or Hindi; punctuation, symbols and emoji become
+hyphens. If that file already
+exists, the new one is numbered (`title-2.md`, `title-3.md`) rather than
+replacing it. To choose the format or the destination:
 
 ```
 convolvger export https://chatgpt.com/share/SHARE_ID -f json
@@ -102,7 +107,14 @@ convolvger export https://chatgpt.com/share/SHARE_ID -o -
 ```
 
 `-f json` writes the archival record; `-f md` (the default) writes the
-reader-facing document. `-o -` writes to stdout instead of a file.
+reader-facing document. `-o -` writes to stdout instead of a file. A path you
+choose with `-o` is written as asked, replacing any file already there.
+
+Files are written as UTF-8 whatever language the conversation is in, and so
+is `-o -` when its output goes to a file or another program, even where the
+system's own encoding is not UTF-8. On Windows, prefer `-o file.md` to `-o -`
+with a PowerShell redirect: PowerShell may re-encode a program's output
+before its `>` writes it.
 
 **Parse a snapshot you already saved**
 
@@ -118,6 +130,12 @@ rather than claiming a false one.
 
 This is how to re-read a capture without asking the provider for it again, which
 matters because the answer may have changed since. It works with `inspect` too.
+
+The saved file is read as UTF-8, or as UTF-8, UTF-16 or UTF-32 when it begins
+with the byte-order mark that says so, which is what Notepad and Windows
+PowerShell 5.1 write. A file in any other encoding is refused with a message
+rather than guessed at, because a wrong guess turns the text into different
+text.
 
 **Archive a Gemini conversation**
 

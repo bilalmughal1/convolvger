@@ -2,6 +2,7 @@
 
 from convolvger.core.results import ParseResult
 from convolvger.core.source import RawSource
+from convolvger.core.text import replace_unpaired_surrogates
 from convolvger.providers.base import FetchUnsupportedError
 from convolvger.providers.claude import _parse, _urls
 
@@ -24,4 +25,4 @@ class ClaudeProvider:
         )
 
     def parse(self, source: RawSource) -> ParseResult:
-        return _parse.parse(source)
+        return replace_unpaired_surrogates(_parse.parse(source))

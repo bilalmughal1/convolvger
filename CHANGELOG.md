@@ -4,6 +4,56 @@ All notable changes to Convolvger will be documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- A multilingual test corpus: 141 short phrases in 138 languages, written in
+  62 scripts, across Asia, Africa, Europe and the Americas, plus Unicode edge
+  cases such as emoji sequences, direction marks and decomposed accents. Every
+  sample passes through every provider and must reach the Markdown and the
+  JSON byte for byte. Message text was already exact in every script tried;
+  the corpus is there to keep it that way. It is a broad sample, not complete
+  coverage: many languages written in these scripts are absent, and so are
+  some scripts in current use. The phrases have not been checked by native
+  speakers
+
+### Changed
+
+- A default file name never replaces an existing file. The next free `-2`,
+  `-3` is used instead, so exporting the same conversation twice now keeps
+  both, for titles in any language, English included. A path chosen with
+  `--output` is still written as asked
+
+### Fixed
+
+- A conversation in any language gets a file of its own. The default file
+  name was built from `a-z` and `0-9` alone, so a title in Arabic, Chinese,
+  Hindi, Russian or any of dozens of other scripts left nothing, every such
+  conversation from one provider was named after the provider, and each export
+  silently replaced the last. The name now keeps the letters, digits and
+  combining marks of any script, and the zero-width joiners some scripts
+  spell words with. Punctuation, symbols and emoji become hyphens, which also
+  removes characters Windows forbids and the invisible direction controls that
+  can make a name display as something it is not. Accented Latin titles keep
+  their accents instead of being cut apart at them
+- `export -o -` and `inspect` wrote in the system's encoding, which on
+  Windows, when output is redirected or piped, cannot represent most of the
+  world's scripts, so they failed with a traceback. They now write UTF-8.
+  This was reproduced by forcing Windows-1252 on Linux; it has not yet been
+  run on Windows, and a PowerShell redirect may still re-encode the output
+- `--from-file` and `verify` read a file that begins with a UTF-8, UTF-16 or
+  UTF-32 byte-order mark. Notepad can add the first and Windows PowerShell 5.1
+  writes the second. A UTF-16 file previously crashed with a traceback. A file
+  in a legacy code page is refused with a message saying so, rather than
+  guessed at
+- Half an emoji no longer crashes an export. A character outside the basic
+  plane is escaped in JSON as two halves, and a reply cut off between them
+  leaves one half that cannot be written as UTF-8. It is replaced with U+FFFD
+  and recorded under the new finding code `unpaired_surrogate_replaced`, a
+  fidelity warning. An export that cannot be written no longer leaves an empty
+  file behind
+
 ## [0.5.0] - 2026-09-26
 
 ### Added
