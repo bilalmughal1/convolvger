@@ -73,7 +73,7 @@ def test_providers_lists_every_bundled_provider() -> None:
     result = runner.invoke(app, ["providers"])
 
     assert result.exit_code == 0
-    for name in ("chatgpt", "claude", "gemini", "grok"):
+    for name in ("chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "qwen"):
         assert name in result.stdout
 
 
@@ -567,6 +567,71 @@ def test_a_saved_grok_share_with_no_responses_is_refused(tmp_path: Path) -> None
     assert "carried no conversation" in result.output
 
 
+NEWER_PROVIDERS = [
+    (
+        "deepseek",
+        "https://chat.deepseek.com/share/0example0share0id",
+        "Shared Conversation",
+        0,
+        ("[citation:2]", "example.com/source"),
+    ),
+    (
+        "kimi",
+        "https://www.kimi.ai/share/00000000-0000-4000-8000-000000000002",
+        "Example Kimi conversation",
+        2,
+        ("Example Sharer", "example.com/source", "Search to confirm"),
+    ),
+    (
+        "qwen",
+        "https://chat.qwen.ai/s/00000000-0000-4000-8000-000000000001?fev=0.3.11",
+        "Example Qwen conversation",
+        2,
+        ("[[3]]", "shared-", "example.com/source", "Invented summary"),
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    ("provider", "url", "title", "exit_code", "leaks"),
+    NEWER_PROVIDERS,
+    ids=[case[0] for case in NEWER_PROVIDERS],
+)
+def test_a_saved_share_from_each_newer_provider_is_archived_end_to_end(
+    tmp_path: Path,
+    provider: str,
+    url: str,
+    title: str,
+    exit_code: int,
+    leaks: tuple[str, ...],
+) -> None:
+    """Exit 2 where the fixture carries reasoning, which is kept and flagged."""
+    fixture = (
+        Path(__file__).parent.parent / "fixtures" / provider / "share-minimal.json"
+    )
+    document = tmp_path / "out.md"
+    archive = tmp_path / "out.json"
+
+    result = runner.invoke(
+        app, ["export", url, "--from-file", str(fixture), "-o", str(document)]
+    )
+    runner.invoke(
+        app,
+        ["export", url, "--from-file", str(fixture), "-f", "json", "-o", str(archive)],
+    )
+
+    assert result.exit_code == exit_code, result.output
+    written = document.read_text(encoding="utf-8")
+    assert f"Provider: {provider}" in written
+    assert f"# {title}" in written
+    for leaked in leaks:
+        assert leaked not in written
+    envelope = ArchiveEnvelope.model_validate_json(archive.read_text(encoding="utf-8"))
+    assert envelope.conversation.provider == provider
+    assert envelope.retrieved_at is None
+    assert runner.invoke(app, ["verify", str(archive)]).exit_code in (0, 2)
+
+
 def test_version_exits_zero_and_names_the_package() -> None:
     result = runner.invoke(app, ["--version"])
 
@@ -599,7 +664,7 @@ def test_version_reports_which_archives_it_can_read() -> None:
 def test_version_lists_the_providers_this_build_supports() -> None:
     result = runner.invoke(app, ["--version"])
 
-    for name in ("chatgpt", "claude", "gemini", "grok"):
+    for name in ("chatgpt", "claude", "gemini", "grok", "deepseek", "kimi", "qwen"):
         assert name in result.stdout
 
 

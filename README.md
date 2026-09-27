@@ -191,6 +191,46 @@ A Grok share that no longer exists answers with an error, but a share can also
 answer successfully with its title and no messages. Both are reported as a
 missing share rather than exported as an empty conversation.
 
+**Archive a DeepSeek, Kimi or Qwen conversation**
+
+```
+convolvger export https://chat.deepseek.com/share/SHARE_ID
+convolvger export https://www.kimi.ai/share/SHARE_ID
+convolvger export https://chat.qwen.ai/s/SHARE_ID
+```
+
+All three are fetched directly, with no browser involved: each share page
+loads its conversation from an endpoint that answers this tool's own
+User-Agent with no cookie or account, and Convolvger asks it directly.
+`www.kimi.com` and `kimi.moonshot.cn` share links work as well as
+`www.kimi.ai`, and so do `chat.qwenlm.ai` links for Qwen.
+
+DeepSeek and Qwen number their citations inside the answer text
+(`[citation:3]`, `[[3]]`). A number that points at a search result the share
+carries is taken out of the text so the document reads cleanly, and the
+answer exactly as served is kept in the JSON archive beside it, with the
+search results. A number that points at nothing is left in place and
+reported, and a number inside code is never touched: `x = [[3]]` is a
+nested list, not a citation. Kimi marks citations beside the text rather
+than inside it, so its text needs no change. None of the citations or search
+results reach Markdown.
+
+Kimi and Qwen show the model's reasoning beside an answer. It is kept in the
+JSON archive, but this version does not model it, so it is reported as a
+warning rather than passed over, as Grok's is. DeepSeek's reasoning has not
+been seen in a share yet; if one carries it, it is kept and reported the same
+way.
+
+A Kimi share names the account that shared it, and a Qwen share carries the
+sharer's account id. Both are kept in the JSON archive under
+`provider_metadata`, as Claude's `creator` is, and neither reaches Markdown.
+
+A DeepSeek share carries a generic title, "Shared Conversation", rather than
+the conversation's own, and the archive records it as served. An unknown
+DeepSeek or Qwen share id answers successfully with an error inside, and an
+unknown Kimi one answers 404; all three are reported as a missing share. A
+share that was deleted has not been tried and is assumed to answer the same.
+
 **Archive a Claude conversation**
 
 A Claude share page cannot be fetched. The page loads its conversation
@@ -304,6 +344,9 @@ Initial providers:
   fetched
 - Gemini — fetched directly from a share link
 - Grok — fetched directly from a share link
+- DeepSeek — fetched directly from a share link
+- Kimi — fetched directly from a share link
+- Qwen — fetched directly from a share link
 
 Additional providers will be added as their public sharing formats are supported and tested.
 
@@ -320,6 +363,8 @@ Claude share snapshots can be parsed and exported, but not fetched: the service 
 Gemini share links can be fetched, parsed and exported, in all three of the link forms Google issues. Citations and search queries are preserved in the JSON archive rather than rendered into the document.
 
 Grok share links can be fetched, parsed and exported. Inline citations, search results and X posts are preserved in the JSON archive rather than rendered into the document; the reasoning trace is preserved but not yet modelled, and is reported as such.
+
+DeepSeek, Kimi and Qwen share links can be fetched, parsed and exported. Citations and search results are preserved in the JSON archive rather than rendered into the document, and inline citation numbers are taken out of the text only where they resolve. Kimi's and Qwen's reasoning is preserved but not yet modelled, and is reported as such.
 
 Extraction records structured findings, each with a stable code and a level. A note is recorded but does not change the exit status; a warning does. Both are written into the JSON archive either way, so nothing is withheld from the record because it was judged unremarkable.
 

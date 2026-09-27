@@ -25,10 +25,16 @@ from convolvger.core.source import RawSource
 from convolvger.providers.chatgpt import ChatGPTProvider
 from convolvger.providers.chatgpt import _fetch as chatgpt_fetch
 from convolvger.providers.claude import ClaudeProvider
+from convolvger.providers.deepseek import DeepSeekProvider
+from convolvger.providers.deepseek import _fetch as deepseek_fetch
 from convolvger.providers.gemini import GeminiProvider
 from convolvger.providers.gemini import _fetch as gemini_fetch
 from convolvger.providers.grok import GrokProvider
 from convolvger.providers.grok import _fetch as grok_fetch
+from convolvger.providers.kimi import KimiProvider
+from convolvger.providers.kimi import _fetch as kimi_fetch
+from convolvger.providers.qwen import QwenProvider
+from convolvger.providers.qwen import _fetch as qwen_fetch
 from convolvger.renderers import render_json, render_markdown
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "multilingual" / "samples.json"
@@ -132,6 +138,91 @@ def chatgpt(escape: bool, texts: list[str]) -> RawSource:
     )
 
 
+def deepseek(escape: bool, texts: list[str]) -> RawSource:
+    messages = [
+        {
+            "message_id": index + 1,
+            "parent_id": index or None,
+            "role": "USER" if index % 2 == 0 else "ASSISTANT",
+            "status": "FINISHED",
+            "inserted_at": 1789000000.0 + index,
+            "fragments": [
+                {
+                    "id": 1,
+                    "type": "REQUEST" if index % 2 == 0 else "RESPONSE",
+                    "content": text,
+                }
+            ],
+        }
+        for index, text in enumerate(texts)
+    ]
+    body = {
+        "code": 0,
+        "msg": "",
+        "data": {
+            "biz_code": 0,
+            "biz_msg": "",
+            "biz_data": {"title": TITLE, "messages": messages},
+        },
+    }
+    return RawSource(
+        url="https://chat.deepseek.com/share/x",
+        content=json.dumps(body, ensure_ascii=escape),
+    )
+
+
+def kimi(escape: bool, texts: list[str]) -> RawSource:
+    messages = [
+        {
+            "id": f"m{index}",
+            "role": "user" if index % 2 == 0 else "assistant",
+            "status": "MESSAGE_STATUS_COMPLETED",
+            "blocks": [{"messageId": f"m{index}", "text": {"content": text}}],
+        }
+        for index, text in enumerate(texts)
+    ]
+    body = {
+        "share": {"id": "s", "chat": {"id": "c", "name": TITLE}, "messages": messages}
+    }
+    return RawSource(
+        url="https://www.kimi.ai/share/x", content=json.dumps(body, ensure_ascii=escape)
+    )
+
+
+def qwen(escape: bool, texts: list[str]) -> RawSource:
+    nodes: dict[str, dict[str, object]] = {}
+    for index, text in enumerate(texts):
+        key = f"n{index}"
+        node: dict[str, object] = {
+            "id": key,
+            "parentId": f"n{index - 1}" if index else None,
+            "childrenIds": [f"n{index + 1}"] if index + 1 < len(texts) else [],
+            "role": "user" if index % 2 == 0 else "assistant",
+            "timestamp": 1789000000 + index,
+        }
+        if index % 2 == 0:
+            node["content"] = text
+        else:
+            node["content"] = ""
+            node["content_list"] = [{"phase": "answer", "content": text}]
+        nodes[key] = node
+    last = f"n{len(texts) - 1}"
+    body = {
+        "success": True,
+        "data": {
+            "id": "q",
+            "title": TITLE,
+            "chat": {
+                "history": {"messages": nodes, "currentId": last},
+                "messages": list(nodes.values()),
+            },
+        },
+    }
+    return RawSource(
+        url="https://chat.qwen.ai/s/x", content=json.dumps(body, ensure_ascii=escape)
+    )
+
+
 SOURCES: dict[
     str,
     tuple[Callable[[RawSource], ParseResult], Callable[[bool, list[str]], RawSource]],
@@ -140,6 +231,9 @@ SOURCES: dict[
     "claude": (ClaudeProvider().parse, claude),
     "gemini": (GeminiProvider().parse, gemini),
     "grok": (GrokProvider().parse, grok),
+    "deepseek": (DeepSeekProvider().parse, deepseek),
+    "kimi": (KimiProvider().parse, kimi),
+    "qwen": (QwenProvider().parse, qwen),
 }
 CASES = [(name, escape) for name in SOURCES for escape in (True, False)]
 
@@ -209,6 +303,18 @@ FETCHERS = {
     "grok": (
         grok_fetch.fetch,
         "https://grok.com/share/bGVnYWN5_00000000-0000-4000-8000-000000000001",
+    ),
+    "deepseek": (
+        deepseek_fetch.fetch,
+        "https://chat.deepseek.com/share/0example0share0id",
+    ),
+    "kimi": (
+        kimi_fetch.fetch,
+        "https://www.kimi.ai/share/00000000-0000-4000-8000-000000000002",
+    ),
+    "qwen": (
+        qwen_fetch.fetch,
+        "https://chat.qwen.ai/s/00000000-0000-4000-8000-000000000001",
     ),
 }
 

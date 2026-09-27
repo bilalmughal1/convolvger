@@ -1,9 +1,14 @@
+import pytest
+
 from convolvger.providers.base import Provider
 from convolvger.providers.chatgpt import ChatGPTProvider
 from convolvger.providers.claude import ClaudeProvider
+from convolvger.providers.deepseek import DeepSeekProvider
 from convolvger.providers.default import build_registry
 from convolvger.providers.gemini import GeminiProvider
 from convolvger.providers.grok import GrokProvider
+from convolvger.providers.kimi import KimiProvider
+from convolvger.providers.qwen import QwenProvider
 
 
 def test_chatgpt_provider_satisfies_the_protocol() -> None:
@@ -13,7 +18,15 @@ def test_chatgpt_provider_satisfies_the_protocol() -> None:
 
 
 def test_registry_contains_chatgpt() -> None:
-    assert build_registry().names() == ["chatgpt", "claude", "gemini", "grok"]
+    assert build_registry().names() == [
+        "chatgpt",
+        "claude",
+        "gemini",
+        "grok",
+        "deepseek",
+        "kimi",
+        "qwen",
+    ]
 
 
 def test_registry_detects_a_chatgpt_share_url() -> None:
@@ -72,3 +85,33 @@ def test_registry_detects_a_grok_share_url() -> None:
     url = "https://grok.com/share/bGVnYWN5_00000000-0000-4000-8000-000000000001"
 
     assert registry.detect(url).name == "grok"
+
+
+@pytest.mark.parametrize(
+    ("provider", "name"),
+    [
+        (DeepSeekProvider(), "deepseek"),
+        (KimiProvider(), "kimi"),
+        (QwenProvider(), "qwen"),
+    ],
+)
+def test_the_newer_providers_satisfy_the_protocol(
+    provider: Provider, name: str
+) -> None:
+    assert provider.name == name
+
+
+@pytest.mark.parametrize(
+    ("url", "name"),
+    [
+        ("https://chat.deepseek.com/share/0example0share0id", "deepseek"),
+        ("https://www.kimi.ai/share/00000000-0000-4000-8000-000000000002", "kimi"),
+        ("https://www.kimi.com/share/00000000-0000-4000-8000-000000000002", "kimi"),
+        (
+            "https://chat.qwen.ai/s/00000000-0000-4000-8000-000000000001?fev=0.3.11",
+            "qwen",
+        ),
+    ],
+)
+def test_registry_detects_each_newer_provider_s_share_url(url: str, name: str) -> None:
+    assert build_registry().detect(url).name == name

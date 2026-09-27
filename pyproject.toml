@@ -15,9 +15,12 @@ keywords = [
     "claude",
     "cli",
     "conversations",
+    "deepseek",
     "digital-preservation",
     "gemini",
     "grok",
+    "kimi",
+    "qwen",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",

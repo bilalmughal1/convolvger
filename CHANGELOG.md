@@ -8,6 +8,36 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- DeepSeek, Kimi and Qwen conversations can be archived from a share link.
+  Each share page loads its conversation from an endpoint that answered this
+  tool's own User-Agent with no cookie or token, so Convolvger asks it
+  directly and nothing impersonates a browser. DeepSeek's share page itself
+  refused every client tried, with a 403 from its CDN, but the endpoint behind
+  it answered; Kimi's is a Connect RPC, called with the share id alone
+- DeepSeek's data endpoint was checked against a real browser's own network
+  traffic and against `robots.txt` before it was added. The share page's own
+  script makes the same call, same-origin and with no cookies; `robots.txt`
+  disallows the share page path, `/share/`, not the API path this tool asks
+- DeepSeek and Qwen number citations inside the answer text, `[citation:N]`
+  and `[[N]]`. A number that resolves to a search result the share carries is
+  taken out of the visible text, and the answer as served is kept in the JSON
+  beside it; one that resolves to nothing is left and reported. A number
+  inside code is content and is never touched, since `x = [[1]]` is a nested
+  list. Qwen numbers results straight across every search in an answer, which
+  was checked against the labels in its own search output
+- An unknown share id is reported as a missing share for all three, although
+  DeepSeek and Qwen answer it with a success status and the error in the
+  body, as Gemini does. A deleted share was not tried. A share that exists but carries nothing is refused rather than
+  exported empty
+- The reasoning Kimi and Qwen show beside an answer is kept in the JSON and
+  reported as unmodelled content, as Grok's is. DeepSeek's was not seen in a
+  share; any fragment of a kind this version does not know is kept and
+  reported the same way. Kimi's share names the
+  account that shared it and Qwen's carries the sharer's account id; both are
+  kept in `provider_metadata`, as Claude's `creator` is, and neither reaches
+  Markdown
+- A weekly contract check for each, against a throwaway share made for the
+  purpose, each in its own job
 - A multilingual test corpus: 141 short phrases in 138 languages, written in
   62 scripts, across Asia, Africa, Europe and the Americas, plus Unicode edge
   cases such as emoji sequences, direction marks and decomposed accents. Every
