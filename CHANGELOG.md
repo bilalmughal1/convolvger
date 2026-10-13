@@ -4,6 +4,42 @@ All notable changes to Convolvger will be documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- A malformed ChatGPT page is refused with an error instead of a traceback:
+  an object key that is not an index reference, a chain of references
+  deeper than the stack, and a leading line nested deeper than the stack
+- A code block holding a line of three or more backticks no longer ends its
+  fence early in the Markdown export. The fence is one backtick longer than
+  the longest run in the code
+- A title with line breaks stays one heading in the Markdown export; the JSON
+  keeps the title as served. A blank title gets the placeholder
+- Capturing refuses a snapshot whose URL no provider handles, and keeps
+  waiting. A page on any site passes the origin check for its own URL, so
+  such a post was accepted and the command then failed
+- Capturing refuses a content type that is not a string instead of printing
+  a traceback, and drops a connection that sends nothing once the wait's
+  deadline passes rather than waiting on it
+- Telling citation markers from code no longer slows with the square of the
+  number of code spans: a text of 32,000 stray backticks took 9.7 seconds
+  where it was measured, and now takes hundredths of a second
+- A fetched response over 32 MiB is refused, the number a captured snapshot
+  was already limited to. The size is counted after decompression
+- A Grok share id is escaped into the API path, as DeepSeek and Qwen escape
+  theirs
+
+### Changed
+
+- The release workflow refuses a tag that does not match the version in
+  `pyproject.toml`, and the checks workflow runs with read-only permissions
+- The contributing guide lists the format check CI already runs
+
+### Removed
+
+- The empty `convolvger.storage` package, which nothing used
+
 ## [0.6.0] - 2026-09-28
 
 ### Added
