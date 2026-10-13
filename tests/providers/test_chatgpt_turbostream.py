@@ -5,12 +5,14 @@ from typing import Any
 
 import pytest
 
+from convolvger.providers import _http
 from convolvger.providers.chatgpt._turbostream import (
     TurboStreamError,
     decode,
     decode_html,
     extract_payloads,
     parse_stream,
+    unfolded_size,
 )
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "chatgpt"
@@ -154,6 +156,54 @@ def test_a_leading_line_that_exhausts_the_stack_raises_a_decoder_error(
     monkeypatch.setattr(json, "loads", exhausted)
     with pytest.raises(TurboStreamError, match="nested too deeply"):
         parse_stream(["[1]\n"])
+
+
+def _doubling(levels: int, leaf: str) -> list[Any]:
+    """A flat array of ``levels`` lists, each referencing the next one twice."""
+    return [[index + 1, index + 1] for index in range(levels)] + [leaf]
+
+
+def test_unfolded_size_is_the_size_of_the_payload_written_compactly() -> None:
+    shared = ["\u00e9t\u00e9", None, True, 1.5]
+    value = {"a": [shared, shared], "b": {"c": -3, "\u65e5": "\U0001f600"}, "d": []}
+    written = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    assert unfolded_size(value) == len(written.encode("utf-8"))
+
+
+def test_a_lone_surrogate_is_counted_as_its_replacement_will_be() -> None:
+    """It is replaced with U+FFFD after decoding, which also takes 3 bytes."""
+    assert unfolded_size("\ud83d") == unfolded_size("\ufffd")
+
+
+def test_a_payload_unfolding_to_the_limit_decodes_and_one_byte_more_does_not(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The limit is the one a fetched response is held to."""
+    monkeypatch.setattr(_http, "MAX_BYTES", 100)
+    assert decode(["x" * 98]).value == "x" * 98  # 100 bytes with its quotes
+    with pytest.raises(TurboStreamError, match="unfolds to more than 100 bytes"):
+        decode(["x" * 99])
+
+
+def test_containers_shared_level_after_level_are_refused_by_what_they_unfold_to() -> (
+    None
+):
+    """16 levels and a 1,000-character string: a tiny array, 65 MB written out."""
+    flat = _doubling(16, "x" * 1000)
+    assert len(json.dumps(flat)) < 2000
+    with pytest.raises(TurboStreamError, match="unfolds to more than"):
+        decode(flat)
+
+
+def test_a_string_referenced_many_times_counts_every_time() -> None:
+    flat: list[Any] = [[1] * 40, "x" * 1_000_000]
+    with pytest.raises(TurboStreamError, match="unfolds to more than"):
+        decode(flat)
+
+
+def test_sharing_within_the_limit_still_decodes_to_shared_objects() -> None:
+    result = decode(_doubling(10, "x"))
+    assert result.value[0] is result.value[1]
 
 
 def test_empty_flat_array_raises() -> None:

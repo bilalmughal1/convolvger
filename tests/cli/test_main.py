@@ -540,6 +540,29 @@ def test_a_source_nested_past_the_limit_is_refused_without_a_traceback(
     assert not written.exists()
 
 
+def test_a_tiny_chatgpt_page_that_unfolds_to_gigabytes_is_refused(
+    tmp_path: Path,
+) -> None:
+    """Each of 26 levels references the next twice: 2 kB saved, 6 GB written out."""
+    flat = [[index + 1, index + 1] for index in range(26)] + ["x" * 64]
+    payload = json.dumps(json.dumps(flat) + "\n")[1:-1]
+    saved = tmp_path / "page.html"
+    saved.write_text(
+        f'<script>streamController.enqueue("{payload}");</script>', encoding="utf-8"
+    )
+    written = tmp_path / "out.json"
+
+    result = runner.invoke(
+        app,
+        ["export", URL, "--from-file", str(saved), "-f", "json", "-o", str(written)],
+    )
+
+    assert result.exit_code == 1
+    assert isinstance(result.exception, SystemExit)
+    assert "unfolds to more than" in result.output
+    assert not written.exists()
+
+
 def test_a_saved_grok_response_is_archived_end_to_end(tmp_path: Path) -> None:
     """Grok fetches, but a saved response must still archive offline.
 

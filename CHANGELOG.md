@@ -38,6 +38,12 @@ The project follows [Semantic Versioning](https://semver.org/).
   the serialiser allows -- 98 levels on Windows, 254 on Linux -- parsed but
   could not be written: a Grok share nested 300 levels deep exported nothing,
   with a traceback. The deepest real share measured nests 24 levels
+- A ChatGPT page whose decoded payload would unfold to more than 32 MiB is
+  refused, the limit a fetched response already had. The page shares repeated
+  values by reference, and whatever writes it out repeats them in full: a 1 kB
+  page whose 22 levels each referenced the next twice exported a 742 MB archive,
+  peaking at 1.47 GB of memory over 109 seconds, and is now refused in about
+  two. Real pages measured decode to less than their own size
 - `verify` refuses an archive nested more than 512 levels deep instead of
   crashing. The limit is above the source limit because an archive's envelope
   adds levels to what it keeps. A value nested to the source limit, added at

@@ -14,6 +14,7 @@ from typing import Any
 from convolvger.core import jsonload
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding, finding
+from convolvger.providers import _http
 
 _ENQUEUE_RE = re.compile(r'streamController\.enqueue\("((?:[^"\\]|\\.)*)"\)')
 _DEFERRED_RE = re.compile(r"^P(\d+):")
@@ -92,6 +93,40 @@ def parse_stream(payloads: list[str]) -> tuple[list[Any], list[Finding]]:
     return flat, findings
 
 
+def unfolded_size(value: Any) -> int:
+    """Bytes ``value`` takes as compact UTF-8 JSON, every shared part repeated.
+
+    The decoder hands back one object for every reference to the same
+    index, so a payload can share a container or a string many times
+    over. Whatever writes it out writes each reference in full, which is
+    the size measured here. Shared parts are measured once and counted
+    as often as they are referenced, so this costs one visit per
+    distinct part however large the total is. Its recursion is bounded
+    by the depth limit, which is checked first.
+    """
+    sizes: dict[int, int] = {}
+
+    def size(node: Any) -> int:
+        known = sizes.get(id(node))
+        if known is not None:
+            return known
+        if isinstance(node, dict):
+            total = 2 + max(len(node) - 1, 0)
+            for key, child in node.items():
+                total += size(key) + 1 + size(child)
+        elif isinstance(node, list):
+            total = 2 + max(len(node) - 1, 0) + sum(size(child) for child in node)
+        else:
+            # A lone surrogate is still here (it is replaced after decoding)
+            # and takes the 3 bytes the replacement character will.
+            text = json.dumps(node, ensure_ascii=False)
+            total = len(text.encode("utf-8", errors="surrogatepass"))
+        sizes[id(node)] = total
+        return total
+
+    return size(value)
+
+
 def decode(flat: list[Any]) -> DecodeResult:
     """Resolve a flat turbo-stream array into plain Python data."""
     if not flat:
@@ -159,6 +194,15 @@ def decode(flat: list[Any]) -> DecodeResult:
         jsonload.check_depth(value)
     except jsonload.JSONNestingError as exc:
         raise TurboStreamError(f"Decoded payload is refused: {exc}") from exc
+    # A page of a few hundred bytes can share its way to gigabytes once
+    # written out: measured, 22 levels that each reference the level
+    # below twice made a 1 kB page export a 742 MB archive. A real page
+    # decodes to less than its own size (0.28 times, measured), so the
+    # limit a fetched response is held to is applied to what it unfolds to.
+    if unfolded_size(value) > _http.MAX_BYTES:
+        raise TurboStreamError(
+            f"Decoded payload is refused: it unfolds to more than {_http.MAX_BYTES} bytes"
+        )
     return DecodeResult(value=value, findings=findings)
 
 
