@@ -23,7 +23,7 @@ from convolvger.core.archive import (
     load_archive,
     tool_version,
 )
-from convolvger.core.errors import ConvolvgerError
+from convolvger.core.errors import ConvolvgerError, ProviderNotFoundError
 from convolvger.core.findings import Finding, Level
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
@@ -103,8 +103,17 @@ def _capture(port: int) -> tuple[RawSource, ParseResult]:
     _warn("")
     _warn("The archive is named after the conversation's own title unless")
     _warn("you passed --output.")
-    raw = wait_for_snapshot(port=port)
-    provider = build_registry().detect(raw.url)
+    registry = build_registry()
+
+    def handled(url: str) -> bool:
+        try:
+            registry.detect(url)
+        except ProviderNotFoundError:
+            return False
+        return True
+
+    raw = wait_for_snapshot(port=port, accepts=handled)
+    provider = registry.detect(raw.url)
     return raw, provider.parse(raw)
 
 

@@ -71,6 +71,42 @@ def test_a_captured_snapshot_can_be_inspected(tmp_path: Path) -> None:
     assert "Provider:  claude" in result.output
 
 
+def test_a_page_no_provider_handles_cannot_end_the_capture(tmp_path: Path) -> None:
+    """Any site's page passes the origin check for its own URL."""
+    statuses: list[int] = []
+
+    def post(url: str, origin: str, content: str) -> None:
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{PORT}/",
+            data=json.dumps({"url": url, "content": content}).encode(),
+            headers={"Content-Type": "application/json", "Origin": origin},
+            method="POST",
+        )
+        for _ in range(60):
+            try:
+                with urllib.request.urlopen(request, timeout=5) as response:
+                    statuses.append(response.status)
+                return
+            except urllib.error.HTTPError as error:
+                statuses.append(error.code)
+                return
+            except urllib.error.URLError:
+                time.sleep(0.05)
+
+    def run() -> None:
+        post("https://elsewhere.example/page", "https://elsewhere.example", "x")
+        post(SHARE, "https://claude.ai", SNAPSHOT.read_text(encoding="utf-8"))
+
+    poster = threading.Thread(target=run)
+    poster.start()
+    result = runner.invoke(app, ["inspect", "--capture", "--port", str(PORT)])
+    poster.join(timeout=5)
+
+    assert statuses == [400, 200]
+    assert result.exit_code == 2
+    assert "Provider:  claude" in result.output
+
+
 def test_capturing_and_a_url_together_are_refused() -> None:
     result = runner.invoke(app, ["export", SHARE, "--capture"])
 

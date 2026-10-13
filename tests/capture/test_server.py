@@ -6,6 +6,7 @@ import threading
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from typing import Any
 
 import pytest
@@ -20,16 +21,18 @@ SHARE = "https://claude.ai/share/00000000-0000-0000-0000-000000000000"
 class Listener:
     """Runs one wait_for_snapshot in a thread so a test can post to it."""
 
-    def __init__(self, timeout: float = 5.0) -> None:
+    def __init__(
+        self, timeout: float = 5.0, accepts: Callable[[str], bool] | None = None
+    ) -> None:
         self.source: RawSource | None = None
         self.error: CaptureError | None = None
-        self._thread = threading.Thread(target=self._run, args=(timeout,))
+        self._thread = threading.Thread(target=self._run, args=(timeout, accepts))
         self._ready = threading.Event()
 
-    def _run(self, timeout: float) -> None:
+    def _run(self, timeout: float, accepts: Callable[[str], bool] | None) -> None:
         self._ready.set()
         try:
-            self.source = wait_for_snapshot(port=PORT, timeout=timeout)
+            self.source = wait_for_snapshot(port=PORT, timeout=timeout, accepts=accepts)
         except CaptureError as error:
             self.error = error
 
@@ -104,6 +107,52 @@ def test_a_refused_payload_does_not_end_the_wait() -> None:
         assert _post({"url": SHARE, "content": "{}"}, "https://claude.ai") == 200
 
     assert listener.source is not None
+
+
+def test_a_content_type_that_is_not_a_string_is_refused_and_the_wait_goes_on() -> None:
+    with Listener() as listener:
+        body = {"url": SHARE, "content": "{}", "content_type": 123}
+        assert _post(body, "https://claude.ai") == 400
+        assert _post({"url": SHARE, "content": "{}"}, "https://claude.ai") == 200
+
+    assert listener.source is not None
+    assert listener.source.content_type is None
+
+
+def test_a_url_the_caller_does_not_accept_is_refused_and_the_wait_goes_on() -> None:
+    """Any page matches its own origin, so the origin check alone admits it."""
+    elsewhere = "https://elsewhere.example/page"
+    with Listener(accepts=lambda url: url == SHARE) as listener:
+        assert (
+            _post({"url": elsewhere, "content": "{}"}, "https://elsewhere.example")
+            == 400
+        )
+        assert _post({"url": SHARE, "content": "{}"}, "https://claude.ai") == 200
+
+    assert listener.source is not None
+    assert listener.source.url == SHARE
+
+
+def test_a_connection_that_sends_nothing_cannot_hold_the_wait_past_its_deadline() -> (
+    None
+):
+    started = time.monotonic()
+    with Listener(timeout=1.0) as listener:
+        for _ in range(40):
+            try:
+                silent = socket.create_connection(("127.0.0.1", PORT), timeout=1)
+                break
+            except OSError:
+                time.sleep(0.05)
+        else:
+            raise AssertionError("listener never came up")
+        listener._thread.join(timeout=4)
+        still_waiting = listener._thread.is_alive()
+        silent.close()
+
+    assert not still_waiting
+    assert isinstance(listener.error, CaptureError)
+    assert time.monotonic() - started < 4
 
 
 def test_a_body_that_is_not_json_is_refused() -> None:

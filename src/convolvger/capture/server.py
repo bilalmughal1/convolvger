@@ -23,6 +23,7 @@ directly, so the listener grants it nothing it did not already have.
 
 import json
 import sys
+from collections.abc import Callable
 from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any
@@ -77,8 +78,20 @@ class _Server(HTTPServer):
 class _Handler(BaseHTTPRequestHandler):
     received: RawSource | None = None
     rejected: str | None = None
+    accepts: Callable[[str], bool] | None = None
+    deadline: float = 0.0
 
     protocol_version = "HTTP/1.1"
+
+    def setup(self) -> None:
+        """Give the connection only the time left before the deadline.
+
+        Without a socket timeout, a client that connects and sends
+        nothing holds the single-threaded listener past its deadline.
+        """
+        super().setup()
+        remaining = _Handler.deadline - datetime.now(UTC).timestamp()
+        self.connection.settimeout(max(remaining, 0.01))
 
     def _respond(self, code: int, body: bytes = b"") -> None:
         origin = self.headers.get("Origin")
@@ -130,6 +143,10 @@ class _Handler(BaseHTTPRequestHandler):
         if not isinstance(url, str) or not isinstance(content, str) or not content:
             self._reject("a payload without a url and a snapshot")
             return
+        content_type = payload.get("content_type")
+        if content_type is not None and not isinstance(content_type, str):
+            self._reject("a content type that is not a string")
+            return
 
         origin = (self.headers.get("Origin") or "").lower()
         expected = _origin_of(url)
@@ -137,10 +154,18 @@ class _Handler(BaseHTTPRequestHandler):
             self._reject(f"an origin of {origin or '(none)'} claiming {url}")
             return
 
+        # A page on any site matches its own origin, so the check above
+        # cannot tell a share page from any other. A URL no provider
+        # handles is refused here, while waiting can still go on,
+        # rather than accepted and failed on afterwards.
+        if _Handler.accepts is not None and not _Handler.accepts(url):
+            self._reject(f"a url no provider handles: {url}")
+            return
+
         _Handler.received = RawSource(
             url=url,
             content=content,
-            content_type=payload.get("content_type"),
+            content_type=content_type,
             fetched_at=datetime.now(UTC),
         )
         self._respond(200, b'{"ok":true}')
@@ -156,15 +181,23 @@ class _Handler(BaseHTTPRequestHandler):
 def wait_for_snapshot(
     port: int = DEFAULT_PORT,
     timeout: float = DEFAULT_TIMEOUT,
+    accepts: Callable[[str], bool] | None = None,
 ) -> RawSource:
     """Wait for a browser to post one snapshot, then stop listening.
 
     Rejected payloads do not end the wait. The likeliest cause is the
     bookmarklet being clicked on a page that is not a share page, and
     ending the command over that would punish the commonest mistake.
+    ``accepts`` says which claimed URLs are worth taking; this module
+    does not know the providers, so the caller that does supplies it.
+
+    A connection that sends nothing is dropped at the deadline. One
+    that keeps sending a byte at a time can still outlast it: each read
+    gets the time left when the connection opened.
     """
     _Handler.received = None
     _Handler.rejected = None
+    _Handler.accepts = accepts
 
     try:
         server = _Server(("127.0.0.1", port), _Handler)
@@ -176,6 +209,7 @@ def wait_for_snapshot(
         ) from error
 
     deadline = datetime.now(UTC).timestamp() + timeout
+    _Handler.deadline = deadline
     try:
         while _Handler.received is None:
             remaining = deadline - datetime.now(UTC).timestamp()
