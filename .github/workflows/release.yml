@@ -20,6 +20,16 @@ jobs:
       # Respects the 3.12 pin in .python-version
       - run: uv python install
       - run: uv sync --locked --dev
+      # A tag names a version by hand, so nothing else keeps it equal to
+      # the one in pyproject.toml; a mismatch would publish a version the
+      # tag does not name.
+      - name: Tag matches the project version
+        run: |
+          version="$(uv version --short)"
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match project version $version"
+            exit 1
+          fi
       - run: uv run pytest
       - run: uv run ruff check .
       - run: uv run ruff format --check .
