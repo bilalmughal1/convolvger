@@ -29,6 +29,19 @@ The project follows [Semantic Versioning](https://semver.org/).
   was already limited to. The size is counted after decompression
 - A Grok share id is escaped into the API path, as DeepSeek and Qwen escape
   theirs
+- JSON nested more than 128 levels deep is refused with an error, wherever it
+  is read: every provider's parser, a Gemini frame or payload, a ChatGPT
+  payload once decoded, a fetched body and a captured one. Before, a document
+  deep enough to exhaust the stack crashed with a traceback while parsing; on
+  Python 3.14 with an unlimited stack it was parsed instead, and what happened
+  next depended on its shape. Content kept unmodelled and nested deeper than
+  254 levels parsed but could not be written: a Grok share nested 300 levels
+  deep exported nothing, with a traceback. The deepest real share measured
+  nests 24 levels
+- `verify` refuses an archive nested more than 512 levels deep instead of
+  crashing. The limit is above the source limit because an archive's envelope
+  adds levels to what it keeps. A value nested to the source limit, added at
+  every place in each provider's synthetic share, was exported and read back
 
 ### Changed
 
