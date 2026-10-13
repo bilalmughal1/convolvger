@@ -31,6 +31,7 @@ import httpx
 
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.source import RawSource
+from convolvger.providers import _http
 from convolvger.providers.gemini._batchexecute import BatchExecuteError, decode
 from convolvger.providers.gemini._parse import CONVERSATION_RPC
 from convolvger.providers.gemini._urls import share_id
@@ -113,14 +114,15 @@ def _resolve(url: str, client: httpx.Client) -> str:
     if known is not None:
         return known
 
+    # Only the Location header is wanted, so the body is never read.
     try:
-        response = client.get(url, follow_redirects=False)
+        with client.stream("GET", url, follow_redirects=False) as response:
+            location = response.headers.get("location")
     except httpx.TimeoutException as exc:
         raise TransientFetchError(f"Request timed out resolving: {url}") from exc
     except httpx.HTTPError as exc:
         raise FetchError(f"Could not resolve share link: {exc}") from exc
 
-    location = response.headers.get("location")
     if not location:
         raise ShareNotFoundError(
             f"Share link did not redirect to a conversation: {url}"
@@ -146,8 +148,11 @@ def fetch(url: str, *, client: httpx.Client | None = None) -> RawSource:
     try:
         conversation_id = _resolve(url, active)
         try:
-            response = active.post(
+            response, body = _http.read(
+                active,
+                "POST",
                 ENDPOINT,
+                too_large=FetchError,
                 params={"rpcids": CONVERSATION_RPC},
                 content=_request_body(conversation_id),
                 headers={
@@ -173,14 +178,14 @@ def fetch(url: str, *, client: httpx.Client | None = None) -> RawSource:
         if status != 200:
             raise FetchError(f"Unexpected status {status}: {url}")
 
-        if _is_empty(response.text):
+        if _is_empty(body):
             raise ShareNotFoundError(
                 f"Share not found (deleted, never existed, or made private): {url}"
             )
 
         return RawSource(
             url=url,
-            content=response.text,
+            content=body,
             content_type=response.headers.get("content-type"),
             fetched_at=datetime.now(UTC),
         )

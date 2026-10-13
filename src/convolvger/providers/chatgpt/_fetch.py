@@ -13,6 +13,7 @@ import httpx
 
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.source import RawSource
+from convolvger.providers import _http
 
 USER_AGENT = (
     f"convolvger/{version('convolvger')} (+https://github.com/bilalmughal1/convolvger)"
@@ -54,7 +55,7 @@ def fetch(url: str, *, client: httpx.Client | None = None) -> RawSource:
     active = client or _build_client()
     try:
         try:
-            response = active.get(url)
+            response, body = _http.read(active, "GET", url, too_large=FetchError)
         except httpx.TimeoutException as exc:
             raise TransientFetchError(f"Request timed out: {url}") from exc
         except httpx.HTTPError as exc:
@@ -76,7 +77,7 @@ def fetch(url: str, *, client: httpx.Client | None = None) -> RawSource:
 
         return RawSource(
             url=url,
-            content=response.text,
+            content=body,
             content_type=response.headers.get("content-type"),
             fetched_at=datetime.now(UTC),
         )

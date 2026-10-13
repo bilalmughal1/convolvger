@@ -29,6 +29,7 @@ import httpx
 
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.source import RawSource
+from convolvger.providers import _http
 from convolvger.providers.kimi._parse import carries_nothing
 from convolvger.providers.kimi._urls import api_url, share_id
 
@@ -87,7 +88,13 @@ def fetch(url: str, *, client: httpx.Client | None = None) -> RawSource:
     active = client or _build_client()
     try:
         try:
-            response = active.post(endpoint, json={"shareId": identifier})
+            response, body = _http.read(
+                active,
+                "POST",
+                endpoint,
+                too_large=FetchError,
+                json={"shareId": identifier},
+            )
         except httpx.TimeoutException as exc:
             raise TransientFetchError(f"Request timed out: {url}") from exc
         except httpx.HTTPError as exc:
@@ -107,14 +114,14 @@ def fetch(url: str, *, client: httpx.Client | None = None) -> RawSource:
         if status != 200:
             raise FetchError(f"Unexpected status {status}: {url}")
 
-        if _is_empty(response.text):
+        if _is_empty(body):
             raise ShareNotFoundError(
                 f"Share not found (deleted, never existed, or made private): {url}"
             )
 
         return RawSource(
             url=url,
-            content=response.text,
+            content=body,
             content_type=response.headers.get("content-type"),
             fetched_at=datetime.now(UTC),
         )
