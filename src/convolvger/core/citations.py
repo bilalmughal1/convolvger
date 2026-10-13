@@ -19,6 +19,7 @@ whose first group is the number, and says which numbers resolve.
 """
 
 import re
+from bisect import bisect_right
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
@@ -40,24 +41,49 @@ class Lifted:
     unresolved: list[str] = field(default_factory=list)
 
 
+def _merged(spans: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    """The same positions as ``spans``, as sorted intervals that do not overlap."""
+    merged: list[tuple[int, int]] = []
+    for low, high in sorted(spans):
+        if merged and low <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], high))
+        else:
+            merged.append((low, high))
+    return merged
+
+
+def _within(position: int, intervals: list[tuple[int, int]], lows: list[int]) -> bool:
+    """True when ``position`` lies in one of the sorted, disjoint ``intervals``.
+
+    A binary search, not a scan: a text with thousands of stray
+    backticks has thousands of spans, and checking each one against
+    every other made the time grow with the square of their number.
+    """
+    index = bisect_right(lows, position) - 1
+    return index >= 0 and position < intervals[index][1]
+
+
 def code_spans(text: str) -> list[tuple[int, int]]:
     """Return the start and end of every fenced block and inline code span."""
     spans = [match.span() for match in FENCE.finditer(text)]
+    fences = list(spans)
+    lows = [low for low, _ in fences]
     for match in INLINE.finditer(text):
         start, end = match.span()
-        if not any(low <= start < high for low, high in spans):
+        if not _within(start, fences, lows):
             spans.append((start, end))
     return spans
 
 
 def lift(text: str, marker: re.Pattern[str], resolves: Callable[[str], bool]) -> Lifted:
     """Remove every marker that resolves and lies outside code."""
-    spans = code_spans(text)
+    spans = _merged(code_spans(text))
+    lows = [low for low, _ in spans]
     kept: list[str] = []
     result = Lifted(text="")
     position = 0
     for match in marker.finditer(text):
-        if any(low <= match.start() < high for low, high in spans):
+        if _within(match.start(), spans, lows):
             continue
         if not resolves(match.group(1)):
             result.unresolved.append(match.group(0))

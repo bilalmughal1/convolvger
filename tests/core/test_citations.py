@@ -1,6 +1,7 @@
 """Lifting numbered citation markers, and leaving code alone."""
 
 import re
+import time
 
 import pytest
 
@@ -67,3 +68,20 @@ def test_text_without_markers_comes_back_unchanged() -> None:
     outcome = lift("Nothing cited here.", MARKER, known)
     assert outcome.text == "Nothing cited here."
     assert outcome.lifted == []
+
+
+def test_many_code_spans_are_found_in_linear_time() -> None:
+    """32,000 spans took about 10 s when each was checked against every other."""
+    text = "`x " * 32_000
+    started = time.perf_counter()
+    spans = code_spans(text)
+    assert len(spans) == 16_000
+    assert time.perf_counter() - started < 2
+
+
+def test_many_markers_among_many_code_spans_are_lifted_in_linear_time() -> None:
+    text = "`x` [[1]] " * 16_000
+    started = time.perf_counter()
+    outcome = lift(text, MARKER, known)
+    assert len(outcome.lifted) == 16_000
+    assert time.perf_counter() - started < 2
