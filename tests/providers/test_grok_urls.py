@@ -45,6 +45,12 @@ def test_the_endpoint_is_keyed_on_the_whole_id() -> None:
     )
 
 
+def test_an_id_is_escaped_into_the_path() -> None:
+    assert _urls.api_url("https://grok.com/share/a;b=c") == (
+        "https://grok.com/rest/app-chat/share_links/a%3Bb%3Dc"
+    )
+
+
 @pytest.mark.parametrize(
     "url",
     [

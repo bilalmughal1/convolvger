@@ -16,7 +16,7 @@ A host belongs here once a share link is seen on it, not because it
 looks plausible, so ``x.com``'s Grok pages are absent.
 """
 
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 
 SHARE_HOSTS = frozenset({"grok.com"})
 
@@ -61,4 +61,4 @@ def api_url(url: str) -> str | None:
     identifier = share_id(url)
     if identifier is None:
         return None
-    return SHARE_API.format(share_id=identifier)
+    return SHARE_API.format(share_id=quote(identifier, safe=""))
