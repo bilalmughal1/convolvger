@@ -598,6 +598,17 @@ def test_a_tiny_chatgpt_page_that_unfolds_to_gigabytes_is_refused(
     assert not written.exists()
 
 
+def test_inspect_shows_a_title_with_line_breaks_on_one_line(tmp_path: Path) -> None:
+    payload = json.loads(GROK_PAYLOAD.read_text(encoding="utf-8"))
+    payload["conversation"]["title"] = "First line\n  Second line"
+    saved = tmp_path / "titled.json"
+    saved.write_text(json.dumps(payload), encoding="utf-8")
+
+    result = runner.invoke(app, ["inspect", GROK_URL, "--from-file", str(saved)])
+
+    assert "Title:     First line Second line\n" in result.output
+
+
 def test_a_saved_grok_response_is_archived_end_to_end(tmp_path: Path) -> None:
     """Grok fetches, but a saved response must still archive offline.
 

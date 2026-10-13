@@ -260,7 +260,10 @@ def inspect(
         return
 
     conversation = result.conversation
-    typer.echo(f"Title:     {conversation.title or '(untitled)'}")
+    # One line, as the Markdown heading has it: a break would start a line
+    # that reads as another field.
+    title = " ".join((conversation.title or "").split()) or "(untitled)"
+    typer.echo(f"Title:     {title}")
     typer.echo(f"Provider:  {conversation.provider}")
     typer.echo(f"Messages:  {len(conversation.messages)}")
     typer.echo(f"Visible:   {sum(m.visible for m in conversation.messages)}")
