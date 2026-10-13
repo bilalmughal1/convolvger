@@ -13,6 +13,7 @@ from convolvger.core.archive import (
 )
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import finding
+from convolvger.core.jsonload import ARCHIVE_MAX_DEPTH, MAX_DEPTH
 from convolvger.core.models import (
     Conversation,
     Message,
@@ -20,6 +21,7 @@ from convolvger.core.models import (
     TextBlock,
     UnknownBlock,
 )
+from convolvger.renderers import render_json
 
 RETRIEVED = datetime(2026, 9, 12, 9, 14, 22, tzinfo=UTC)
 
@@ -198,6 +200,27 @@ def test_load_refuses_a_file_that_declares_no_schema_version() -> None:
 def test_load_refuses_text_that_is_not_json() -> None:
     with pytest.raises(ArchiveError, match="Not JSON"):
         load_archive("# Untitled conversation\n")
+
+
+def test_load_refuses_json_nested_past_the_archive_limit() -> None:
+    deep = "[" * (ARCHIVE_MAX_DEPTH + 1) + "]" * (ARCHIVE_MAX_DEPTH + 1)
+    with pytest.raises(ArchiveError, match="Refused: JSON nested more than 512"):
+        load_archive('{"x": ' + deep[1:-1] + "}")
+
+
+def test_load_refuses_json_too_deep_for_the_stack_not_a_crash() -> None:
+    with pytest.raises(ArchiveError, match="Refused"):
+        load_archive('{"x": ' + "[" * 100_000 + "]" * 100_000 + "}")
+
+
+def test_load_reads_an_archive_nested_deeper_than_a_source_may_be() -> None:
+    """The envelope adds levels; refusing them would refuse this tool's own output."""
+    archive = json.loads(render_json(conversation()))
+    value: object = "kept"
+    for _ in range(MAX_DEPTH + 20):
+        value = [value]
+    archive["conversation"]["provider_metadata"] = {"deep": value}
+    assert load_archive(json.dumps(archive)).conversation.provider_metadata
 
 
 def test_load_refuses_json_that_is_not_an_object() -> None:

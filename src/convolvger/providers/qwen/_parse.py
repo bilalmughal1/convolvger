@@ -50,6 +50,7 @@ import re
 from datetime import UTC, datetime
 from typing import Any
 
+from convolvger.core import jsonload
 from convolvger.core.citations import lift
 from convolvger.core.findings import Finding, collapse, finding
 from convolvger.core.models import (
@@ -276,9 +277,11 @@ def _current_path(tree: dict[str, Any], current: Any) -> set[str]:
 def parse(source: RawSource) -> ParseResult:
     """Convert a Qwen share payload into a Conversation."""
     try:
-        payload = json.loads(source.content)
+        payload = jsonload.loads(source.content)
     except json.JSONDecodeError as exc:
         raise ParseError(f"Share payload is not valid JSON: {exc}") from exc
+    except jsonload.JSONNestingError as exc:
+        raise ParseError(f"Share payload is refused: {exc}") from exc
 
     if not isinstance(payload, dict) or not isinstance(payload.get("data"), dict):
         raise ParseError("Share payload is not a Qwen share answer")

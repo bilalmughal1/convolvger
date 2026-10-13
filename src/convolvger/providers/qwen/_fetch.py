@@ -19,6 +19,7 @@ from importlib.metadata import version
 
 import httpx
 
+from convolvger.core import jsonload
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.source import RawSource
 from convolvger.providers import _http
@@ -58,8 +59,8 @@ def _build_client() -> httpx.Client:
 def _is_empty(body: str) -> bool:
     """True when the endpoint answered 200 but carried no conversation."""
     try:
-        payload = json.loads(body)
-    except json.JSONDecodeError:
+        payload = jsonload.loads(body)
+    except (json.JSONDecodeError, jsonload.JSONNestingError):
         return False
     return carries_nothing(payload)
 

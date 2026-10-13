@@ -34,6 +34,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
+from convolvger.core import jsonload
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding, finding
 
@@ -65,7 +66,6 @@ def documents(raw: str) -> list[Any]:
     if not raw.startswith(PREFIX):
         raise BatchExecuteError("Response does not begin with the batchexecute prefix")
 
-    decoder = json.JSONDecoder()
     found: list[Any] = []
     position = len(PREFIX)
     while position < len(raw):
@@ -80,9 +80,11 @@ def documents(raw: str) -> list[Any]:
             break
 
         try:
-            document, position = decoder.raw_decode(raw, position)
+            document, position = jsonload.raw_decode(raw, position)
         except json.JSONDecodeError as error:
             raise BatchExecuteError(f"Frame is not valid JSON: {error}") from error
+        except jsonload.JSONNestingError as error:
+            raise BatchExecuteError(f"Frame is refused: {error}") from error
         found.append(document)
 
     if not found:
@@ -125,10 +127,14 @@ def decode(raw: str) -> DecodeResult:
                 raise BatchExecuteError(f"Malformed {ENVELOPE_TAG} row: {row[:2]}")
 
             try:
-                payload = json.loads(row[2])
+                payload = jsonload.loads(row[2])
             except json.JSONDecodeError as error:
                 raise BatchExecuteError(
                     f"Payload of {row[1]!r} is not valid JSON: {error}"
+                ) from error
+            except jsonload.JSONNestingError as error:
+                raise BatchExecuteError(
+                    f"Payload of {row[1]!r} is refused: {error}"
                 ) from error
             envelopes.append(Envelope(rpc_id=row[1], payload=payload))
 

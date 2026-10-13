@@ -40,6 +40,7 @@ import json
 from datetime import datetime
 from typing import Any
 
+from convolvger.core import jsonload
 from convolvger.core.findings import Finding, collapse, finding
 from convolvger.core.models import (
     ContentBlock,
@@ -194,9 +195,11 @@ def _message(raw: dict[str, Any], findings: list[Finding]) -> Message:
 def parse(source: RawSource) -> ParseResult:
     """Convert a Kimi share payload into a Conversation."""
     try:
-        payload = json.loads(source.content)
+        payload = jsonload.loads(source.content)
     except json.JSONDecodeError as exc:
         raise ParseError(f"Share payload is not valid JSON: {exc}") from exc
+    except jsonload.JSONNestingError as exc:
+        raise ParseError(f"Share payload is refused: {exc}") from exc
 
     if not isinstance(payload, dict):
         raise ParseError("Share payload is not a JSON object")

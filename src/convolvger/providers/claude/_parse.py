@@ -17,6 +17,7 @@ import json
 from datetime import datetime
 from typing import Any
 
+from convolvger.core import jsonload
 from convolvger.core.findings import Finding, collapse, finding
 from convolvger.core.models import Conversation, Message, MessageRole
 from convolvger.core.results import ParseError, ParseResult
@@ -100,9 +101,11 @@ def _message(raw: dict[str, Any], findings: list[Finding]) -> Message:
 def parse(source: RawSource) -> ParseResult:
     """Convert a saved Claude chat snapshot into a Conversation."""
     try:
-        envelope = json.loads(source.content)
+        envelope = jsonload.loads(source.content)
     except json.JSONDecodeError as exc:
         raise ParseError(f"Snapshot is not valid JSON: {exc}") from exc
+    except jsonload.JSONNestingError as exc:
+        raise ParseError(f"Snapshot is refused: {exc}") from exc
 
     if not isinstance(envelope, dict):
         raise ParseError("Snapshot is not a JSON object")

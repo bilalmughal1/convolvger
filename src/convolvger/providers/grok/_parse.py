@@ -44,6 +44,7 @@ import re
 from datetime import datetime
 from typing import Any
 
+from convolvger.core import jsonload
 from convolvger.core.findings import Finding, collapse, finding
 from convolvger.core.models import (
     ContentBlock,
@@ -167,8 +168,8 @@ def _card_ids(
     found: set[str] = set()
     for card in cards:
         try:
-            decoded = json.loads(card) if isinstance(card, str) else None
-        except json.JSONDecodeError:
+            decoded = jsonload.loads(card) if isinstance(card, str) else None
+        except (json.JSONDecodeError, jsonload.JSONNestingError):
             decoded = None
         identifier = decoded.get("id") if isinstance(decoded, dict) else None
         if isinstance(identifier, str):
@@ -309,9 +310,11 @@ def _message(raw: dict[str, Any], findings: list[Finding]) -> Message:
 def parse(source: RawSource) -> ParseResult:
     """Convert a Grok share payload into a Conversation."""
     try:
-        envelope = json.loads(source.content)
+        envelope = jsonload.loads(source.content)
     except json.JSONDecodeError as exc:
         raise ParseError(f"Share payload is not valid JSON: {exc}") from exc
+    except jsonload.JSONNestingError as exc:
+        raise ParseError(f"Share payload is refused: {exc}") from exc
 
     if not isinstance(envelope, dict):
         raise ParseError("Share payload is not a JSON object")

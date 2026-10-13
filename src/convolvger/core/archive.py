@@ -15,6 +15,7 @@ from importlib.metadata import PackageNotFoundError, version
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from convolvger.core import jsonload
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding
 from convolvger.core.models import Conversation
@@ -106,9 +107,11 @@ def load_archive(text: str) -> ArchiveEnvelope:
     file, as it already owns writing one.
     """
     try:
-        payload = json.loads(text)
+        payload = jsonload.loads(text, max_depth=jsonload.ARCHIVE_MAX_DEPTH)
     except json.JSONDecodeError as error:
         raise ArchiveError(f"Not JSON: {error}") from error
+    except jsonload.JSONNestingError as error:
+        raise ArchiveError(f"Refused: {error}") from error
 
     if not isinstance(payload, dict):
         raise ArchiveError(

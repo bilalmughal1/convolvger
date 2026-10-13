@@ -155,6 +155,16 @@ def test_a_connection_that_sends_nothing_cannot_hold_the_wait_past_its_deadline(
     assert time.monotonic() - started < 4
 
 
+def test_a_body_nested_too_deeply_is_refused_and_the_wait_goes_on() -> None:
+    """Parsed before any origin check, so any page could send one."""
+    deep = ("[" * 100_000 + "]" * 100_000).encode()
+    with Listener() as listener:
+        assert _post(None, "https://elsewhere.example", raw=deep) == 400
+        assert _post({"url": SHARE, "content": "{}"}, "https://claude.ai") == 200
+
+    assert listener.source is not None
+
+
 def test_a_body_that_is_not_json_is_refused() -> None:
     with Listener(timeout=1.0) as listener:
         assert _post(None, "https://claude.ai", raw=b"<html>nope</html>") == 400

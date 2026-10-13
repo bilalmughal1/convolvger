@@ -506,6 +506,39 @@ GROK_URL = "https://grok.com/share/bGVnYWN5_00000000-0000-4000-8000-000000000001
 GROK_PAYLOAD = Path(__file__).parent.parent / "fixtures" / "grok" / "share-minimal.json"
 
 
+def test_a_source_nested_past_the_limit_is_refused_without_a_traceback(
+    tmp_path: Path,
+) -> None:
+    """300 levels parsed, then could not be serialised: a traceback, no archive."""
+    payload = json.loads(GROK_PAYLOAD.read_text(encoding="utf-8"))
+    value: object = "end"
+    for _ in range(300):
+        value = [value]
+    payload["unmodelled_for_test"] = value
+    saved = tmp_path / "deep.json"
+    saved.write_text(json.dumps(payload), encoding="utf-8")
+    written = tmp_path / "out.json"
+
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            GROK_URL,
+            "--from-file",
+            str(saved),
+            "-f",
+            "json",
+            "-o",
+            str(written),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert isinstance(result.exception, SystemExit)
+    assert "refused: JSON nested more than 128 levels deep" in result.output
+    assert not written.exists()
+
+
 def test_a_saved_grok_response_is_archived_end_to_end(tmp_path: Path) -> None:
     """Grok fetches, but a saved response must still archive offline.
 

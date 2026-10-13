@@ -29,6 +29,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any
 from urllib.parse import urlsplit
 
+from convolvger.core import jsonload
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.source import RawSource
 
@@ -130,9 +131,12 @@ class _Handler(BaseHTTPRequestHandler):
             return
 
         try:
-            payload = json.loads(self.rfile.read(size))
+            payload = jsonload.loads(self.rfile.read(size))
         except (OSError, json.JSONDecodeError):
             self._reject("a body that is not JSON")
+            return
+        except jsonload.JSONNestingError:
+            self._reject("a body nested too deeply")
             return
 
         if not isinstance(payload, dict):

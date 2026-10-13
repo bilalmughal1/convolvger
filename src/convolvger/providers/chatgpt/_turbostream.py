@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
+from convolvger.core import jsonload
 from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding, finding
 
@@ -63,12 +64,12 @@ def parse_stream(payloads: list[str]) -> tuple[list[Any], list[Finding]]:
         )
 
     try:
-        flat = json.loads(lines[0], parse_constant=note_constant)
+        flat = jsonload.loads(lines[0], parse_constant=note_constant)
     except json.JSONDecodeError as exc:
         raise TurboStreamError(
             f"Leading turbo-stream line is not JSON: {exc.msg}"
         ) from exc
-    except RecursionError as exc:
+    except jsonload.JSONNestingError as exc:
         raise TurboStreamError(
             "Leading turbo-stream line is nested too deeply"
         ) from exc
@@ -152,6 +153,12 @@ def decode(flat: list[Any]) -> DecodeResult:
         value = at(0)
     except RecursionError as exc:
         raise TurboStreamError("References are nested too deeply") from exc
+    # The flat array is two levels deep whatever it encodes, so the limit
+    # every other provider's JSON gets is applied to what it decodes to.
+    try:
+        jsonload.check_depth(value)
+    except jsonload.JSONNestingError as exc:
+        raise TurboStreamError(f"Decoded payload is refused: {exc}") from exc
     return DecodeResult(value=value, findings=findings)
 
 
