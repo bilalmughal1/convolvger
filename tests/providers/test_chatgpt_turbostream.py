@@ -133,9 +133,27 @@ def test_a_reference_chain_deeper_than_the_stack_raises() -> None:
         decode([*chain, "end"])
 
 
-def test_a_leading_line_nested_deeper_than_the_stack_raises() -> None:
-    with pytest.raises(TurboStreamError, match="nested too deeply"):
+def test_a_leading_line_nested_100k_deep_raises_a_decoder_error() -> None:
+    """Which error depends on the stack, never whether it is this one.
+
+    Python 3.14 bounds recursion in C by the stack actually available:
+    with ``ulimit -s unlimited`` it reads all 100,000 levels and reports
+    the unclosed array, where 3.12, 3.13 and 3.14 on an 8 MiB stack run
+    out of stack first.
+    """
+    with pytest.raises(TurboStreamError):
         parse_stream(["[" * 100_000 + "\n"])
+
+
+def test_a_leading_line_that_exhausts_the_stack_raises_a_decoder_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def exhausted(*args: object, **kwargs: object) -> object:
+        raise RecursionError("maximum recursion depth exceeded")
+
+    monkeypatch.setattr(json, "loads", exhausted)
+    with pytest.raises(TurboStreamError, match="nested too deeply"):
+        parse_stream(["[1]\n"])
 
 
 def test_empty_flat_array_raises() -> None:
