@@ -7,7 +7,7 @@ validated, since the provider's own answer is the authority on whether an
 id exists.
 """
 
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, unquote, urlsplit
 
 SHARE_HOSTS = frozenset({"chat.deepseek.com"})
 
@@ -49,4 +49,6 @@ def api_url(url: str) -> str | None:
     identifier = share_id(url)
     if identifier is None:
         return None
-    return CONTENT_API.format(share_id=quote(identifier, safe=""))
+    # The id arrives percent-encoded, as part of a link; encoding it again
+    # would turn an escape such as %2F into %252F.
+    return CONTENT_API.format(share_id=quote(unquote(identifier), safe=""))

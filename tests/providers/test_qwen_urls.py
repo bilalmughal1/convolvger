@@ -43,3 +43,9 @@ def test_rejects_urls_that_are_not_share_links(url: str) -> None:
 
 def test_a_malformed_url_is_rejected_rather_than_raising() -> None:
     assert _urls.is_share_url("https://[") is False
+
+
+def test_an_escape_already_in_the_link_is_not_escaped_again() -> None:
+    assert _urls.api_url("https://chat.qwen.ai/s/ab%2Fc") == (
+        "https://chat.qwen.ai/api/v2/chats/share/ab%2Fc"
+    )

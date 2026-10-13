@@ -11,7 +11,7 @@ the ``/s/`` form is recognised, because it is the one share links take.
 The id is not validated; the provider's own answer is the authority.
 """
 
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, unquote, urlsplit
 
 SHARE_HOSTS = frozenset({"chat.qwen.ai", "chat.qwenlm.ai"})
 
@@ -58,4 +58,8 @@ def api_url(url: str) -> str | None:
     identifier = share_id(url)
     if parsed is None or identifier is None:
         return None
-    return SHARE_API.format(host=parsed[0], share_id=quote(identifier, safe=""))
+    # The id arrives percent-encoded, as part of a link; encoding it again
+    # would turn an escape such as %2F into %252F.
+    return SHARE_API.format(
+        host=parsed[0], share_id=quote(unquote(identifier), safe="")
+    )
