@@ -18,6 +18,10 @@ Run linting:
 
 uv run ruff check .
 
+Check formatting:
+
+uv run ruff format --check .
+
 Run type checking:
 
 uv run mypy src tests

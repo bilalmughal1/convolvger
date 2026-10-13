@@ -28,10 +28,10 @@ Version 3 added ``occurrences`` to a finding: the envelope allows
 unknown fields, but a nested ``Finding`` forbids them, so the
 envelope's forward compatibility does not reach inside it. It also
 added ``provider_metadata`` to a conversation, which is the same kind
-of change and would normally need its own bump -- but version 3 has
-not been released, so no reader exists that could refuse it and the
-rule has nothing to protect. A field added to a nested model after a
-release does need one.
+of change and would normally need its own bump -- but version 3 had
+not been released when it was added, so no reader existed that could
+refuse it and the rule had nothing to protect. A field added to a
+nested model after a release does need one.
 """
 
 READABLE_VERSIONS: frozenset[int] = frozenset({2, SCHEMA_VERSION})

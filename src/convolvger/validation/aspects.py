@@ -32,8 +32,8 @@ in step.
 An aspect is not a severity. Every warning bears on a check -- a
 finding that changes the exit status must answer some question, or the
 status would contradict the verdict -- but the reverse does not hold.
-That every note is informational is a fact about today's eleven codes,
-not a rule: a genuinely minor fidelity loss could be minted as a note
+That every note is informational is a fact about today's codes, not a
+rule: a genuinely minor fidelity loss could be minted as a note
 tomorrow, and an aspect derived from a level would then be wrong.
 """
 
