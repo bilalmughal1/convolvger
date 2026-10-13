@@ -77,18 +77,20 @@ def _reference(raw: dict[str, Any]) -> str | None:
     return title or url
 
 
-_BACKTICK_RUN = re.compile(r"`+")
+def _fence(text: str, language: str | None) -> str:
+    """Return a fence the code inside it cannot close.
 
-
-def _fence(text: str) -> str:
-    """Return a backtick fence the code inside it cannot close.
-
-    A fence ends at the first line holding a run of backticks at least
-    as long as the opening one, so the fence is made one longer than
-    the longest run anywhere in the code.
+    A fence ends at the first line holding a run of its character at
+    least as long as the opening one, so the fence is made one longer
+    than the longest run anywhere in the code. Backticks are used unless
+    the language names one: after a backtick fence the language may not
+    hold a backtick, and the line would not open a fence at all. After a
+    tilde fence it may.
     """
-    longest = max((len(run) for run in _BACKTICK_RUN.findall(text)), default=0)
-    return "`" * max(3, longest + 1)
+    mark = "~" if language and "`" in language else "`"
+    runs = re.findall(re.escape(mark) + "+", text)
+    longest = max((len(run) for run in runs), default=0)
+    return mark * max(3, longest + 1)
 
 
 def _quote(text: str) -> str:
@@ -99,7 +101,7 @@ def _render_block(block: ContentBlock) -> str:
     if isinstance(block, TextBlock):
         return block.text
     if isinstance(block, CodeBlock):
-        fence = _fence(block.text)
+        fence = _fence(block.text, block.language)
         opening = f"{fence}{block.language}" if block.language else fence
         return f"{opening}\n{block.text}\n{fence}"
     if isinstance(block, ReasoningBlock):

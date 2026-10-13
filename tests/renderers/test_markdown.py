@@ -201,6 +201,20 @@ def test_a_line_of_backticks_inside_code_cannot_close_its_fence() -> None:
     assert f"`````markdown\n{code}\n`````" in output
 
 
+def test_a_language_naming_a_backtick_is_fenced_with_tildes() -> None:
+    """After backticks the line would not open a fence; after tildes it does."""
+    output = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[CodeBlock(text="x = 1\n~~~\ny = 2", language="py`x")],
+            )
+        )
+    )
+
+    assert "~~~~py`x\nx = 1\n~~~\ny = 2\n~~~~" in output
+
+
 def test_reasoning_is_visually_distinct_from_assistant_prose() -> None:
     """Reasoning must never be presentable as ordinary assistant output."""
     output = render_markdown(
