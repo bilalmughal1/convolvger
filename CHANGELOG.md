@@ -27,8 +27,17 @@ The project follows [Semantic Versioning](https://semver.org/).
   where it was measured, and now takes hundredths of a second
 - A fetched response over 32 MiB is refused, the number a captured snapshot
   was already limited to. The size is counted after decompression
-- A Grok share id is escaped into the API path, as DeepSeek and Qwen escape
-  theirs
+- A share id is escaped into the API URL once. DeepSeek, Qwen and Grok
+  escaped an id still in its percent-encoded form from the link, so an escape
+  such as `%2F` was sent as `%252F`. Real ids seen carry no escapes
+- A code block whose language holds a backtick is fenced with tildes in the
+  Markdown export. After backticks such a line opens no fence: the code read as
+  prose, and its closing fence opened a code block that swallowed the text
+  after it
+- `inspect` prints a title with line breaks on one line, as the Markdown
+  heading does
+- A fetched response refused for its size names the link that was supplied, as
+  the other fetch errors do
 - JSON nested more than 64 levels deep is refused with an error, wherever it
   is read: every provider's parser, a Gemini frame or payload, a ChatGPT
   payload once decoded, a fetched body and a captured one. Before, a document
