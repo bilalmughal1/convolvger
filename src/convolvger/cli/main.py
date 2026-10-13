@@ -324,24 +324,24 @@ def export(
         _fail(error)
         return
 
-    if output_format == "json":
-        if include_hidden or include_inactive:
-            _warn("Note: include flags are ignored; JSON keeps every message.")
-        rendered = render_json(
-            result.conversation,
-            findings=result.findings,
-            fetched_at=raw.fetched_at,
-        )
-    else:
-        rendered = render_markdown(
-            result.conversation,
-            include_hidden=include_hidden,
-            include_inactive=include_inactive,
-            findings=result.findings,
-            fetched_at=raw.fetched_at,
-        )
+    if output_format == "json" and (include_hidden or include_inactive):
+        _warn("Note: include flags are ignored; JSON keeps every message.")
 
     try:
+        if output_format == "json":
+            rendered = render_json(
+                result.conversation,
+                findings=result.findings,
+                fetched_at=raw.fetched_at,
+            )
+        else:
+            rendered = render_markdown(
+                result.conversation,
+                include_hidden=include_hidden,
+                include_inactive=include_inactive,
+                findings=result.findings,
+                fetched_at=raw.fetched_at,
+            )
         if output is not None and str(output) == "-":
             write_stdout(sys.stdout, rendered)
         else:

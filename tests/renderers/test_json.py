@@ -1,6 +1,9 @@
 from datetime import UTC, datetime
 
+import pytest
+
 from convolvger.core.archive import ArchiveEnvelope
+from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import finding
 from convolvger.core.models import (
     Conversation,
@@ -10,6 +13,7 @@ from convolvger.core.models import (
     UnknownBlock,
 )
 from convolvger.renderers import render_json
+from convolvger.renderers.json import RenderError
 
 RETRIEVED = datetime(2026, 9, 12, 9, 14, 22, tzinfo=UTC)
 
@@ -86,3 +90,17 @@ def test_output_ends_with_a_single_newline() -> None:
 
     assert output.endswith("\n")
     assert not output.endswith("\n\n")
+
+
+def test_a_conversation_the_serialiser_refuses_is_a_render_error() -> None:
+    """300 levels is past what pydantic-core serialises on Windows or Linux."""
+    deep: object = "end"
+    for _ in range(300):
+        deep = [deep]
+    refused = Conversation(
+        provider="grok", source_url="https://x", provider_metadata={"deep": deep}
+    )
+
+    with pytest.raises(RenderError, match="could not be written") as raised:
+        render_json(refused)
+    assert isinstance(raised.value, ConvolvgerError)

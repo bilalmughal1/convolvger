@@ -44,6 +44,10 @@ The project follows [Semantic Versioning](https://semver.org/).
   page whose 22 levels each referenced the next twice exported a 742 MB archive,
   peaking at 1.47 GB of memory over 109 seconds, and is now refused in about
   two. Real pages measured decode to less than their own size
+- A conversation the serialiser cannot write ends `export` with an error
+  instead of a traceback, and no file is written. Sources are already held to
+  a depth every platform measured can serialise; this covers a later pydantic
+  release lowering that depth
 - `verify` refuses an archive nested more than 512 levels deep instead of
   crashing. The limit is above the source limit because an archive's envelope
   adds levels to what it keeps. A value nested to the source limit, added at

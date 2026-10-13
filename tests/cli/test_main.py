@@ -7,6 +7,7 @@ import pytest
 from typer.testing import CliRunner
 
 from convolvger.cli.main import app
+from convolvger.core import jsonload
 from convolvger.core.archive import READABLE_VERSIONS, SCHEMA_VERSION, ArchiveEnvelope
 from convolvger.core.errors import ProviderNotFoundError
 from convolvger.core.findings import Finding, finding
@@ -537,6 +538,40 @@ def test_a_source_nested_past_the_limit_is_refused_without_a_traceback(
     assert result.exit_code == 1
     assert isinstance(result.exception, SystemExit)
     assert f"refused: JSON nested more than {MAX_DEPTH} levels deep" in result.output
+    assert not written.exists()
+
+
+def test_an_archive_the_serialiser_refuses_ends_cleanly_and_writes_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Stands in for a pydantic release whose ceiling falls below the input limit."""
+    monkeypatch.setattr(jsonload, "check_depth", lambda *args, **kwargs: None)
+    payload = json.loads(GROK_PAYLOAD.read_text(encoding="utf-8"))
+    value: object = "end"
+    for _ in range(300):
+        value = [value]
+    payload["unmodelled_for_test"] = value
+    saved = tmp_path / "deep.json"
+    saved.write_text(json.dumps(payload), encoding="utf-8")
+    written = tmp_path / "out.json"
+
+    result = runner.invoke(
+        app,
+        [
+            "export",
+            GROK_URL,
+            "--from-file",
+            str(saved),
+            "-f",
+            "json",
+            "-o",
+            str(written),
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert isinstance(result.exception, SystemExit)
+    assert "The archive could not be written" in result.output
     assert not written.exists()
 
 
