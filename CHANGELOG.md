@@ -67,6 +67,8 @@ The project follows [Semantic Versioning](https://semver.org/).
 - The release workflow refuses a tag that does not match the version in
   `pyproject.toml`, and the checks workflow runs with read-only permissions
 - The contributing guide lists the format check CI already runs
+- `ruff` refuses bidirectional control characters in Python source (PLE2502),
+  which can make code read differently from how it runs
 
 ### Removed
 
