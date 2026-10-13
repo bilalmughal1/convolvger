@@ -153,6 +153,7 @@ def fetch(url: str, *, client: httpx.Client | None = None) -> RawSource:
                 "POST",
                 ENDPOINT,
                 too_large=FetchError,
+                share_url=url,
                 params={"rpcids": CONVERSATION_RPC},
                 content=_request_body(conversation_id),
                 headers={

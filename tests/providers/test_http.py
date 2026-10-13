@@ -15,6 +15,7 @@ from convolvger.providers.kimi import _fetch as kimi_fetch
 from convolvger.providers.qwen import _fetch as qwen_fetch
 
 URL = "https://example.test/x"
+SHARE = "https://example.test/share/x"
 
 
 class TooLarge(Exception):
@@ -37,7 +38,7 @@ def small_limit(monkeypatch: pytest.MonkeyPatch) -> int:
 
 def test_a_body_at_the_limit_is_read(small_limit: int) -> None:
     client = _client(httpx.Response(200, content=b"a" * small_limit))
-    response, body = _http.read(client, "GET", URL, too_large=TooLarge)
+    response, body = _http.read(client, "GET", URL, too_large=TooLarge, share_url=SHARE)
     assert response.status_code == 200
     assert body == "a" * small_limit
 
@@ -47,7 +48,7 @@ def test_a_body_over_the_limit_is_refused_while_it_streams(small_limit: int) -> 
     content = _chunks(b"a" * 60, b"a" * 60)
     client = _client(httpx.Response(200, content=content))
     with pytest.raises(TooLarge, match="over the limit"):
-        _http.read(client, "GET", URL, too_large=TooLarge)
+        _http.read(client, "GET", URL, too_large=TooLarge, share_url=SHARE)
 
 
 def test_a_declared_length_over_the_limit_is_refused_before_reading(
@@ -61,7 +62,7 @@ def test_a_declared_length_over_the_limit_is_refused_before_reading(
         200, content=never_read(), headers={"content-length": "101"}
     )
     with pytest.raises(TooLarge, match="declares 101 bytes"):
-        _http.read(_client(response), "GET", URL, too_large=TooLarge)
+        _http.read(_client(response), "GET", URL, too_large=TooLarge, share_url=SHARE)
 
 
 def test_a_small_compressed_body_that_expands_past_the_limit_is_refused(
@@ -71,7 +72,7 @@ def test_a_small_compressed_body_that_expands_past_the_limit_is_refused(
     assert len(packed) < small_limit
     response = httpx.Response(200, content=packed, headers={"content-encoding": "gzip"})
     with pytest.raises(TooLarge):
-        _http.read(_client(response), "GET", URL, too_large=TooLarge)
+        _http.read(_client(response), "GET", URL, too_large=TooLarge, share_url=SHARE)
 
 
 def test_a_compressed_body_is_decoded_once() -> None:
@@ -80,8 +81,19 @@ def test_a_compressed_body_is_decoded_once() -> None:
         content=gzip.compress("café".encode()),
         headers={"content-encoding": "gzip", "content-type": "text/plain"},
     )
-    _, body = _http.read(_client(response), "GET", URL, too_large=TooLarge)
+    _, body = _http.read(
+        _client(response), "GET", URL, too_large=TooLarge, share_url=SHARE
+    )
     assert body == "café"
+
+
+def test_a_refusal_names_the_link_that_was_supplied(small_limit: int) -> None:
+    """The endpoint asked is an implementation detail; the link is what was given."""
+    client = _client(httpx.Response(200, content=_chunks(b"a" * 101)))
+    with pytest.raises(TooLarge) as raised:
+        _http.read(client, "GET", URL, too_large=TooLarge, share_url=SHARE)
+    assert str(raised.value).endswith(SHARE)
+    assert URL not in str(raised.value)
 
 
 def test_a_declared_charset_is_honoured_as_response_text_would() -> None:
@@ -89,7 +101,9 @@ def test_a_declared_charset_is_honoured_as_response_text_would() -> None:
     response = httpx.Response(
         200, content=raw, headers={"content-type": "text/plain; charset=latin-1"}
     )
-    _, body = _http.read(_client(response), "GET", URL, too_large=TooLarge)
+    _, body = _http.read(
+        _client(response), "GET", URL, too_large=TooLarge, share_url=SHARE
+    )
     assert body == httpx.Response(200, content=raw, headers=response.headers).text
 
 
@@ -115,5 +129,6 @@ def test_every_fetcher_refuses_an_oversized_response_with_its_own_error(
 ) -> None:
     module, url = FETCHERS[provider]
     client = _client(httpx.Response(200, content=_chunks(b"{" * 80, b"}" * 80)))
-    with pytest.raises(module.FetchError, match="over the limit"):
+    with pytest.raises(module.FetchError, match="over the limit") as raised:
         module.fetch(url, client=client)
+    assert str(raised.value).endswith(url)

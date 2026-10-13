@@ -94,6 +94,7 @@ def fetch(url: str, *, client: httpx.Client | None = None) -> RawSource:
                 "POST",
                 endpoint,
                 too_large=FetchError,
+                share_url=url,
                 json={"shareId": identifier},
             )
         except httpx.TimeoutException as exc:

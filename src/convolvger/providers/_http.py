@@ -32,24 +32,32 @@ def read(
     url: str,
     *,
     too_large: type[Exception],
+    share_url: str,
     **options: Any,
 ) -> tuple[httpx.Response, str]:
     """Send one request and return the response with its body as text.
 
-    The body is decoded as ``Response.text`` would decode it. The
+    ``share_url`` is the link the person supplied, named in a refusal as
+    the fetchers' other errors name it. The body is decoded as
+    ``Response.text`` would decode it. The
     returned response has been closed, so its own ``text`` and
     ``content`` are not available; use the string returned beside it.
     """
     with client.stream(method, url, **options) as response:
         declared = response.headers.get("content-length", "")
         if declared.isdigit() and int(declared) > MAX_BYTES:
-            raise too_large(f"Response declares {declared} bytes, over the limit")
+            raise too_large(
+                f"Response declares {declared} bytes, over the limit of "
+                f"{MAX_BYTES}: {share_url}"
+            )
         chunks: list[bytes] = []
         size = 0
         for chunk in response.iter_bytes():
             size += len(chunk)
             if size > MAX_BYTES:
-                raise too_large(f"Response is over the limit of {MAX_BYTES} bytes")
+                raise too_large(
+                    f"Response is over the limit of {MAX_BYTES} bytes: {share_url}"
+                )
             chunks.append(chunk)
     body = b"".join(chunks).decode(response.encoding or "utf-8", errors="replace")
     return response, body

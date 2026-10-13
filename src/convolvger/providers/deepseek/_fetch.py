@@ -97,7 +97,9 @@ def fetch(url: str, *, client: httpx.Client | None = None) -> RawSource:
     active = client or _build_client()
     try:
         try:
-            response, body = _http.read(active, "GET", endpoint, too_large=FetchError)
+            response, body = _http.read(
+                active, "GET", endpoint, too_large=FetchError, share_url=url
+            )
         except httpx.TimeoutException as exc:
             raise TransientFetchError(f"Request timed out: {url}") from exc
         except httpx.HTTPError as exc:
