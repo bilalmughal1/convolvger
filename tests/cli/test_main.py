@@ -15,6 +15,7 @@ from convolvger.core.jsonload import MAX_DEPTH
 from convolvger.core.models import Conversation, Message, MessageRole, TextBlock
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
+from convolvger.providers import _http
 from convolvger.renderers import render_json
 
 runner = CliRunner()
@@ -545,7 +546,8 @@ def test_an_archive_the_serialiser_refuses_ends_cleanly_and_writes_nothing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Stands in for a pydantic release whose ceiling falls below the input limit."""
-    monkeypatch.setattr(jsonload, "check_depth", lambda *args, **kwargs: None)
+    for check in ("check_depth", "_check_tree"):
+        monkeypatch.setattr(jsonload, check, lambda *args, **kwargs: None)
     payload = json.loads(GROK_PAYLOAD.read_text(encoding="utf-8"))
     value: object = "end"
     for _ in range(300):
@@ -607,6 +609,52 @@ def test_inspect_shows_a_title_with_line_breaks_on_one_line(tmp_path: Path) -> N
     result = runner.invoke(app, ["inspect", GROK_URL, "--from-file", str(saved)])
 
     assert "Title:     First line Second line\n" in result.output
+
+
+def test_a_saved_snapshot_is_held_to_the_fetch_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    size = GROK_PAYLOAD.stat().st_size
+    monkeypatch.setattr(_http, "MAX_BYTES", size)
+    at_limit = runner.invoke(
+        app, ["inspect", GROK_URL, "--from-file", str(GROK_PAYLOAD)]
+    )
+    assert at_limit.exit_code == 2
+
+    monkeypatch.setattr(_http, "MAX_BYTES", size - 1)
+    over = runner.invoke(app, ["inspect", GROK_URL, "--from-file", str(GROK_PAYLOAD)])
+    assert over.exit_code == 1
+    assert isinstance(over.exception, SystemExit)
+    assert f"larger than {size - 1} bytes" in over.output
+
+
+def test_verify_reads_an_archive_larger_than_the_fetch_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An archive can outgrow its source; limiting it would refuse this tool's output."""
+    archive = tmp_path / "out.json"
+    exported = runner.invoke(
+        app,
+        [
+            "export",
+            GROK_URL,
+            "--from-file",
+            str(GROK_PAYLOAD),
+            "-f",
+            "json",
+            "-o",
+            str(archive),
+        ],
+    )
+    assert exported.exit_code == 2
+    monkeypatch.setattr(_http, "MAX_BYTES", 10)
+
+    result = runner.invoke(app, ["verify", str(archive)])
+
+    assert "larger than" not in result.output
+    assert (
+        result.exit_code == 2
+    )  # read and judged: the fixture's reasoning is unmodelled
 
 
 def test_a_saved_grok_response_is_archived_end_to_end(tmp_path: Path) -> None:

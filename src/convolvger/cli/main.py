@@ -28,6 +28,7 @@ from convolvger.core.findings import Finding, Level
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
 from convolvger.core.text import TextEncodingError, decode_text
+from convolvger.providers import _http
 from convolvger.providers.default import build_registry
 from convolvger.renderers import render_json, render_markdown
 from convolvger.validation.report import Report
@@ -141,6 +142,30 @@ def _select(
     return _retrieve(source)
 
 
+class SnapshotTooLargeError(ConvolvgerError):
+    """Raised when a saved snapshot is larger than a fetched one may be."""
+
+
+def _read_snapshot(path: Path) -> bytes:
+    """Read a saved snapshot, refusing one larger than a fetched response may be.
+
+    A snapshot on disk is the same input a fetch or a capture hands over,
+    so it is held to the same limit. At most one byte past it is read, so
+    a file of any size is refused without being loaded. An archive given
+    to ``verify`` is not limited this way: it can be larger than the
+    source it was made from, and a limit would refuse this tool's output.
+    """
+    limit = _http.MAX_BYTES
+    with path.open("rb") as handle:
+        data = handle.read(limit + 1)
+    if len(data) > limit:
+        raise SnapshotTooLargeError(
+            f"{path} is larger than {limit} bytes, the limit a fetched "
+            f"response is held to"
+        )
+    return data
+
+
 def _reparse(source: str, path: Path) -> tuple[RawSource, ParseResult]:
     """Parse a snapshot already on disk instead of fetching it.
 
@@ -153,7 +178,7 @@ def _reparse(source: str, path: Path) -> tuple[RawSource, ParseResult]:
     time into an archive.
     """
     provider = build_registry().detect(source)
-    raw = RawSource(url=source, content=decode_text(path.read_bytes()))
+    raw = RawSource(url=source, content=decode_text(_read_snapshot(path)))
     return raw, provider.parse(raw)
 
 

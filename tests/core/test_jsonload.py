@@ -1,6 +1,7 @@
 """Parsing JSON with a fixed limit on how deeply it nests."""
 
 import json
+import random
 import time
 from typing import Any
 
@@ -106,3 +107,30 @@ def test_an_archive_may_nest_deeper_than_a_source() -> None:
     jsonload.loads(
         nested(jsonload.MAX_DEPTH + 10), max_depth=jsonload.ARCHIVE_MAX_DEPTH
     )
+
+
+def _random_tree(rng: random.Random, budget: int) -> Any:
+    if budget <= 0 or rng.random() < 0.2:
+        return rng.choice([0, "x", None, True])
+    if rng.random() < 0.5:
+        return [_random_tree(rng, budget - 1) for _ in range(rng.randint(0, 3))]
+    return {str(i): _random_tree(rng, budget - 1) for i in range(rng.randint(0, 3))}
+
+
+def test_parsed_json_is_judged_exactly_as_the_shared_aware_walk_judges_it() -> None:
+    """Parsed JSON takes a faster walk; it must refuse the same documents."""
+    rng = random.Random(20261013)
+    for _ in range(2000):
+        text = json.dumps(_random_tree(rng, rng.randint(0, 12)))
+        for limit in range(1, 14):
+            try:
+                jsonload.check_depth(json.loads(text), limit)
+                expected = True
+            except jsonload.JSONNestingError:
+                expected = False
+            try:
+                jsonload.loads(text, max_depth=limit)
+                got = True
+            except jsonload.JSONNestingError:
+                got = False
+            assert got == expected, (text, limit)

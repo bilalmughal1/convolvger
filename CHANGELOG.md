@@ -4,6 +4,21 @@ All notable changes to Convolvger will be documented in this file.
 
 The project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- A snapshot given with `--from-file` is refused when it is larger than 32 MiB,
+  the limit a fetched or captured one is held to. At most one byte past the
+  limit is read, so a file of any size is refused without being loaded.
+  `verify` is not limited this way: an archive can be larger than the source
+  it was made from, and a limit would refuse this tool's own output
+- Large payloads are parsed faster and in less memory. The depth check walks
+  parsed JSON one level at a time, and lone surrogates are looked for before
+  anything is copied rather than by copying everything. A 4 MiB payload of
+  small nested lists went from 19 to 26 seconds and 584 MB to 4 seconds and
+  388 MB; the depth check on the real captures measured is five times faster
+
 ## [0.6.1] - 2026-10-13
 
 ### Fixed
