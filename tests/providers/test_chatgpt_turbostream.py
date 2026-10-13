@@ -120,6 +120,24 @@ def test_reference_cycle_raises() -> None:
         decode([{"_1": 2}, "self", {"_1": 0}])
 
 
+@pytest.mark.parametrize("key", ["_x", "_", "_ 1", "_1_0", "_-5"])
+def test_a_key_that_is_not_an_index_reference_raises(key: str) -> None:
+    """``int()`` would accept some of these and choke on others; none is an index."""
+    with pytest.raises(TurboStreamError, match="Malformed key reference"):
+        decode([{key: 1}, "value"])
+
+
+def test_a_reference_chain_deeper_than_the_stack_raises() -> None:
+    chain: list[Any] = [[index + 1] for index in range(5000)]
+    with pytest.raises(TurboStreamError, match="nested too deeply"):
+        decode([*chain, "end"])
+
+
+def test_a_leading_line_nested_deeper_than_the_stack_raises() -> None:
+    with pytest.raises(TurboStreamError, match="nested too deeply"):
+        parse_stream(["[" * 100_000 + "\n"])
+
+
 def test_empty_flat_array_raises() -> None:
     with pytest.raises(TurboStreamError, match="empty"):
         decode([])

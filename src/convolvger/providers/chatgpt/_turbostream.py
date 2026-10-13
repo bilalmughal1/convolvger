@@ -16,6 +16,7 @@ from convolvger.core.findings import Finding, finding
 
 _ENQUEUE_RE = re.compile(r'streamController\.enqueue\("((?:[^"\\]|\\.)*)"\)')
 _DEFERRED_RE = re.compile(r"^P(\d+):")
+_KEY_RE = re.compile(r"_([0-9]+)")
 
 NULL_SENTINEL = -5
 
@@ -67,6 +68,10 @@ def parse_stream(payloads: list[str]) -> tuple[list[Any], list[Finding]]:
         raise TurboStreamError(
             f"Leading turbo-stream line is not JSON: {exc.msg}"
         ) from exc
+    except RecursionError as exc:
+        raise TurboStreamError(
+            "Leading turbo-stream line is nested too deeply"
+        ) from exc
 
     if not isinstance(flat, list):
         raise TurboStreamError(f"Expected a flat array, got {type(flat).__name__}")
@@ -115,7 +120,10 @@ def decode(flat: list[Any]) -> DecodeResult:
 
     def key_name(key: str) -> str:
         if key.startswith("_"):
-            return str(at(int(key[1:])))
+            index = _KEY_RE.fullmatch(key)
+            if index is None:
+                raise TurboStreamError(f"Malformed key reference: {key!r}")
+            return str(at(int(index.group(1))))
         findings.append(finding("literal_object_key", f"kept as-is: {key}"))
         return key
 
@@ -137,7 +145,14 @@ def decode(flat: list[Any]) -> DecodeResult:
             return [at(item) if _is_ref(item) else item for item in node]
         return node
 
-    return DecodeResult(value=at(0), findings=findings)
+    # Resolution recurses once per reference followed, so a long enough
+    # chain exhausts the stack; that is a payload this decoder refuses,
+    # not a crash.
+    try:
+        value = at(0)
+    except RecursionError as exc:
+        raise TurboStreamError("References are nested too deeply") from exc
+    return DecodeResult(value=value, findings=findings)
 
 
 def decode_html(html: str) -> DecodeResult:
