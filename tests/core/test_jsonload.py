@@ -19,7 +19,9 @@ def test_a_document_at_the_limit_is_returned() -> None:
 
 
 def test_a_document_one_level_over_the_limit_is_refused_naming_the_limit() -> None:
-    with pytest.raises(jsonload.JSONNestingError, match="more than 128 levels"):
+    with pytest.raises(
+        jsonload.JSONNestingError, match=f"more than {jsonload.MAX_DEPTH} levels"
+    ):
         jsonload.loads(nested(jsonload.MAX_DEPTH + 1))
 
 
@@ -92,9 +94,9 @@ def test_a_shared_container_reached_again_deeper_is_measured_again() -> None:
     wrapped: Any = shared
     for _ in range(jsonload.MAX_DEPTH - 2):
         wrapped = [wrapped]
-    # Under ``[wrapped, shared]`` the wrappers reach depth 127, inside the
+    # Under ``[wrapped, shared]`` the wrappers end one level inside the
     # limit. ``shared`` is walked first at depth 2, then reached again
-    # under them at 128, where its own levels go past the limit.
+    # under them at the limit, where its own levels go past it.
     with pytest.raises(jsonload.JSONNestingError):
         jsonload.check_depth([wrapped, shared])
 

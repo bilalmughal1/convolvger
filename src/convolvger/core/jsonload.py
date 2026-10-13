@@ -11,19 +11,23 @@ So depth is checked after parsing as well, and anything deeper than
 the limit is refused the same way everywhere.
 
 ``MAX_DEPTH`` applies to what a provider serves. The binding constraint
-is not the stack but serialisation: pydantic-core 2.46.5 refuses to
-serialise a value nested more than 254 levels inside an ``Any`` field,
-which is where unmodelled content is kept, so a deeper source could be
-parsed and then not written. The deepest real share measured nests 24
-levels (a Gemini payload); the others nest 9 to 15. 128 leaves room
-for five times that and stays well clear of 254.
+is not the stack but serialisation: pydantic-core refuses to serialise
+a value nested past a depth inside an ``Any`` field, which is where
+unmodelled content is kept, so a deeper source could be parsed and then
+not written. That depth differs by platform: with pydantic-core 2.46.5
+it was measured at 98 levels on Windows and 254 on Linux, on CPython
+3.12, 3.13 and 3.14 alike. The deepest real share measured nests 24
+levels (a Gemini payload); the others nest 9 to 15. 64 leaves room for
+more than twice that and stays clear of 98, wherever in a source the
+deep value sits.
 
 ``ARCHIVE_MAX_DEPTH`` applies to an archive being read back. An archive
 wraps the conversation in its own envelope -- a value kept from a
 source was measured 3 to 7 levels further from the top than within the
 value itself -- so it must read deeper than a source may be, or
-``verify`` would refuse archives this tool wrote. Archive loading was
-measured to validate 2,000 levels.
+``verify`` would refuse archives this tool wrote. Validating an archive
+is not limited the way writing one is: 600 levels validated on Windows
+and 2,000 on Linux.
 
 A refusal is a ``JSONNestingError``, not a ``JSONDecodeError``: the
 document may be perfectly valid JSON, and each caller names it in its
@@ -33,7 +37,7 @@ own error rather than calling it malformed.
 import json
 from typing import Any
 
-MAX_DEPTH = 128
+MAX_DEPTH = 64
 ARCHIVE_MAX_DEPTH = 512
 
 

@@ -10,6 +10,7 @@ from convolvger.cli.main import app
 from convolvger.core.archive import READABLE_VERSIONS, SCHEMA_VERSION, ArchiveEnvelope
 from convolvger.core.errors import ProviderNotFoundError
 from convolvger.core.findings import Finding, finding
+from convolvger.core.jsonload import MAX_DEPTH
 from convolvger.core.models import Conversation, Message, MessageRole, TextBlock
 from convolvger.core.results import ParseError, ParseResult
 from convolvger.core.source import RawSource
@@ -535,7 +536,7 @@ def test_a_source_nested_past_the_limit_is_refused_without_a_traceback(
 
     assert result.exit_code == 1
     assert isinstance(result.exception, SystemExit)
-    assert "refused: JSON nested more than 128 levels deep" in result.output
+    assert f"refused: JSON nested more than {MAX_DEPTH} levels deep" in result.output
     assert not written.exists()
 
 
