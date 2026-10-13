@@ -64,6 +64,21 @@ def test_untitled_conversation_gets_a_placeholder_title() -> None:
     )
 
 
+@pytest.mark.parametrize(
+    "title", ["First line\nSecond line", "First line\r\n\r\n  Second line  "]
+)
+def test_a_title_with_line_breaks_stays_one_heading(title: str) -> None:
+    output = render_markdown(conversation(text(MessageRole.USER, "hi"), title=title))
+
+    assert output.startswith("# First line Second line\n\n- Source:")
+
+
+def test_a_blank_title_gets_the_placeholder() -> None:
+    output = render_markdown(conversation(text(MessageRole.USER, "hi"), title=" \n "))
+
+    assert output.startswith("# Untitled conversation\n")
+
+
 def test_roles_become_headings() -> None:
     output = render_markdown(
         conversation(
@@ -170,6 +185,20 @@ def test_code_block_without_language_is_still_fenced() -> None:
     )
 
     assert '```\nsearch("x")\n```' in output
+
+
+def test_a_line_of_backticks_inside_code_cannot_close_its_fence() -> None:
+    code = "Example:\n```\nstill code\n````\nstill code too"
+    output = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[CodeBlock(text=code, language="markdown")],
+            )
+        )
+    )
+
+    assert f"`````markdown\n{code}\n`````" in output
 
 
 def test_reasoning_is_visually_distinct_from_assistant_prose() -> None:

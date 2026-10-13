@@ -25,6 +25,7 @@ Nothing here is provider-specific.
 """
 
 import json
+import re
 from datetime import datetime
 from typing import Any
 
@@ -76,6 +77,20 @@ def _reference(raw: dict[str, Any]) -> str | None:
     return title or url
 
 
+_BACKTICK_RUN = re.compile(r"`+")
+
+
+def _fence(text: str) -> str:
+    """Return a backtick fence the code inside it cannot close.
+
+    A fence ends at the first line holding a run of backticks at least
+    as long as the opening one, so the fence is made one longer than
+    the longest run anywhere in the code.
+    """
+    longest = max((len(run) for run in _BACKTICK_RUN.findall(text)), default=0)
+    return "`" * max(3, longest + 1)
+
+
 def _quote(text: str) -> str:
     return "\n".join(f"> {line}" if line else ">" for line in text.splitlines())
 
@@ -84,8 +99,9 @@ def _render_block(block: ContentBlock) -> str:
     if isinstance(block, TextBlock):
         return block.text
     if isinstance(block, CodeBlock):
-        fence = f"```{block.language}" if block.language else "```"
-        return f"{fence}\n{block.text}\n```"
+        fence = _fence(block.text)
+        opening = f"{fence}{block.language}" if block.language else fence
+        return f"{opening}\n{block.text}\n{fence}"
     if isinstance(block, ReasoningBlock):
         label = f"**Reasoning — {block.label}**" if block.label else "**Reasoning**"
         return f"{label}\n{_quote(block.text)}"
@@ -141,6 +157,13 @@ def _render_message(message: Message) -> str:
     return "\n\n".join(parts)
 
 
+def _title(title: str | None) -> str:
+    """The title on one line: a heading ends at the first line break."""
+    if title is None or not title.strip():
+        return "Untitled conversation"
+    return " ".join(title.split())
+
+
 def _provenance(
     conversation: Conversation,
     rendered: int,
@@ -151,7 +174,7 @@ def _provenance(
     fetched_at: datetime | None,
 ) -> str:
     lines = [
-        f"# {conversation.title or 'Untitled conversation'}",
+        f"# {_title(conversation.title)}",
         "",
         f"- Source: {conversation.source_url}",
         f"- Provider: {conversation.provider}",
