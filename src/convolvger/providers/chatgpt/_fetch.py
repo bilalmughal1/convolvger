@@ -16,7 +16,7 @@ from convolvger.core.source import RawSource
 from convolvger.providers import _http
 
 USER_AGENT = (
-    f"convolvger/{version('convolvger')} (+https://github.com/bilalmughal1/convolvger)"
+    f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
 )
 TIMEOUT = httpx.Timeout(30.0)
 

@@ -45,10 +45,10 @@ dependencies = [
 convolvger = "convolvger.cli.main:app"
 
 [project.urls]
-Homepage = "https://github.com/bilalmughal1/convolvger"
-Repository = "https://github.com/bilalmughal1/convolvger"
-Issues = "https://github.com/bilalmughal1/convolvger/issues"
-Changelog = "https://github.com/bilalmughal1/convolvger/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/fahadbilalsaleem/convolvger"
+Repository = "https://github.com/fahadbilalsaleem/convolvger"
+Issues = "https://github.com/fahadbilalsaleem/convolvger/issues"
+Changelog = "https://github.com/fahadbilalsaleem/convolvger/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]

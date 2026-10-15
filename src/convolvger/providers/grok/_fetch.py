@@ -36,7 +36,7 @@ from convolvger.providers.grok._parse import carries_nothing
 from convolvger.providers.grok._urls import api_url
 
 USER_AGENT = (
-    f"convolvger/{version('convolvger')} (+https://github.com/bilalmughal1/convolvger)"
+    f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
 )
 TIMEOUT = httpx.Timeout(30.0)
 

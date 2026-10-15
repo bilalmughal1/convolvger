@@ -82,7 +82,7 @@ pip install -U convolvger       # inside a virtual environment
 ```
 
 Releases are listed at
-[github.com/bilalmughal1/convolvger/releases](https://github.com/bilalmughal1/convolvger/releases).
+[github.com/fahadbilalsaleem/convolvger/releases](https://github.com/fahadbilalsaleem/convolvger/releases).
 
 A newer Convolvger reads archives written by older ones: each archive records
 its schema version, and `--version` lists the versions this one reads. The

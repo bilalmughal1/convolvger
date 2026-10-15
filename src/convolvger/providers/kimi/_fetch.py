@@ -35,7 +35,7 @@ from convolvger.providers.kimi._parse import carries_nothing
 from convolvger.providers.kimi._urls import api_url, share_id
 
 USER_AGENT = (
-    f"convolvger/{version('convolvger')} (+https://github.com/bilalmughal1/convolvger)"
+    f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
 )
 TIMEOUT = httpx.Timeout(30.0)
 
