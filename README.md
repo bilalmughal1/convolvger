@@ -188,8 +188,9 @@ for the same data the page itself loads, using your own browser session, and
 hands it to the waiting command. No link is typed: it arrives with the
 conversation, from the page you clicked. `--capture` works with `inspect` too.
 
-Capturing Claude was verified in Chrome, Edge and Firefox. The bookmarklet
-works in any browser that runs bookmarklets and lets a page reach `localhost`.
+Capturing Claude was verified in Chrome, Edge and Firefox, and capturing
+Perplexity in Chrome. The bookmarklet works in any browser that runs
+bookmarklets and lets a page reach `localhost`.
 
 If you would rather not run a listener, save the data yourself and use
 `--from-file`, giving the share link as usual. For Claude, the data is at
@@ -287,9 +288,7 @@ Each pair of reasoning title and thought is shown as reasoning.
 splits it into, and its citations are read from the results Perplexity itself
 marks as cited. A thread longer than twenty turns arrives in pages and only
 the first page is captured; when more exist, the archive says so. An image
-inside an answer is kept in the JSON and reported as unmodelled. Capturing
-Perplexity has been tested against a recording of a real share page, not yet
-by hand in a browser.
+inside an answer is kept in the JSON and reported as unmodelled.
 
 **Reasoning, in general.** Reasoning is shown only in the shape measured in
 real shares; reasoning in any other shape is kept in the JSON and reported as a
