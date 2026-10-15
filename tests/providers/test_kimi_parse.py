@@ -5,7 +5,7 @@ from typing import Any
 
 import pytest
 
-from convolvger.core.models import Message, MessageRole, TextBlock
+from convolvger.core.models import Message, MessageRole, ReasoningBlock, TextBlock
 from convolvger.core.results import ParseError
 from convolvger.core.source import RawSource
 from convolvger.providers.kimi import _parse
@@ -20,9 +20,8 @@ def source(payload: object) -> RawSource:
 
 
 def text_of(message: Message) -> str:
-    block = message.content[0]
-    assert isinstance(block, TextBlock)
-    return block.text
+    """The first text block: reasoning, when there is any, comes before it."""
+    return next(block.text for block in message.content if isinstance(block, TextBlock))
 
 
 @pytest.fixture
@@ -32,12 +31,10 @@ def minimal() -> dict[str, Any]:
 
 
 def without_reasoning(payload: dict[str, Any]) -> dict[str, Any]:
-    """The fixture minus its think and tool blocks, which are flagged by design."""
+    """The fixture minus its tool block, which is flagged by design."""
     for message in payload["share"]["messages"]:
         message["blocks"] = [
-            block
-            for block in message["blocks"]
-            if "think" not in block and "tool" not in block
+            block for block in message["blocks"] if "tool" not in block
         ]
     return payload
 
@@ -86,16 +83,60 @@ def test_a_missing_children_list_is_read_as_empty_not_damage(
     assert result.findings == []
 
 
-def test_reasoning_and_searches_are_kept_and_flagged(minimal: dict[str, Any]) -> None:
+def test_reasoning_becomes_reasoning_blocks_and_searches_stay_flagged(
+    minimal: dict[str, Any],
+) -> None:
+    """As ChatGPT's thoughts do: the content is the text, the summary its label."""
     result = _parse.parse(source(minimal))
-    assert sorted((f.code, f.message, f.occurrences) for f in result.findings) == [
-        ("unmodelled_content_type", "think block preserved in provider_metadata", 1),
-        ("unmodelled_content_type", "think block preserved in provider_metadata", 2),
+    assert [(f.code, f.message, f.occurrences) for f in result.findings] == [
         ("unmodelled_content_type", "tool block preserved in provider_metadata", 1),
     ]
+    reasoning = [
+        (block.text, block.label)
+        for block in result.conversation.messages[3].content
+        if isinstance(block, ReasoningBlock)
+    ]
+    assert reasoning == [
+        ("Search to confirm how the switch works.", "Checking the switch"),
+        ("Answer with the thermostat.", None),
+    ]
     extras = result.conversation.messages[3].provider_metadata["block_extras"]
-    assert extras["2"]["think"]["summary"] == "Checking the switch"
+    assert "think" not in extras["2"]
     assert len(extras["3"]["tool"]["contents"]) == 3
+
+
+@pytest.mark.parametrize(
+    "thought",
+    [
+        {"content": "Notes.", "plan": ["an unfamiliar field"]},
+        {"content": "Notes.", "plan": "an unfamiliar field holding text"},
+        {"content": ["not", "a", "string"]},
+        "not an object",
+    ],
+)
+def test_a_think_block_of_a_shape_not_yet_seen_is_kept_and_flagged(
+    minimal: dict[str, Any], thought: object
+) -> None:
+    minimal["share"]["messages"][1]["blocks"][2]["think"] = thought
+    result = _parse.parse(source(without_reasoning(minimal)))
+    assert [(f.code, f.message) for f in result.findings] == [
+        ("unmodelled_content_type", "think block preserved in provider_metadata"),
+    ]
+    extras = result.conversation.messages[1].provider_metadata["block_extras"]
+    assert extras["2"]["think"] == thought
+
+
+def test_a_think_block_with_only_a_summary_shows_the_summary(
+    minimal: dict[str, Any],
+) -> None:
+    minimal["share"]["messages"][1]["blocks"][2]["think"] = {
+        "content": "",
+        "summary": "Only a summary",
+    }
+    message = _parse.parse(source(minimal)).conversation.messages[1]
+    reasoning = [b for b in message.content if isinstance(b, ReasoningBlock)]
+    assert [(b.text, b.label) for b in reasoning] == [("Only a summary", None)]
+    assert message.provider_metadata["block_extras"]["2"]["think"] == {"content": ""}
 
 
 def test_every_block_is_accounted_for(minimal: dict[str, Any]) -> None:
@@ -109,12 +150,21 @@ def test_every_block_is_accounted_for(minimal: dict[str, Any]) -> None:
         texts = iter(
             block.text for block in message.content if isinstance(block, TextBlock)
         )
+        thoughts = iter(
+            block for block in message.content if isinstance(block, ReasoningBlock)
+        )
         for index, block in enumerate(served["blocks"]):
             held = extras.get(str(index), {})
             if "text" in block:
                 text = dict(held.get("text", {}))
                 text.setdefault("content", next(texts))
                 assert {**held, "text": text} == block
+            elif "think" in block:
+                reasoning = next(thoughts)
+                think = {"content": reasoning.text, **held.get("think", {})}
+                if reasoning.label is not None:
+                    think["summary"] = reasoning.label
+                assert {**held, "think": think} == block
             else:
                 assert held == block
 
@@ -130,7 +180,8 @@ def test_citations_and_the_sharer_stay_out_of_the_document(
     document = render_markdown(conversation, findings=result.findings)
     assert "Example Sharer" not in document
     assert "example.com/source" not in document
-    assert "Search to confirm" not in document
+    # Reasoning is shown, set apart from the answer as a labelled quote.
+    assert "**Reasoning — Checking the switch**\n> Search to confirm" in document
 
     archive = render_json(conversation, findings=result.findings)
     assert "Example Sharer" in archive

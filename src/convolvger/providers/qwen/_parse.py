@@ -28,8 +28,12 @@ An assistant node's ``content`` was measured empty: the answer is in its
 ``answer`` phase is the text a reader sees. ``web_search`` parts hold the
 searches run and their results, kept in ``provider_metadata`` as other
 providers' search results are. ``thinking_summary`` parts hold the
-model's summarised reasoning, which this version does not model; they
-are kept and flagged, as Grok's reasoning trace is.
+model's summarised reasoning as the share page shows it: a list of
+titles and a list of thoughts, of one length in every part measured. Each
+pair becomes a reasoning block, the thought its text and the title its
+label, as ChatGPT's thoughts do -- but only when the part carries
+exactly that, so a shape not yet seen is kept and flagged rather than
+half read.
 
 An answer cites its results inline as ``[[N]]``. The results are
 numbered from 1 straight across every search in the message: measured,
@@ -58,6 +62,7 @@ from convolvger.core.models import (
     Conversation,
     Message,
     MessageRole,
+    ReasoningBlock,
     TextBlock,
 )
 from convolvger.core.results import ParseError, ParseResult
@@ -70,6 +75,8 @@ ROLES = {"user": MessageRole.USER, "assistant": MessageRole.ASSISTANT}
 
 ANSWER = "answer"
 SEARCH = "web_search"
+THINKING = "thinking_summary"
+SUMMARY_KEYS = ("summary_title", "summary_thought")
 CITATION = re.compile(r"\[\[(\d+)\]\]")
 
 PARTS_KEY = "part_extras"
@@ -115,6 +122,36 @@ def _resolvable(parts: list[Any]) -> set[str]:
     return {str(number) for number in range(1, total + 1)}
 
 
+def _summary(part: dict[str, Any]) -> list[ReasoningBlock] | None:
+    """Return the reasoning a ``thinking_summary`` part holds, if read whole.
+
+    None unless ``extra`` holds exactly a list of titles and a list of
+    thoughts of one length, every item a non-empty string -- the only
+    shape measured, and the only one every value of survives as a block.
+    """
+    extra = part.get("extra")
+    if not isinstance(extra, dict) or set(extra) != set(SUMMARY_KEYS):
+        return None
+    lists = []
+    for key in SUMMARY_KEYS:
+        holder = extra[key]
+        if not isinstance(holder, dict) or set(holder) != {"content"}:
+            return None
+        items = holder["content"]
+        if not isinstance(items, list) or not items:
+            return None
+        if not all(isinstance(item, str) and item for item in items):
+            return None
+        lists.append(items)
+    titles, thoughts = lists
+    if len(titles) != len(thoughts):
+        return None
+    return [
+        ReasoningBlock(text=thought, label=title)
+        for title, thought in zip(titles, thoughts, strict=True)
+    ]
+
+
 def _parts(
     raw: Any, findings: list[Finding], message_id: str | None
 ) -> tuple[list[ContentBlock], dict[str, Any]]:
@@ -145,6 +182,16 @@ def _parts(
                 # Kept whenever no text block holds the served string exactly.
                 rest["content"] = text
             extras[position] = rest
+            continue
+
+        reasoning = (
+            _summary(part) if isinstance(part, dict) and phase == THINKING else None
+        )
+        if isinstance(part, dict) and reasoning is not None:
+            content.extend(reasoning)
+            extras[position] = {
+                key: value for key, value in part.items() if key != "extra"
+            }
             continue
 
         extras[position] = part

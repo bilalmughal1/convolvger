@@ -13,7 +13,7 @@ from typing import Any
 
 import pytest
 
-from convolvger.core.models import MessageRole, TextBlock
+from convolvger.core.models import MessageRole, ReasoningBlock, TextBlock
 from convolvger.core.source import RawSource
 from convolvger.providers.chatgpt._parse import parse
 from convolvger.providers.grok import _parse as grok
@@ -281,9 +281,8 @@ def test_the_qwen_capture_parses_with_its_copies_in_step_and_citations_resolved(
         MessageRole.ASSISTANT,
     ] * 2
     assert all(message.active for message in conversation.messages)
-    assert [
-        f.message for f in result.findings if "thinking_summary" not in f.message
-    ] == []
+    # Its reasoning is read whole, so nothing is left flagged.
+    assert result.findings == []
     assert "messages" not in conversation.provider_metadata["chat"]
     document = render_markdown(conversation, findings=result.findings)
     assert "[[" not in document
@@ -294,6 +293,10 @@ def test_the_qwen_capture_parses_with_its_copies_in_step_and_citations_resolved(
             for part in message.provider_metadata["part_extras"].values()
             if part.get("phase") == "answer" and "content" in part
         ]
-        block = message.content[0]
-        assert isinstance(block, TextBlock)
-        assert [re.sub(r"\[\[\d+\]\]", "", text) for text in served] == [block.text]
+        reasoning = [b for b in message.content if isinstance(b, ReasoningBlock)]
+        texts = [b for b in message.content if isinstance(b, TextBlock)]
+        assert reasoning
+        assert message.content == [*reasoning, *texts]
+        assert [re.sub(r"\[\[\d+\]\]", "", text) for text in served] == [
+            block.text for block in texts
+        ]

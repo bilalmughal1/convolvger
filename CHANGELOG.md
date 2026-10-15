@@ -6,6 +6,18 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Kimi's and Qwen's reasoning is shown in the Markdown as reasoning, a labelled
+  quote set apart from the answer, as ChatGPT's thoughts already were, instead
+  of being kept only in the JSON and reported as unmodelled. A Kimi thought's
+  content is the text and its summary the label; each Qwen title and thought
+  pair becomes one block. It is read only in the shape measured in real
+  shares, and anything else is kept and reported as before. A Qwen share whose
+  only unmodelled content was its reasoning now exits 0, and `verify` calls it
+  faithful. Grok's reasoning trace is still kept and reported: its steps mix in
+  searches and tool calls, and its shape has been seen in one conversation
+
 ### Fixed
 
 - A snapshot given with `--from-file` is refused when it is larger than 32 MiB,

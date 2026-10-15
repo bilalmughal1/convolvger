@@ -16,9 +16,14 @@ A message is a list of blocks, each holding exactly one kind of content
 beside its own ids and time. ``text`` is the prose a reader sees and
 becomes a text block. ``multiStage`` and ``stage`` record the progress
 of generation and describe the answer rather than adding to it. ``think``
-holds the model's own working notes, and ``tool`` a search it ran with
-every result it got back; neither is modelled by this version, so both
-are kept and flagged, as Grok's reasoning trace is. Every block that is
+holds the model's working notes as shown on the share page: its
+``content``, and in one measured block a ``summary``. It becomes a
+reasoning block, as ChatGPT's thoughts do, with the summary as its label
+-- but only when it carries nothing else, so a shape not yet seen is
+kept and flagged rather than half read. ``tool`` holds a search the
+model ran with every result it got back; it is not modelled by this
+version, so it is kept and flagged, as Grok's reasoning trace is. Every
+block that is
 not text, and everything a text block carries beside its text, is kept
 in ``provider_metadata`` under its position, so nothing served is lost.
 
@@ -38,7 +43,7 @@ the served strings are kept beside them rather than rounded away.
 
 import json
 from datetime import datetime
-from typing import Any
+from typing import Any, TypeGuard
 
 from convolvger.core import jsonload
 from convolvger.core.findings import Finding, collapse, finding
@@ -47,6 +52,7 @@ from convolvger.core.models import (
     Conversation,
     Message,
     MessageRole,
+    ReasoningBlock,
     TextBlock,
 )
 from convolvger.core.results import ParseError, ParseResult
@@ -63,7 +69,8 @@ BLOCK_ENVELOPE = frozenset({"id", "parentId", "messageId", "createTime"})
 """What every block carries beside its one kind of content."""
 
 PROGRESS_KINDS = frozenset({"multiStage", "stage"})
-UNMODELLED_KINDS = frozenset({"think", "tool"})
+UNMODELLED_KINDS = frozenset({"tool"})
+THINK_KEYS = frozenset({"content", "summary"})
 
 BLOCKS_KEY = "block_extras"
 """Where each block's unmodelled fields land, keyed by its position."""
@@ -93,6 +100,38 @@ def _timestamp(value: Any) -> datetime | None:
 def _kind(block: dict[str, Any]) -> str | None:
     kinds = [key for key in block if key not in BLOCK_ENVELOPE]
     return kinds[0] if len(kinds) == 1 else None
+
+
+def _readable_thought(thought: Any) -> TypeGuard[dict[str, str]]:
+    """True for a ``think`` body holding only text this version reads."""
+    return (
+        isinstance(thought, dict)
+        and set(thought) <= THINK_KEYS
+        and all(isinstance(value, str) for value in thought.values())
+    )
+
+
+def _reasoning(
+    thought: dict[str, str],
+) -> tuple[ReasoningBlock | None, dict[str, str]]:
+    """Return the reasoning a ``think`` body holds, and what it does not.
+
+    The text is the content, labelled with the summary. A thought with
+    only a summary is shown as its text, as ChatGPT's are. A served value
+    no block holds exactly -- an empty string -- is returned to be kept.
+    """
+    body = thought.get("content", "")
+    summary = thought.get("summary", "")
+    unheld: dict[str, str]
+    if body:
+        reasoning = ReasoningBlock(text=body, label=summary or None)
+        unheld = {"summary": summary} if "summary" in thought and not summary else {}
+    elif summary:
+        reasoning = ReasoningBlock(text=summary)
+        unheld = {"content": body} if "content" in thought else {}
+    else:
+        return None, dict(thought)
+    return reasoning, unheld
 
 
 def _blocks(
@@ -130,6 +169,18 @@ def _blocks(
                 others["content"] = body["content"]
             if others:
                 rest["text"] = others
+            if rest:
+                extras[position] = rest
+            continue
+
+        thought = block.get("think")
+        if kind == "think" and _readable_thought(thought):
+            reasoning, unheld = _reasoning(thought)
+            if reasoning is not None:
+                content.append(reasoning)
+            rest = {key: value for key, value in block.items() if key != "think"}
+            if unheld:
+                rest["think"] = unheld
             if rest:
                 extras[position] = rest
             continue

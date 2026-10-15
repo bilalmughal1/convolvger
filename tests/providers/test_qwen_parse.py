@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from convolvger.core.models import Message, MessageRole, TextBlock
+from convolvger.core.models import Message, MessageRole, ReasoningBlock, TextBlock
 from convolvger.core.results import ParseError
 from convolvger.core.source import RawSource
 from convolvger.providers.qwen import _parse
@@ -21,9 +21,8 @@ def source(payload: object) -> RawSource:
 
 
 def text_of(message: Message) -> str:
-    block = message.content[0]
-    assert isinstance(block, TextBlock)
-    return block.text
+    """The first text block: reasoning, when there is any, comes before it."""
+    return next(block.text for block in message.content if isinstance(block, TextBlock))
 
 
 @pytest.fixture
@@ -51,7 +50,7 @@ def edit(payload: dict[str, Any], position: int, **changes: Any) -> None:
 
 
 def without_thinking(payload: dict[str, Any]) -> dict[str, Any]:
-    """The fixture minus its thinking summaries, which are flagged by design."""
+    """The fixture minus its thinking summaries, for tests about answers alone."""
     for position, flat in enumerate(payload["data"]["chat"]["messages"]):
         if "content_list" in flat:
             parts = [
@@ -126,19 +125,78 @@ def test_a_citation_beyond_the_results_is_left_and_reported(
     ]
 
 
-def test_thinking_summaries_are_kept_and_flagged(minimal: dict[str, Any]) -> None:
+def test_thinking_summaries_become_reasoning_blocks_before_the_answer(
+    minimal: dict[str, Any],
+) -> None:
+    """As ChatGPT's thoughts do: each thought its text, its title the label."""
     result = _parse.parse(source(minimal))
-    assert [(f.code, f.message, f.message_id) for f in result.findings] == [
-        (
-            "unmodelled_content_type",
-            "thinking_summary part preserved in provider_metadata",
-            message.id,
-        )
-        for message in result.conversation.messages
-        if message.role is MessageRole.ASSISTANT
+    assert result.findings == []
+    message = result.conversation.messages[1]
+    assert isinstance(message.content[0], ReasoningBlock)
+    assert (message.content[0].text, message.content[0].label) == (
+        "Invented summary of the reasoning.",
+        "Planning the answer",
+    )
+    assert isinstance(message.content[-1], TextBlock)
+    kept = message.provider_metadata["part_extras"]["0"]
+    assert "extra" not in kept
+    assert kept["phase"] == "thinking_summary"
+
+
+def test_every_title_and_thought_is_held_by_a_reasoning_block(
+    minimal: dict[str, Any],
+) -> None:
+    """Nothing the part served is lost: the pairs rebuild its ``extra`` exactly."""
+    titles = ["First step", "Second step"]
+    thoughts = ["One.", "Two."]
+    summary = minimal["data"]["chat"]["messages"][1]["content_list"][0]
+    summary["extra"] = {
+        "summary_title": {"content": titles},
+        "summary_thought": {"content": thoughts},
+    }
+    edit(
+        minimal, 1, content_list=minimal["data"]["chat"]["messages"][1]["content_list"]
+    )
+    message = _parse.parse(source(minimal)).conversation.messages[1]
+    reasoning = [b for b in message.content if isinstance(b, ReasoningBlock)]
+    assert [b.label for b in reasoning] == titles
+    assert [b.text for b in reasoning] == thoughts
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        {
+            "summary_title": {"content": ["A", "B"]},
+            "summary_thought": {"content": ["x"]},
+        },
+        {
+            "summary_title": {"content": ["A"]},
+            "summary_thought": {"content": ["x"]},
+            "unfamiliar": True,
+        },
+        {"summary_title": {"content": [""]}, "summary_thought": {"content": ["x"]}},
+        {"summary_title": {"content": "A"}, "summary_thought": {"content": "x"}},
+        {
+            "summary_title": {"content": ["A"], "more": 1},
+            "summary_thought": {"content": ["x"]},
+        },
+    ],
+    ids=["uneven", "unfamiliar-key", "empty-title", "not-lists", "extra-field"],
+)
+def test_a_thinking_summary_of_a_shape_not_yet_seen_is_kept_and_flagged(
+    minimal: dict[str, Any], extra: dict[str, Any]
+) -> None:
+    flat = minimal["data"]["chat"]["messages"][1]
+    flat["content_list"][0]["extra"] = extra
+    edit(minimal, 1, content_list=flat["content_list"])
+    result = _parse.parse(source(minimal))
+    message = result.conversation.messages[1]
+    assert not [b for b in message.content if isinstance(b, ReasoningBlock)]
+    assert ("thinking_summary part preserved in provider_metadata", message.id) in [
+        (f.message, f.message_id) for f in result.findings
     ]
-    kept = result.conversation.messages[1].provider_metadata["part_extras"]["0"]
-    assert kept["extra"]["summary_title"]["content"] == ["Planning the answer"]
+    assert message.provider_metadata["part_extras"]["0"]["extra"] == extra
 
 
 def test_search_results_and_the_sharer_stay_out_of_the_document(
@@ -148,8 +206,10 @@ def test_search_results_and_the_sharer_stay_out_of_the_document(
     conversation = result.conversation
     assert conversation.provider_metadata["user_id"].startswith("shared-")
     document = render_markdown(conversation, findings=result.findings)
-    for leaked in ("shared-", "example.com/source", "Invented summary"):
+    for leaked in ("shared-", "example.com/source"):
         assert leaked not in document
+    # Reasoning is shown, set apart from the answer as a labelled quote.
+    assert "**Reasoning — Planning the answer**\n> Invented summary" in document
     archive = render_json(conversation, findings=result.findings)
     assert "example.com/source" in archive
     assert "Invented summary" in archive

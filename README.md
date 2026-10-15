@@ -215,11 +215,15 @@ nested list, not a citation. Kimi marks citations beside the text rather
 than inside it, so its text needs no change. None of the citations or search
 results reach Markdown.
 
-Kimi and Qwen show the model's reasoning beside an answer. It is kept in the
-JSON archive, but this version does not model it, so it is reported as a
-warning rather than passed over, as Grok's is. DeepSeek's reasoning has not
-been seen in a share yet; if one carries it, it is kept and reported the same
-way.
+Kimi and Qwen show the model's reasoning beside an answer, and it appears in
+the document as reasoning: a labelled quote set apart from the answer, as
+ChatGPT's thoughts are, so the two are never mistaken for each other. That
+happens only when the reasoning has the shape measured in real shares; one
+in any other shape is kept in the JSON archive and reported as a warning
+instead. Grok's reasoning trace is still kept and reported, not shown: its
+steps carry searches and tool calls alongside the prose, and its shape has
+been seen in a single conversation. DeepSeek's reasoning has not been seen
+in a share yet; if one carries it, it is kept and reported the same way.
 
 A Kimi share names the account that shared it, and a Qwen share carries the
 sharer's account id. Both are kept in the JSON archive under
@@ -364,7 +368,7 @@ Gemini share links can be fetched, parsed and exported, in all three of the link
 
 Grok share links can be fetched, parsed and exported. Inline citations, search results and X posts are preserved in the JSON archive rather than rendered into the document; the reasoning trace is preserved but not yet modelled, and is reported as such.
 
-DeepSeek, Kimi and Qwen share links can be fetched, parsed and exported. Citations and search results are preserved in the JSON archive rather than rendered into the document, and inline citation numbers are taken out of the text only where they resolve. Kimi's and Qwen's reasoning is preserved but not yet modelled, and is reported as such.
+DeepSeek, Kimi and Qwen share links can be fetched, parsed and exported. Citations and search results are preserved in the JSON archive rather than rendered into the document, and inline citation numbers are taken out of the text only where they resolve. Kimi's and Qwen's reasoning is shown in the document as labelled reasoning, kept apart from the answer.
 
 Extraction records structured findings, each with a stable code and a level. A note is recorded but does not change the exit status; a warning does. Both are written into the JSON archive either way, so nothing is withheld from the record because it was judged unremarkable.
 

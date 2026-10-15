@@ -731,14 +731,14 @@ NEWER_PROVIDERS = [
         "https://www.kimi.ai/share/00000000-0000-4000-8000-000000000002",
         "Example Kimi conversation",
         2,
-        ("Example Sharer", "example.com/source", "Search to confirm"),
+        ("Example Sharer", "example.com/source"),
     ),
     (
         "qwen",
         "https://chat.qwen.ai/s/00000000-0000-4000-8000-000000000001?fev=0.3.11",
         "Example Qwen conversation",
-        2,
-        ("[[3]]", "shared-", "example.com/source", "Invented summary"),
+        0,
+        ("[[3]]", "shared-", "example.com/source"),
     ),
 ]
 
@@ -756,7 +756,7 @@ def test_a_saved_share_from_each_newer_provider_is_archived_end_to_end(
     exit_code: int,
     leaks: tuple[str, ...],
 ) -> None:
-    """Exit 2 where the fixture carries reasoning, which is kept and flagged."""
+    """Exit 2 where the fixture carries content this version does not model."""
     fixture = (
         Path(__file__).parent.parent / "fixtures" / provider / "share-minimal.json"
     )
