@@ -1,13 +1,50 @@
 # Convolvger
 
-Local-first, provider-independent archival for public AI conversations.
+Local-first archival for public AI conversations.
 
-Convolvger takes a public AI conversation share URL, reconstructs the conversation into a canonical internal model, validates the extracted data, and exports it into portable formats such as Markdown and JSON.
+Give Convolvger the share link of a conversation from ChatGPT, Claude, Gemini,
+Grok, DeepSeek, Kimi, Qwen or Perplexity. It reads the conversation the link
+publishes, checks what it could and could not extract, and writes it out as a
+Markdown document to read and a JSON archive that keeps everything the
+provider served. It runs on your machine, needs no account, and sends nothing
+anywhere but the provider you asked it to read.
+
+## Contents
+
+- [Supported providers](#supported-providers)
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Commands](#commands)
+- [Capturing from your browser](#capturing-from-your-browser)
+- [What the output contains](#what-the-output-contains)
+- [Provider notes](#provider-notes)
+- [Limits](#limits)
+- [What a snapshot is](#what-a-snapshot-is)
+- [Status](#status)
+
+## Supported providers
+
+| Provider | How it is read | Share link |
+| --- | --- | --- |
+| ChatGPT | fetched | `https://chatgpt.com/share/ID` |
+| Claude | captured in your browser | `https://claude.ai/share/ID` |
+| Gemini | fetched | `https://gemini.google.com/share/ID`, `https://g.co/gemini/share/ID`, `https://share.gemini.google/TOKEN` |
+| Grok | fetched | `https://grok.com/share/ID` |
+| DeepSeek | fetched | `https://chat.deepseek.com/share/ID` |
+| Kimi | fetched | `https://www.kimi.ai/share/ID` (also `www.kimi.com`, `kimi.moonshot.cn`) |
+| Qwen | fetched | `https://chat.qwen.ai/s/ID` (also `chat.qwenlm.ai`) |
+| Perplexity | captured in your browser | `https://www.perplexity.ai/search/ID` |
+
+*Fetched* means Convolvger asks for the conversation itself, as the share page
+does, with no cookie or account. *Captured* means the provider refuses programs
+that are not browsers, so Convolvger waits for your browser to hand the
+conversation over instead of pretending to be one: see
+[Capturing from your browser](#capturing-from-your-browser).
 
 ## Install
 
-Convolvger needs Python 3.12 or newer. The simplest route is [uv](https://docs.astral.sh/uv/),
-which downloads a suitable Python itself if you do not have one.
+Convolvger needs Python 3.12 or newer. The simplest route is
+[uv](https://docs.astral.sh/uv/), which downloads a suitable Python itself.
 
 **macOS, Linux, WSL**
 
@@ -23,365 +60,288 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 uv tool install convolvger
 ```
 
-**Without uv**
+**Without uv**: `pipx install convolvger`, or `pip install convolvger` inside a
+virtual environment running Python 3.12 or newer. An older interpreter fails
+with `Requires-Python >=3.12`.
+
+Check the install with `convolvger --version`. It prints the version, the
+Python it runs on, the archive schema it writes and the ones it reads, and the
+providers it supports. Include it in a bug report: the version it prints is the
+one your archives record.
+
+### Upgrade
+
+Convolvger never updates itself and never checks for a new release, because a
+tool that keeps your conversations on your machine has no business contacting
+an index about itself. Upgrade with whatever installed it:
 
 ```
-pipx install convolvger
-```
-
-or `pip install convolvger` inside a virtual environment running Python 3.12 or
-newer. Installing with an older interpreter fails with `Requires-Python >=3.12`,
-which is the error to expect on a system Python 3.10 or 3.11.
-
-Check the install:
-
-```
-convolvger --help
-convolvger --version
-```
-
-`--version` reports the installed version, the interpreter it runs on, the
-archive schema it writes and the ones it can read, and the providers this build
-supports. It is the quickest thing to include in a bug report, because the
-version it prints is the one your archives record.
-
-## Upgrade
-
-Convolvger never updates itself and never checks for a new release. A tool that
-keeps your conversations on your machine has no business contacting an index to
-ask about itself, so upgrading is something you do deliberately, with whichever
-tool installed it:
-
-```
-uv tool upgrade convolvger      # if you installed with uv
-pipx upgrade convolvger         # if you installed with pipx
+uv tool upgrade convolvger      # installed with uv
+pipx upgrade convolvger         # installed with pipx
 pip install -U convolvger       # inside a virtual environment
 ```
 
-Then run `convolvger --version` to confirm which copy you now have. Releases are
-listed at [github.com/bilalmughal1/convolvger/releases](https://github.com/bilalmughal1/convolvger/releases).
+Releases are listed at
+[github.com/bilalmughal1/convolvger/releases](https://github.com/bilalmughal1/convolvger/releases).
 
-Archives written by an older version stay readable: each one records the schema
-it was written against, and a newer Convolvger reads the versions it lists under
-`--version` rather than assuming. The reverse does not hold. Archives from 0.7
-record schema 4, which adds a message's citations, and Convolvger 0.6 refuses
-them with a message saying so.
+A newer Convolvger reads archives written by older ones: each archive records
+its schema version, and `--version` lists the versions this one reads. The
+reverse does not hold. Archive schema 4, which records each message's
+citations, is refused by Convolvger 0.6 with a message naming the version.
 
-## Usage
-
-Every command begins with `convolvger`, followed by a subcommand. There are
-five: `providers`, `bookmarklet`, `inspect`, `export` and `verify`. Note that a bare
-`export <url>` runs your shell's own `export` builtin rather than this tool.
-
-**See which providers are supported**
+## Quick start
 
 ```
-convolvger providers
+convolvger inspect https://chatgpt.com/share/ID           # look, write nothing
+convolvger export  https://chatgpt.com/share/ID           # write a Markdown document
+convolvger export  https://chatgpt.com/share/ID -f json   # write the JSON archive
+convolvger verify  conversation.json                      # check an archive
 ```
 
-**Look at a conversation without saving anything**
+Always type `convolvger` first: a bare `export URL` runs your shell's own
+`export` instead.
+
+## Commands
+
+**`convolvger providers`** lists the providers this build supports.
+
+**`convolvger inspect URL`** prints the title, the provider, how many messages
+there are and every finding about the extraction, and writes nothing.
+
+**`convolvger export URL`** writes the conversation to a file in the current
+directory, named after its title:
+
+| Option | Effect |
+| --- | --- |
+| `-f md` (default) | The Markdown document, for reading |
+| `-f json` | The JSON archive, the complete record |
+| `-o PATH` | Write to `PATH`, replacing any file already there |
+| `-o -` | Write to standard output |
+| `--include-hidden` | Keep messages the provider hides from viewers (Markdown) |
+| `--include-inactive` | Keep branches the conversation moved away from (Markdown) |
+| `--from-file PATH` | Read a saved copy instead of fetching (see below) |
+| `--capture` | Wait for your browser to hand the conversation over |
+
+The file name keeps the letters, digits and accents of the title in any
+script, so a title in Arabic, Chinese or Hindi gives a name in Arabic, Chinese
+or Hindi; punctuation, symbols and emoji become hyphens. An existing file is
+never replaced by a name Convolvger chose: the new one is numbered
+(`title-2.md`, `title-3.md`). Output is written as UTF-8 whatever the system's
+encoding. On Windows, prefer `-o file.md` to `-o -` with a PowerShell `>`,
+which may re-encode the output.
+
+**`--from-file`** parses a copy you saved instead of asking the provider:
 
 ```
-convolvger inspect https://chatgpt.com/share/SHARE_ID
+convolvger export https://chatgpt.com/share/ID --from-file saved-page.html
 ```
 
-Prints the title, provider, message counts and every extraction finding, then
-exits without writing a file.
+The link is still given: it chooses the provider and is the source the archive
+records. When a saved file was made cannot be known from the file, so its
+archive records no retrieval time rather than a false one. The file is read as
+UTF-8, or as UTF-8, UTF-16 or UTF-32 when it starts with the byte-order mark
+that says so (as Notepad and Windows PowerShell 5.1 write them); any other
+encoding is refused rather than guessed. Re-reading a saved copy is the way to
+archive what you saw, since the provider's answer may since have changed.
+`--from-file` works with `inspect` too.
 
-**Export it**
+**`convolvger verify ARCHIVE.json`** reads an archive and reports what it
+records, without fetching or parsing anything again. It answers two questions
+separately:
 
-```
-convolvger export https://chatgpt.com/share/SHARE_ID
-```
+- *Complete*: did the provider serve everything its own snapshot referred to?
+- *Faithful*: could everything it served be modelled?
 
-Writes Markdown to a file named after the conversation's title, in the
-current directory. The name keeps the letters, digits and accents of the
-title in any script, so a conversation titled in Arabic, Chinese or Hindi is
-named in Arabic, Chinese or Hindi; punctuation, symbols and emoji become
-hyphens. If that file already
-exists, the new one is numbered (`title-2.md`, `title-3.md`) rather than
-replacing it. To choose the format or the destination:
+A finding that bears on neither is listed but counted toward neither, so a
+share whose messages are empty by design is still reported complete. A finding
+code this version does not know changes neither answer, since a later version
+may have written the archive, and an archive of a schema this version cannot
+read is refused rather than judged.
 
-```
-convolvger export https://chatgpt.com/share/SHARE_ID -f json
-convolvger export https://chatgpt.com/share/SHARE_ID -o mychat.md
-convolvger export https://chatgpt.com/share/SHARE_ID -o -
-```
+**Exit codes**: `0` clean; `2` finished with warnings, or for `verify`, a check
+did not pass; `1` failed, or for `verify`, the file is not an archive this
+version can read.
 
-`-f json` writes the archival record; `-f md` (the default) writes the
-reader-facing document. `-o -` writes to stdout instead of a file. A path you
-choose with `-o` is written as asked, replacing any file already there.
+## Capturing from your browser
 
-Files are written as UTF-8 whatever language the conversation is in, and so
-is `-o -` when its output goes to a file or another program, even where the
-system's own encoding is not UTF-8. On Windows, prefer `-o file.md` to `-o -`
-with a PowerShell redirect: PowerShell may re-encode a program's output
-before its `>` writes it.
+Claude and Perplexity put their conversation data behind a bot wall: asked by
+a program, the page and the data behind it answer with a refusal or a
+challenge, whatever headers are sent. Convolvger does not impersonate a
+browser to get past that. It waits for yours, which the provider already
+lets in.
 
-**Parse a snapshot you already saved**
-
-```
-convolvger export https://chatgpt.com/share/SHARE_ID --from-file saved-page.html
-```
-
-`--from-file` parses a saved copy of the share page instead of fetching the URL.
-The URL is still required: it routes the snapshot to the right provider, and it
-is the provenance the archive records. Because when a saved file was captured is
-not knowable from the file, an archive made this way records no retrieval time
-rather than claiming a false one.
-
-This is how to re-read a capture without asking the provider for it again, which
-matters because the answer may have changed since. It works with `inspect` too.
-
-The saved file is read as UTF-8, or as UTF-8, UTF-16 or UTF-32 when it begins
-with the byte-order mark that says so, which is what Notepad and Windows
-PowerShell 5.1 write. A file in any other encoding is refused with a message
-rather than guessed at, because a wrong guess turns the text into different
-text.
-
-**Archive a Gemini conversation**
-
-```
-convolvger export https://gemini.google.com/share/SHARE_ID
-```
-
-Gemini share pages are fetched directly, with no browser involved. The page
-itself carries no conversation — it is an application shell that loads one
-afterwards — so Convolvger asks for the same data the page does. All three link
-forms work:
-
-```
-https://gemini.google.com/share/SHARE_ID
-https://g.co/gemini/share/SHARE_ID
-https://share.gemini.google/TOKEN
-```
-
-The first two carry the conversation id. The third is a shortener whose token is
-not the id, so that form costs one extra request to resolve.
-
-A Gemini conversation may cite web pages and record the searches the model ran.
-Neither appears in the answer text the provider serves, so both are kept in the
-JSON archive under `provider_metadata`, alongside the response ids. As with
-Claude, no renderer reads `provider_metadata` and none of it reaches Markdown.
-
-A deleted or unknown Gemini share answers with a success status and an empty
-payload rather than an error, so Convolvger reports it as a missing share
-instead of passing an empty conversation off as a real one.
-
-**Archive a Grok conversation**
-
-```
-convolvger export https://grok.com/share/SHARE_ID
-```
-
-Grok share pages are fetched directly, with no browser involved. Like Gemini's,
-the page loads its conversation separately, so Convolvger asks for the same
-JSON the page does. No cookie or account is needed. The share id is taken as
-it appears in the link, whatever its prefix.
-
-A Grok answer marks its citations inline. Each becomes a number in the text,
-`[1]`, `[2]`, and the page it links to is listed under the answer, titled
-from the web result for that page; two citations of one page share a number.
-The JSON archive keeps the message exactly as served, alongside the web
-results, X posts, citation cards and model name the provider served. Only the
-cited pages reach Markdown, not the rest of the search. The reasoning
-trace Grok shows beside a thinking answer is kept in the JSON too, but this
-version does not model it, so it is reported as a warning rather than passed
-over. Files and images a message names are reported as not carried: the
-share lists them without serving them, and Convolvger does not follow their
-links to fetch them.
-
-A Grok share that no longer exists answers with an error, but a share can also
-answer successfully with its title and no messages. Both are reported as a
-missing share rather than exported as an empty conversation.
-
-**Archive a DeepSeek, Kimi or Qwen conversation**
-
-```
-convolvger export https://chat.deepseek.com/share/SHARE_ID
-convolvger export https://www.kimi.ai/share/SHARE_ID
-convolvger export https://chat.qwen.ai/s/SHARE_ID
-```
-
-All three are fetched directly, with no browser involved: each share page
-loads its conversation from an endpoint that answers this tool's own
-User-Agent with no cookie or account, and Convolvger asks it directly.
-`www.kimi.com` and `kimi.moonshot.cn` share links work as well as
-`www.kimi.ai`, and so do `chat.qwenlm.ai` links for Qwen.
-
-DeepSeek and Qwen number their citations inside the answer text
-(`[citation:3]`, `[[3]]`). A number that points at a search result the share
-carries is shown as `[1]`, `[2]` and so on, counted in the order the answer
-first cites each result, and those results are listed under the answer as
-its sources. The answer exactly as served is kept in the JSON archive beside
-it, with every search result. A number that points at nothing is left in
-place and reported, and a number inside code is never touched: `x = [[3]]`
-is a nested list, not a citation. Kimi marks citations beside the text rather
-than inside it, so its text is left as served and the results it cites are
-listed under it. A search result the answer does not cite stays in the JSON
-archive only: in the shares measured, about a third of the results were
-cited.
-
-Kimi and Qwen show the model's reasoning beside an answer, and it appears in
-the document as reasoning: a labelled quote set apart from the answer, as
-ChatGPT's thoughts are, so the two are never mistaken for each other. That
-happens only when the reasoning has the shape measured in real shares; one
-in any other shape is kept in the JSON archive and reported as a warning
-instead. Grok's reasoning trace is still kept and reported, not shown: its
-steps carry searches and tool calls alongside the prose, and its shape has
-been seen in a single conversation. DeepSeek's reasoning has not been seen
-in a share yet; if one carries it, it is kept and reported the same way.
-
-A Kimi share names the account that shared it, and a Qwen share carries the
-sharer's account id. Both are kept in the JSON archive under
-`provider_metadata`, as Claude's `creator` is, and neither reaches Markdown.
-
-A DeepSeek share carries a generic title, "Shared Conversation", rather than
-the conversation's own, and the archive records it as served. An unknown
-DeepSeek or Qwen share id answers successfully with an error inside, and an
-unknown Kimi one answers 404; all three are reported as a missing share. A
-share that was deleted has not been tried and is assumed to answer the same.
-
-**Archive a Claude conversation**
-
-A Claude share page cannot be fetched. The page loads its conversation
-separately, and the service refuses non-browser clients whatever headers they
-send. Rather than impersonate a browser, Convolvger waits for yours to hand the
-snapshot over. One-time setup:
+One-time setup:
 
 ```
 convolvger bookmarklet
 ```
 
-That prints a bookmarklet and how to save it. Then, for any Claude share link:
+This prints a bookmarklet, a bookmark whose address is a small program, and
+how to save it. Then, for each conversation:
 
 ```
 convolvger export --capture
 ```
 
-Open the share page and click the bookmark. The archive is written and named
-after the conversation's own title. No URL is typed: it arrives with the
-snapshot, from the page you clicked. `--capture` works with `inspect` too.
+Open the share page and click the bookmark. The bookmarklet asks the provider
+for the same data the page itself loads, using your own browser session, and
+hands it to the waiting command. No link is typed: it arrives with the
+conversation, from the page you clicked. `--capture` works with `inspect` too.
 
-Verified in Chrome, Edge and Firefox. Other browsers should work where they run
-bookmarklets and permit connections to localhost.
+Capturing Claude was verified in Chrome, Edge and Firefox. The bookmarklet
+works in any browser that runs bookmarklets and lets a page reach `localhost`.
 
-If you would rather not run a listener, `convolvger export <claude-share-url>`
-prints the URL your browser can read the snapshot from. Open it, save the JSON,
-and pass it with `--from-file`. That path works in any browser.
+If you would rather not run a listener, save the data yourself and use
+`--from-file`, giving the share link as usual. For Claude, the data is at
+`https://claude.ai/api/chat_snapshots/ID?rendering_mode=messages&render_all_tools=true`;
+open that in your browser and save it.
 
-**What capturing does, and what it does not**
+**What the listener does, and does not.** While the command waits, it listens
+on `127.0.0.1:23477`: on your machine only, not your network. It takes one
+conversation, then stops, and gives up after three minutes. It accepts a
+conversation only from a page whose origin matches the share link it claims to
+come from, and only for a link a provider handles, so a page on another site
+can neither forge a conversation nor end the wait. A connection that sends
+nothing is dropped when the wait ends. What it does not defend against: a page
+on the provider's own site could reach it during the seconds it runs, and so
+could another program on your machine, which could equally write the archive
+file directly. Nothing is sent anywhere else.
 
-While the command waits it listens on `127.0.0.1:23477` — loopback only, not
-reachable from your network. It takes one snapshot and then stops, and gives up
-after three minutes. It accepts a payload only when the browser's origin matches
-the address the payload claims to come from, so a page on another site cannot
-post a forged conversation.
+## What the output contains
 
-Two things it does not defend against, stated plainly: any page on the
-provider's own domain could reach the listener during the seconds it runs, and
-so could another program on your machine — though such a program could write the
-archive file directly anyway. Nothing is transmitted anywhere else. Your browser
-talks to the provider using the session it already has, and to loopback.
+**The Markdown document** is for reading. It starts with a header naming the
+source, the provider and when it was retrieved, and what the provider did not
+serve: attachments a message names but does not carry, results a tool call
+referred to but left empty, and turns a captured thread did not include.
+Findings about what this tool could not model are counted there, and recorded
+in full in the JSON.
 
-**What a Claude archive contains**
+- **Messages** appear under headings by role. Messages the provider hides from
+  viewers and branches the conversation moved away from are left out by
+  default, and each omission is reported in the header.
+- **Reasoning** that a provider shows beside an answer (ChatGPT, Kimi, Qwen)
+  appears as a labelled quote, apart from the answer, so the two are never
+  mistaken for each other.
+- **Citations** from Grok, DeepSeek, Kimi, Qwen and Perplexity appear in the
+  text as `[1]`, `[2]`, numbered in the order the answer first cites each
+  source, and a **Sources** list under the answer links each one by its title.
+  Only cited sources are listed: in the real shares measured, about a third of
+  the search results an answer carried were cited. A citation that points at
+  nothing is left as written and reported, and nothing inside code is ever
+  taken for a citation. ChatGPT, Claude and Gemini citations are kept in the
+  JSON but not yet listed.
+- **Content this version does not model** is flagged, not dropped. Where such
+  a block carries a title and a link, the document shows them; nothing is
+  fetched to do so.
 
-Claude's snapshot names the account that shared it, so a Claude JSON archive
-carries `created_by` and `creator` — a display name and an account id — under
-`provider_metadata`. They are kept because the JSON is the archival record and
-drops nothing the provider served. No renderer reads `provider_metadata`, so
-the Markdown export does not contain them.
+**The JSON archive** is the record. It omits nothing the provider served:
+every message, including hidden ones and inactive branches, every search
+result, cited or not, and everything a provider sent that the model has no
+field for, kept under `provider_metadata`. Text that was changed for reading,
+by citation markers for instance, is kept beside it exactly as served. Every
+finding is recorded with a stable code and a level: a *note* does not change
+the exit status, a *warning* does.
 
-Markdown omits provider-hidden messages and deactivated branches by default and
-reports each omission in its header. `--include-hidden` and
-`--include-inactive` keep them. Both flags are ignored for JSON, which never
-omits anything.
+**Whoever shared the conversation.** Claude, Kimi, Qwen and Perplexity name the
+account that shared it, by display name, account id, username or profile
+picture depending on the provider. That is kept in the JSON archive, because
+the archive drops nothing served, and never appears in the Markdown document.
 
-The header also names what the provider itself did not serve: attachments a
-message declared but did not carry, and tool results the snapshot referenced
-and left empty. Observations of the same thing across messages are merged for
-display and their counts summed, since the message id that separates them in
-the record is not shown in a Markdown file. Findings about what this tool
-could not model are counted in the header rather than named, and every finding
-is recorded in full in the JSON export.
+## Provider notes
 
-Content whose type this version does not model is flagged rather than dropped,
-and where such a block carries a title and a link — a web result a search tool
-returned, for instance — the export shows them. The complete block stays in
-the JSON. Nothing is fetched to do this: the title and the link were served
-inside the snapshot, and Convolvger never dereferences a URL it archives.
+**ChatGPT.** The share page carries the conversation inside it, encoded; it is
+decoded locally. Its thoughts and reasoning recaps are shown as reasoning.
 
-**Check an archive's integrity**
+**Claude.** Captured. Tool calls and their results are kept as such.
 
-```
-convolvger verify mychat.json
-```
+**Gemini.** The page is an application shell that loads its conversation
+separately; Convolvger asks for that data. The third link form,
+`share.gemini.google`, is a shortener whose token is not the conversation's
+id, so it costs one extra request to resolve. Citations and the searches the
+model ran are kept in the JSON. A deleted or unknown share answers with an
+empty success rather than an error, and is reported as missing.
 
-Reads a JSON archive and reports what it records, without re-fetching or
-re-parsing anything. See the Status section below for what the two verdicts
-mean.
+**Grok.** Each citation marker becomes a number, and the page it links to is
+listed under the answer, titled from the matching web result; two citations of
+one page share a number. Grok's reasoning trace is kept in the JSON and
+reported as unmodelled: its steps mix searches and tool calls into the prose,
+and its shape has been seen in one conversation only. Files and images a
+message names are reported as not carried, since the share lists them without
+serving them. A share that is gone, or that answers with a title and no
+messages, is reported as missing.
 
-**Exit codes**
+**DeepSeek.** Citations written `[citation:3]` are numbered and listed. Every
+share carries the generic title "Shared Conversation", recorded as served. An
+unknown share answers successfully with an error inside, and is reported as
+missing.
 
-`0` clean, `2` completed with warnings or with a failed integrity check, `1`
-failed.
+**Kimi.** Its citations sit beside the text rather than in it, so the text is
+left as served and the results they name are listed under it. Its reasoning is
+shown as reasoning. A search the model ran is kept and reported as unmodelled.
 
-## Goals
+**Qwen.** Citations written `[[3]]` are numbered across every search in the
+answer and listed; `x = [[3]]` inside code is a nested list and left alone.
+Each pair of reasoning title and thought is shown as reasoning.
 
-- Archive public AI conversations locally
-- Support multiple AI providers through isolated adapters
-- Preserve conversation structure and exposed content
-- Detect incomplete or inconsistent extraction
-- Produce deterministic, provider-independent output
-- Keep conversion entirely local, with no LLM required
-- Avoid account credentials and telemetry
+**Perplexity.** Captured. The answer is assembled from the pieces Perplexity
+splits it into, and its citations are read from the results Perplexity itself
+marks as cited. A thread longer than twenty turns arrives in pages and only
+the first page is captured; when more exist, the archive says so. An image
+inside an answer is kept in the JSON and reported as unmodelled. Capturing
+Perplexity has been tested against a recording of a real share page, not yet
+by hand in a browser.
+
+**Reasoning, in general.** Reasoning is shown only in the shape measured in
+real shares; reasoning in any other shape is kept in the JSON and reported as a
+warning. DeepSeek's reasoning has not been seen in a share yet and would be
+kept and reported the same way.
+
+## Limits
+
+Convolvger refuses rather than misreads:
+
+- A response, a captured conversation or a saved file larger than 32 MiB, and
+  a ChatGPT page whose decoded data would unfold to more than that.
+- JSON nested more than 64 levels deep (512 for an archive given to `verify`).
+  The deepest real share measured nests 24.
+- A saved file in an encoding other than UTF-8, UTF-16 or UTF-32.
+
+Each refusal ends with an error message, not a traceback, and writes no file.
 
 ## What a snapshot is
 
-Convolvger archives *public share snapshots*. A snapshot is what a provider chooses to expose at a given URL at a given moment — not the conversation itself, and not a guarantee.
+Convolvger archives *public share snapshots*: what a provider chooses to show
+at a link at a given moment. That is not the conversation itself, and not a
+guarantee.
 
-Share pages can change after they are published. While building the ChatGPT adapter we fetched the same share link twice, eight hours apart. Both responses had the same conversation, the same title, and the same 31 message IDs. Four assistant messages addressed to a tool were served the second time with their payload emptied and their content type relabelled from `code` to `text` — while their IDs, roles, recipients, statuses, weights and every metadata key stayed identical. A comparison of anything but the content would have called the two snapshots the same file. Nothing about the conversation had changed; the provider's rendering of it had.
+Share pages change after they are published. While building the ChatGPT
+adapter we fetched the same link twice, eight hours apart. Both had the same
+conversation, the same title and the same 31 message ids. The second time,
+four messages addressed to a tool came back with their content emptied and
+relabelled from `code` to `text`, while every id, role, status and metadata key
+stayed the same. A comparison of anything but the content would have called
+the two the same file. Nothing about the conversation had changed; the
+provider's rendering of it had.
 
-That is why every Convolvger export records when it was retrieved, reports every message it could not render, and never silently drops content. An archive is a claim about what was there when you looked. It is only trustworthy if it also says when it looked and what it could not see.
+That is why every export records when it was retrieved, reports what it could
+not render, and never silently drops content. An archive is a claim about what
+was there when you looked, and it is only trustworthy if it also says when you
+looked and what it could not see.
 
-Convolvger does not recover private conversations, hidden model state, chain-of-thought, deleted content, or attachments the provider does not publish. If it is not in the snapshot, it is not in the archive.
-
-## Supported Providers
-
-Initial providers:
-
-- ChatGPT — fetched directly from a share link
-- Claude — captured from your own browser, since its share pages cannot be
-  fetched
-- Gemini — fetched directly from a share link
-- Grok — fetched directly from a share link
-- DeepSeek — fetched directly from a share link
-- Kimi — fetched directly from a share link
-- Qwen — fetched directly from a share link
-
-Additional providers will be added as their public sharing formats are supported and tested.
+Convolvger does not recover private conversations, hidden model state, deleted
+content, or attachments the provider does not publish. If it is not in the
+snapshot, it is not in the archive.
 
 ## Status
 
-Convolvger is under active development and not yet ready for general use.
+Convolvger is in active development; every command above works today, and each
+provider is checked against a real share. It is built to:
 
-Every command shown under Usage above works today.
-
-ChatGPT share links can be fetched, parsed, and exported. Markdown is a reader-facing document that may omit content, reports every omission in its header, and names what the provider did not serve; JSON is the complete archival record and omits nothing the model holds.
-
-Claude share snapshots can be parsed and exported, but not fetched: the service refuses non-browser clients, so a snapshot is captured from your own browser as described under Usage.
-
-Gemini share links can be fetched, parsed and exported, in all three of the link forms Google issues. Citations and search queries are preserved in the JSON archive rather than rendered into the document.
-
-Grok share links can be fetched, parsed and exported. Inline citations are numbered in the text and the pages they cite are listed under the answer; the full search results and X posts are preserved in the JSON archive. The reasoning trace is preserved but not yet modelled, and is reported as such.
-
-DeepSeek, Kimi and Qwen share links can be fetched, parsed and exported. The search results an answer cites are listed under it, with inline citation numbers shown as `[1]`, `[2]` where they resolve; every search result is preserved in the JSON archive. Kimi's and Qwen's reasoning is shown in the document as labelled reasoning, kept apart from the answer.
-
-Extraction records structured findings, each with a stable code and a level. A note is recorded but does not change the exit status; a warning does. Both are written into the JSON archive either way, so nothing is withheld from the record because it was judged unremarkable.
-
-`convolvger verify PATH` reads a JSON archive and reports what it records, without re-fetching or re-parsing anything. It answers two questions separately: whether the provider served everything its own snapshot structure referenced, and whether everything it served could be modelled. Findings that indicate neither are listed in full and counted toward neither answer, so an archive whose messages are mostly empty by design — which is how a public share snapshot normally arrives — is still reported complete. A finding whose code this version does not recognise changes no answer, since an archive may have been written by a later version. An archive declaring a schema version this version cannot read is refused rather than given a verdict.
-
-Exit codes: 0 clean, 2 completed with warnings, 1 failed. For `verify`, 2 means a check did not pass, and 1 means the file could not be read as an archive at all.
+- archive public AI conversations locally, with no account and no telemetry;
+- support many providers through isolated adapters;
+- keep the structure and content a provider exposes, and say what it could not;
+- produce the same output for the same input, whichever provider it came from;
+- run entirely locally, with no language model involved.
 
 ## License
 

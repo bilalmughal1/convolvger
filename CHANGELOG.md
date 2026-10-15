@@ -6,8 +6,27 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Perplexity shared threads (`https://www.perplexity.ai/search/ID`), captured
+  from the browser as Claude's are: asked by this tool, the page and the data
+  behind it answer with a Cloudflare challenge. The bookmarklet asks for the
+  thread exactly as the page does, measured from a signed-out browser with no
+  cookie or token. The answer is assembled from the text pieces Perplexity
+  splits it into, and its citations are read from the results Perplexity marks
+  as cited, by their own number. Only the first page of a thread is read, up to
+  twenty turns; a longer thread is reported as continuing. An image inside an
+  answer is kept and reported as unmodelled. The sharer's name, username, id and
+  profile image are kept in the JSON archive and never rendered
+
 ### Changed
 
+- The bookmarklet captures Perplexity as well as Claude. Each provider that is
+  captured rather than fetched now declares where its share pages are and where
+  their data is, and the bookmarklet tries each in turn
+- The README is rewritten for the current set of providers, commands and
+  outputs. It no longer claims that `export` prints the address a Claude
+  snapshot can be saved from, which it did not do
 - A message now lists the sources it cites. Under each DeepSeek, Qwen, Grok and
   Kimi answer that cites search results, a numbered **Sources** list links each
   one by its title, and the citation in the text reads `[1]`, `[2]`, counted in
