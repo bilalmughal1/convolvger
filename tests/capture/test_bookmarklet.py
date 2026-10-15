@@ -1,6 +1,8 @@
 """The bookmarklet: a link that must survive being pasted into a browser."""
 
-from convolvger.capture.bookmarklet import bookmarklet
+import re
+
+from convolvger.capture.bookmarklet import RULES, bookmarklet
 from convolvger.capture.server import DEFAULT_PORT
 
 
@@ -31,13 +33,24 @@ def test_it_is_one_line_and_free_of_percent_escapes() -> None:
 def test_it_declines_pages_that_are_not_share_pages() -> None:
     link = bookmarklet()
 
-    assert "claude.ai" in link
-    assert r"\/share\/" in link
+    assert '"h":["claude.ai"],"p":"^/share/([^/?#]+)"' in link
+    assert '"h":["www.perplexity.ai"],"p":"^/search/([^/?#]+)"' in link
     assert "open a share page first" in link
 
 
-def test_it_reads_the_snapshot_from_the_providers_own_endpoint() -> None:
-    assert "api/chat_snapshots/" in bookmarklet()
+def test_it_reads_each_snapshot_from_the_providers_own_endpoint() -> None:
+    link = bookmarklet()
+    assert "https://claude.ai/api/chat_snapshots/{share_id}" in link
+    assert "https://www.perplexity.ai/rest/thread/{share_id}?" in link
+
+
+def test_every_rule_carries_a_path_with_one_group_for_the_id() -> None:
+    """The browser runs the pattern; Python checks it means one thing."""
+    for rule in RULES:
+        assert re.compile(rule.path).groups == 1
+        assert rule.path.startswith("^/")
+        assert "{share_id}" in rule.api
+        assert rule.hosts
 
 
 def test_it_says_what_to_do_when_nothing_is_listening() -> None:

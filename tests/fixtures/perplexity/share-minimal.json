@@ -1,0 +1,1654 @@
+{
+  "background_entries": [],
+  "entries": [
+    {
+      "backend_uuid": "00000000-0000-4000-8000-000000000020",
+      "context_uuid": "00000000-0000-4000-8000-000000000002",
+      "uuid": "00000000-0000-4000-8000-000000000010",
+      "frontend_context_uuid": "00000000-0000-4000-8000-000000000003",
+      "frontend_uuid": "00000000-0000-4000-8000-000000000010",
+      "status": "COMPLETED",
+      "thread_title": "Example Perplexity thread",
+      "related_queries": [],
+      "display_model": "turbo",
+      "user_selected_model": "turbo",
+      "personalized": false,
+      "mode": "COPILOT",
+      "query_str": "How does a kettle work?",
+      "search_focus": "internet",
+      "source": "mweb",
+      "updated_datetime": "2026-01-01T10:00:20.000000",
+      "step_type": "FINAL",
+      "author_id": "00000000-0000-4000-8000-000000000009",
+      "author_username": "example-sharer",
+      "author_image": "https://example.com/avatar.png",
+      "bookmark_state": "NOT_BOOKMARKED",
+      "thread_access": 2,
+      "thread_url_slug": "00000000-0000-4000-8000-000000000001",
+      "query_source": "default",
+      "privacy_state": "NONE",
+      "gpt4": false,
+      "sources": {
+        "sources": [
+          "x"
+        ]
+      },
+      "entry_created_datetime": "2026-01-01T10:00:00.000000+00:00",
+      "entry_updated_datetime": "2026-01-01T10:00:20.000000+00:00",
+      "blocks": [
+        {
+          "intended_usage": "plan",
+          "plan_block": {
+            "progress": "DONE",
+            "goals": [
+              {
+                "id": "0",
+                "description": "Example search step",
+                "final": true,
+                "todo_task_status": "INCOMPLETE"
+              },
+              {
+                "id": "1",
+                "description": "Kettles heat water with an element.[1][2]\n\n```python\nx = [1]\n```\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n",
+                "final": true,
+                "todo_task_status": "INCOMPLETE"
+              }
+            ],
+            "final": true
+          }
+        },
+        {
+          "intended_usage": "workflow_root",
+          "workflow_block": {
+            "version": "1.0",
+            "status": "WORKFLOW_COMPLETED",
+            "headline": "x",
+            "started_at": "2026-01-01T10:00:00.000000+00:00",
+            "completed_at": "2026-01-01T10:00:00.000000+00:00",
+            "predicted_completion_at": "2026-01-01T10:00:00.000000",
+            "steps": [
+              {
+                "status": "WORKFLOW_COMPLETED",
+                "title": "Example search step",
+                "items": [
+                  {
+                    "id": "item-q",
+                    "type": "WORKFLOW_ITEM_QUERIES",
+                    "payload": {
+                      "queries_payload": {
+                        "queries": [
+                          "example query"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "item-s",
+                    "type": "WORKFLOW_ITEM_SOURCES",
+                    "payload": {
+                      "sources_payload": {
+                        "sources": [
+                          {
+                            "name": "Example source 3",
+                            "snippet": "Invented snippet 3.",
+                            "url": "https://example.com/source-3"
+                          },
+                          {
+                            "name": "Example source 2",
+                            "snippet": "Invented snippet 2.",
+                            "url": "https://example.com/source-2"
+                          },
+                          {
+                            "name": "Example source 1",
+                            "snippet": "Invented snippet 1.",
+                            "url": "https://example.com/source-1"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ],
+                "started_at": "2026-01-01T10:00:00.000000+00:00",
+                "completed_at": "2026-01-01T10:00:00.000000+00:00",
+                "icon": "search",
+                "tool_name": "search_web",
+                "source_tier": "SOURCE_TIER_DEFAULT",
+                "id": "step-search"
+              },
+              {
+                "status": "WORKFLOW_COMPLETED",
+                "title": "",
+                "items": [
+                  {
+                    "id": "item-t0",
+                    "type": "WORKFLOW_ITEM_TEXT",
+                    "payload": {
+                      "text_payload": {
+                        "text": "Kettles heat water with an element.[1][2]\n\n```python\nx = [1]\n```\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n",
+                        "chunks": [
+                          "Kettles heat water with an element.[1][2]\n\n```python\nx = [1]\n```\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n"
+                        ],
+                        "variant": "answer",
+                        "is_streaming": false
+                      }
+                    },
+                    "display_mode": "x",
+                    "variant": "answer"
+                  }
+                ],
+                "started_at": "2026-01-01T10:00:00.000000",
+                "completed_at": "2026-01-01T10:00:00.000000",
+                "unnest_items": true,
+                "source_tier": "SOURCE_TIER_DEFAULT",
+                "id": "step-text-0"
+              }
+            ],
+            "snapshots": []
+          }
+        },
+        {
+          "intended_usage": "web_results",
+          "web_result_block": {
+            "progress": "DONE",
+            "web_results": [
+              {
+                "name": "Example source 1",
+                "snippet": "Invented snippet 1.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-1",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              },
+              {
+                "name": "Example source 2",
+                "snippet": "Invented snippet 2.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-2",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              },
+              {
+                "name": "Example source 3",
+                "snippet": "Invented snippet 3.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-3",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              }
+            ]
+          }
+        },
+        {
+          "intended_usage": "answer_tabs",
+          "answer_tabs_block": {
+            "modes": [
+              {
+                "answer_mode_type": "ANSWER"
+              },
+              {
+                "answer_mode_type": "SOURCES"
+              },
+              {
+                "answer_mode_type": "IMAGE",
+                "has_preview": false
+              }
+            ],
+            "reformulated_queries": []
+          }
+        },
+        {
+          "intended_usage": "sources_answer_mode",
+          "sources_mode_block": {
+            "answer_mode_type": "SOURCES",
+            "progress": "DONE",
+            "web_results": [
+              {
+                "name": "Example source 1",
+                "snippet": "Invented snippet 1.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-1",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              },
+              {
+                "name": "Example source 2",
+                "snippet": "Invented snippet 2.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-2",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              },
+              {
+                "name": "Example source 3",
+                "snippet": "Invented snippet 3.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-3",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              }
+            ],
+            "result_count": 3,
+            "rows": [
+              {
+                "citation": 1,
+                "status": "SELECTED",
+                "web_result": {
+                  "name": "Example source 1",
+                  "snippet": "Invented snippet 1.",
+                  "timestamp": "2026-01-01T10:00:00.000000",
+                  "url": "https://example.com/source-1",
+                  "meta_data": {
+                    "citation_domain_name": null,
+                    "client": "web",
+                    "images": []
+                  },
+                  "is_attachment": false,
+                  "is_image": false,
+                  "is_code_interpreter": false,
+                  "is_knowledge_card": false,
+                  "is_navigational": false,
+                  "is_widget": false,
+                  "is_focused_web": false,
+                  "is_client_context": false,
+                  "is_memory": false,
+                  "is_conversation_history": false,
+                  "is_conversation_summary": false
+                }
+              },
+              {
+                "citation": 2,
+                "status": "SELECTED",
+                "web_result": {
+                  "name": "Example source 2",
+                  "snippet": "Invented snippet 2.",
+                  "timestamp": "2026-01-01T10:00:00.000000",
+                  "url": "https://example.com/source-2",
+                  "meta_data": {
+                    "citation_domain_name": null,
+                    "client": "web",
+                    "images": []
+                  },
+                  "is_attachment": false,
+                  "is_image": false,
+                  "is_code_interpreter": false,
+                  "is_knowledge_card": false,
+                  "is_navigational": false,
+                  "is_widget": false,
+                  "is_focused_web": false,
+                  "is_client_context": false,
+                  "is_memory": false,
+                  "is_conversation_history": false,
+                  "is_conversation_summary": false
+                }
+              },
+              {
+                "status": "SELECTED",
+                "web_result": {
+                  "name": "Example source 3",
+                  "snippet": "Invented snippet 3.",
+                  "timestamp": "2026-01-01T10:00:00.000000",
+                  "url": "https://example.com/source-3",
+                  "meta_data": {
+                    "citation_domain_name": null,
+                    "client": "web",
+                    "images": []
+                  },
+                  "is_attachment": false,
+                  "is_image": false,
+                  "is_code_interpreter": false,
+                  "is_knowledge_card": false,
+                  "is_navigational": false,
+                  "is_widget": false,
+                  "is_focused_web": false,
+                  "is_client_context": false,
+                  "is_memory": false,
+                  "is_conversation_history": false,
+                  "is_conversation_summary": false
+                }
+              }
+            ]
+          }
+        },
+        {
+          "intended_usage": "pending_followups",
+          "pending_followups_block": {
+            "followups": []
+          }
+        }
+      ],
+      "related_query_items": [],
+      "access_level": "PUBLIC_READ",
+      "answer_modes": [
+        {
+          "answer_mode_type": "ANSWER"
+        },
+        {
+          "answer_mode_type": "SOURCES"
+        },
+        {
+          "answer_mode_type": "IMAGE",
+          "has_preview": false
+        }
+      ],
+      "structured_answer_block_usages": [
+        "x"
+      ],
+      "reconnectable": false,
+      "classifier_results": {
+        "personal_search": false,
+        "skip_search": false,
+        "widget_type": "x",
+        "hide_nav": false,
+        "hide_sources": false,
+        "image_generation": false,
+        "time_widget": false,
+        "mhe_predictions": {
+          "skip_search": false,
+          "image_generation_intent": false,
+          "time_widget": false,
+          "places_search_intent": false,
+          "shopping_intent": false,
+          "image_preview": false,
+          "video_preview": false,
+          "study_intent": null,
+          "personal_search": false,
+          "weather_widget": false,
+          "finance_widget_gating": false,
+          "calculator_widget": false,
+          "comet_nav_widget_combined_target": false,
+          "finance_agent_gating": false
+        },
+        "mhe_predictions_full": {
+          "skip_search": {
+            "is_true": false,
+            "probability": null,
+            "threshold": null
+          },
+          "image_generation_intent": {
+            "is_true": false,
+            "probability": 0.00037956238,
+            "threshold": 0.98
+          },
+          "time_widget": {
+            "is_true": false,
+            "probability": 0.0011672974,
+            "threshold": 0.8
+          },
+          "places_search_intent": {
+            "is_true": false,
+            "probability": 0.017944336,
+            "threshold": 0.75
+          },
+          "shopping_intent": {
+            "is_true": false,
+            "probability": 0.0001487732,
+            "threshold": 0.8
+          },
+          "image_preview": {
+            "is_true": false,
+            "probability": 0.21777344,
+            "threshold": 0.42
+          },
+          "video_preview": {
+            "is_true": false,
+            "probability": 0.014038086,
+            "threshold": 0.5
+          },
+          "study_intent": null,
+          "personal_search": {
+            "is_true": false,
+            "probability": null,
+            "threshold": null
+          },
+          "skip_personal_search": {
+            "is_true": true,
+            "probability": 0.99609375,
+            "threshold": 0.95
+          },
+          "weather_widget": {
+            "is_true": false,
+            "probability": 0.011657715,
+            "threshold": 0.4
+          },
+          "finance_widget_gating": {
+            "is_true": false,
+            "probability": 0.08154297,
+            "threshold": 0.53
+          },
+          "calculator_widget": {
+            "is_true": false,
+            "probability": 0.0006866455,
+            "threshold": 0.3
+          },
+          "comet_nav_widget_combined_target": {
+            "is_true": false,
+            "probability": 0.018554688,
+            "threshold": 0.5
+          },
+          "domain_subdomain": {
+            "label": "x",
+            "probability": 0.68359375
+          },
+          "finance_agent_gating": {
+            "is_true": false,
+            "probability": 0.00029563904,
+            "threshold": 0.7
+          }
+        }
+      },
+      "search_implementation_mode": "multi_step",
+      "query_language": "en",
+      "search_mode": "SEARCH",
+      "social_info": {
+        "like_count": 0,
+        "user_likes": false,
+        "fork_count": 0,
+        "view_count": 1
+      },
+      "featured_images": []
+    },
+    {
+      "backend_uuid": "00000000-0000-4000-8000-000000000021",
+      "context_uuid": "00000000-0000-4000-8000-000000000002",
+      "uuid": "00000000-0000-4000-8000-000000000011",
+      "frontend_context_uuid": "00000000-0000-4000-8000-000000000003",
+      "frontend_uuid": "00000000-0000-4000-8000-000000000011",
+      "status": "COMPLETED",
+      "thread_title": "Example Perplexity thread",
+      "related_queries": [],
+      "display_model": "turbo",
+      "user_selected_model": "turbo",
+      "personalized": false,
+      "mode": "COPILOT",
+      "query_str": "Why does it switch off?",
+      "search_focus": "internet",
+      "source": "mweb",
+      "updated_datetime": "2026-01-01T10:02:20.000000",
+      "step_type": "FINAL",
+      "author_id": "00000000-0000-4000-8000-000000000009",
+      "author_username": "example-sharer",
+      "author_image": "https://example.com/avatar.png",
+      "bookmark_state": "NOT_BOOKMARKED",
+      "thread_access": 2,
+      "thread_url_slug": "00000000-0000-4000-8000-000000000001",
+      "query_source": "default",
+      "privacy_state": "NONE",
+      "gpt4": false,
+      "sources": {
+        "sources": [
+          "x"
+        ]
+      },
+      "entry_created_datetime": "2026-01-01T10:02:00.000000+00:00",
+      "entry_updated_datetime": "2026-01-01T10:02:20.000000+00:00",
+      "blocks": [
+        {
+          "intended_usage": "plan",
+          "plan_block": {
+            "progress": "DONE",
+            "goals": [
+              {
+                "id": "0",
+                "description": "Example search step",
+                "final": true,
+                "todo_task_status": "INCOMPLETE"
+              },
+              {
+                "id": "1",
+                "description": "A thermostat switches it off.[1]\n\n## Safety\n\nIt also cuts out when dry.[2]",
+                "final": true,
+                "todo_task_status": "INCOMPLETE"
+              }
+            ],
+            "final": true
+          }
+        },
+        {
+          "intended_usage": "workflow_root",
+          "workflow_block": {
+            "version": "1.0",
+            "status": "WORKFLOW_COMPLETED",
+            "headline": "x",
+            "started_at": "2026-01-01T10:00:00.000000+00:00",
+            "completed_at": "2026-01-01T10:00:00.000000+00:00",
+            "predicted_completion_at": "2026-01-01T10:00:00.000000",
+            "steps": [
+              {
+                "status": "WORKFLOW_COMPLETED",
+                "title": "Example search step",
+                "items": [
+                  {
+                    "id": "item-q",
+                    "type": "WORKFLOW_ITEM_QUERIES",
+                    "payload": {
+                      "queries_payload": {
+                        "queries": [
+                          "example query"
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "id": "item-s",
+                    "type": "WORKFLOW_ITEM_SOURCES",
+                    "payload": {
+                      "sources_payload": {
+                        "sources": [
+                          {
+                            "name": "Example source 3",
+                            "snippet": "Invented snippet 3.",
+                            "url": "https://example.com/source-3"
+                          },
+                          {
+                            "name": "Example source 2",
+                            "snippet": "Invented snippet 2.",
+                            "url": "https://example.com/source-2"
+                          },
+                          {
+                            "name": "Example source 1",
+                            "snippet": "Invented snippet 1.",
+                            "url": "https://example.com/source-1"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ],
+                "started_at": "2026-01-01T10:00:00.000000+00:00",
+                "completed_at": "2026-01-01T10:00:00.000000+00:00",
+                "icon": "search",
+                "tool_name": "search_web",
+                "source_tier": "SOURCE_TIER_DEFAULT",
+                "id": "step-search",
+                "batch_step_id": "batch-1"
+              },
+              {
+                "status": "WORKFLOW_COMPLETED",
+                "title": "",
+                "items": [
+                  {
+                    "id": "item-t0",
+                    "type": "WORKFLOW_ITEM_TEXT",
+                    "payload": {
+                      "text_payload": {
+                        "text": "A thermostat switches it off.[1]",
+                        "chunks": [
+                          "A thermostat switches it off.[1]"
+                        ],
+                        "variant": "answer",
+                        "is_streaming": false
+                      }
+                    },
+                    "display_mode": "x",
+                    "variant": "answer"
+                  }
+                ],
+                "started_at": "2026-01-01T10:00:00.000000",
+                "completed_at": "2026-01-01T10:00:00.000000",
+                "unnest_items": true,
+                "source_tier": "SOURCE_TIER_DEFAULT",
+                "id": "step-text-0"
+              },
+              {
+                "status": "WORKFLOW_COMPLETED",
+                "title": "",
+                "items": [
+                  {
+                    "id": "item-t1",
+                    "type": "WORKFLOW_ITEM_TEXT",
+                    "payload": {
+                      "text_payload": {
+                        "text": "\n\n## Safety\n\nIt also cuts out when dry.[2]",
+                        "chunks": [
+                          "\n\n## Safety\n\nIt also cuts out when dry.[2]"
+                        ],
+                        "variant": "answer",
+                        "is_streaming": false
+                      }
+                    },
+                    "display_mode": "x",
+                    "variant": "answer"
+                  }
+                ],
+                "started_at": "2026-01-01T10:00:00.000000",
+                "completed_at": "2026-01-01T10:00:00.000000",
+                "unnest_items": true,
+                "source_tier": "SOURCE_TIER_DEFAULT",
+                "id": "step-text-1"
+              }
+            ],
+            "snapshots": []
+          }
+        },
+        {
+          "intended_usage": "web_results",
+          "web_result_block": {
+            "progress": "DONE",
+            "web_results": [
+              {
+                "name": "Example source 1",
+                "snippet": "Invented snippet 1.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-1",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              },
+              {
+                "name": "Example source 2",
+                "snippet": "Invented snippet 2.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-2",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              },
+              {
+                "name": "Example source 3",
+                "snippet": "Invented snippet 3.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-3",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              }
+            ]
+          }
+        },
+        {
+          "intended_usage": "answer_tabs",
+          "answer_tabs_block": {
+            "modes": [
+              {
+                "answer_mode_type": "ANSWER"
+              },
+              {
+                "answer_mode_type": "SOURCES"
+              },
+              {
+                "answer_mode_type": "IMAGE",
+                "has_preview": false
+              }
+            ],
+            "reformulated_queries": []
+          }
+        },
+        {
+          "intended_usage": "sources_answer_mode",
+          "sources_mode_block": {
+            "answer_mode_type": "SOURCES",
+            "progress": "DONE",
+            "web_results": [
+              {
+                "name": "Example source 1",
+                "snippet": "Invented snippet 1.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-1",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              },
+              {
+                "name": "Example source 2",
+                "snippet": "Invented snippet 2.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-2",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              },
+              {
+                "name": "Example source 3",
+                "snippet": "Invented snippet 3.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-3",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              }
+            ],
+            "result_count": 3,
+            "rows": [
+              {
+                "citation": 2,
+                "status": "SELECTED",
+                "web_result": {
+                  "name": "Example source 1",
+                  "snippet": "Invented snippet 1.",
+                  "timestamp": "2026-01-01T10:00:00.000000",
+                  "url": "https://example.com/source-1",
+                  "meta_data": {
+                    "citation_domain_name": null,
+                    "client": "web",
+                    "images": []
+                  },
+                  "is_attachment": false,
+                  "is_image": false,
+                  "is_code_interpreter": false,
+                  "is_knowledge_card": false,
+                  "is_navigational": false,
+                  "is_widget": false,
+                  "is_focused_web": false,
+                  "is_client_context": false,
+                  "is_memory": false,
+                  "is_conversation_history": false,
+                  "is_conversation_summary": false
+                }
+              },
+              {
+                "status": "SELECTED",
+                "web_result": {
+                  "name": "Example source 2",
+                  "snippet": "Invented snippet 2.",
+                  "timestamp": "2026-01-01T10:00:00.000000",
+                  "url": "https://example.com/source-2",
+                  "meta_data": {
+                    "citation_domain_name": null,
+                    "client": "web",
+                    "images": []
+                  },
+                  "is_attachment": false,
+                  "is_image": false,
+                  "is_code_interpreter": false,
+                  "is_knowledge_card": false,
+                  "is_navigational": false,
+                  "is_widget": false,
+                  "is_focused_web": false,
+                  "is_client_context": false,
+                  "is_memory": false,
+                  "is_conversation_history": false,
+                  "is_conversation_summary": false
+                }
+              },
+              {
+                "citation": 1,
+                "status": "SELECTED",
+                "web_result": {
+                  "name": "Example source 3",
+                  "snippet": "Invented snippet 3.",
+                  "timestamp": "2026-01-01T10:00:00.000000",
+                  "url": "https://example.com/source-3",
+                  "meta_data": {
+                    "citation_domain_name": null,
+                    "client": "web",
+                    "images": []
+                  },
+                  "is_attachment": false,
+                  "is_image": false,
+                  "is_code_interpreter": false,
+                  "is_knowledge_card": false,
+                  "is_navigational": false,
+                  "is_widget": false,
+                  "is_focused_web": false,
+                  "is_client_context": false,
+                  "is_memory": false,
+                  "is_conversation_history": false,
+                  "is_conversation_summary": false
+                }
+              }
+            ]
+          }
+        },
+        {
+          "intended_usage": "pending_followups",
+          "pending_followups_block": {
+            "followups": []
+          }
+        }
+      ],
+      "related_query_items": [],
+      "access_level": "PUBLIC_READ",
+      "answer_modes": [
+        {
+          "answer_mode_type": "ANSWER"
+        },
+        {
+          "answer_mode_type": "SOURCES"
+        },
+        {
+          "answer_mode_type": "IMAGE",
+          "has_preview": false
+        }
+      ],
+      "structured_answer_block_usages": [
+        "x"
+      ],
+      "reconnectable": false,
+      "classifier_results": {
+        "personal_search": false,
+        "skip_search": false,
+        "widget_type": "x",
+        "hide_nav": false,
+        "hide_sources": false,
+        "image_generation": false,
+        "time_widget": false,
+        "mhe_predictions": {
+          "skip_search": false,
+          "image_generation_intent": false,
+          "time_widget": false,
+          "places_search_intent": false,
+          "shopping_intent": false,
+          "image_preview": false,
+          "video_preview": false,
+          "study_intent": null,
+          "personal_search": false,
+          "weather_widget": false,
+          "finance_widget_gating": false,
+          "calculator_widget": false,
+          "comet_nav_widget_combined_target": false,
+          "finance_agent_gating": false
+        },
+        "mhe_predictions_full": {
+          "skip_search": {
+            "is_true": false,
+            "probability": null,
+            "threshold": null
+          },
+          "image_generation_intent": {
+            "is_true": false,
+            "probability": 0.00037956238,
+            "threshold": 0.98
+          },
+          "time_widget": {
+            "is_true": false,
+            "probability": 0.0011672974,
+            "threshold": 0.8
+          },
+          "places_search_intent": {
+            "is_true": false,
+            "probability": 0.017944336,
+            "threshold": 0.75
+          },
+          "shopping_intent": {
+            "is_true": false,
+            "probability": 0.0001487732,
+            "threshold": 0.8
+          },
+          "image_preview": {
+            "is_true": false,
+            "probability": 0.21777344,
+            "threshold": 0.42
+          },
+          "video_preview": {
+            "is_true": false,
+            "probability": 0.014038086,
+            "threshold": 0.5
+          },
+          "study_intent": null,
+          "personal_search": {
+            "is_true": false,
+            "probability": null,
+            "threshold": null
+          },
+          "skip_personal_search": {
+            "is_true": true,
+            "probability": 0.99609375,
+            "threshold": 0.95
+          },
+          "weather_widget": {
+            "is_true": false,
+            "probability": 0.011657715,
+            "threshold": 0.4
+          },
+          "finance_widget_gating": {
+            "is_true": false,
+            "probability": 0.08154297,
+            "threshold": 0.53
+          },
+          "calculator_widget": {
+            "is_true": false,
+            "probability": 0.0006866455,
+            "threshold": 0.3
+          },
+          "comet_nav_widget_combined_target": {
+            "is_true": false,
+            "probability": 0.018554688,
+            "threshold": 0.5
+          },
+          "domain_subdomain": {
+            "label": "x",
+            "probability": 0.68359375
+          },
+          "finance_agent_gating": {
+            "is_true": false,
+            "probability": 0.00029563904,
+            "threshold": 0.7
+          }
+        }
+      },
+      "search_implementation_mode": "multi_step",
+      "query_language": "en",
+      "search_mode": "SEARCH",
+      "social_info": {
+        "like_count": 0,
+        "user_likes": false,
+        "fork_count": 0,
+        "view_count": 1
+      },
+      "featured_images": []
+    }
+  ],
+  "first_entry": {
+    "backend_uuid": "00000000-0000-4000-8000-000000000020",
+    "context_uuid": "00000000-0000-4000-8000-000000000002",
+    "uuid": "00000000-0000-4000-8000-000000000010",
+    "frontend_context_uuid": "00000000-0000-4000-8000-000000000003",
+    "frontend_uuid": "00000000-0000-4000-8000-000000000010",
+    "status": "COMPLETED",
+    "thread_title": "Example Perplexity thread",
+    "related_queries": [],
+    "display_model": "turbo",
+    "user_selected_model": "turbo",
+    "personalized": false,
+    "mode": "COPILOT",
+    "query_str": "How does a kettle work?",
+    "search_focus": "internet",
+    "source": "mweb",
+    "updated_datetime": "2026-01-01T10:00:20.000000",
+    "step_type": "FINAL",
+    "author_id": "00000000-0000-4000-8000-000000000009",
+    "author_username": "example-sharer",
+    "author_image": "https://example.com/avatar.png",
+    "bookmark_state": "NOT_BOOKMARKED",
+    "thread_access": 2,
+    "thread_url_slug": "00000000-0000-4000-8000-000000000001",
+    "query_source": "default",
+    "privacy_state": "NONE",
+    "gpt4": false,
+    "sources": {
+      "sources": [
+        "x"
+      ]
+    },
+    "entry_created_datetime": "2026-01-01T10:00:00.000000+00:00",
+    "entry_updated_datetime": "2026-01-01T10:00:20.000000+00:00",
+    "blocks": [
+      {
+        "intended_usage": "plan",
+        "plan_block": {
+          "progress": "DONE",
+          "goals": [
+            {
+              "id": "0",
+              "description": "Example search step",
+              "final": true,
+              "todo_task_status": "INCOMPLETE"
+            },
+            {
+              "id": "1",
+              "description": "Kettles heat water with an element.[1][2]\n\n```python\nx = [1]\n```\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n",
+              "final": true,
+              "todo_task_status": "INCOMPLETE"
+            }
+          ],
+          "final": true
+        }
+      },
+      {
+        "intended_usage": "workflow_root",
+        "workflow_block": {
+          "version": "1.0",
+          "status": "WORKFLOW_COMPLETED",
+          "headline": "x",
+          "started_at": "2026-01-01T10:00:00.000000+00:00",
+          "completed_at": "2026-01-01T10:00:00.000000+00:00",
+          "predicted_completion_at": "2026-01-01T10:00:00.000000",
+          "steps": [
+            {
+              "status": "WORKFLOW_COMPLETED",
+              "title": "Example search step",
+              "items": [
+                {
+                  "id": "item-q",
+                  "type": "WORKFLOW_ITEM_QUERIES",
+                  "payload": {
+                    "queries_payload": {
+                      "queries": [
+                        "example query"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "id": "item-s",
+                  "type": "WORKFLOW_ITEM_SOURCES",
+                  "payload": {
+                    "sources_payload": {
+                      "sources": [
+                        {
+                          "name": "Example source 3",
+                          "snippet": "Invented snippet 3.",
+                          "url": "https://example.com/source-3"
+                        },
+                        {
+                          "name": "Example source 2",
+                          "snippet": "Invented snippet 2.",
+                          "url": "https://example.com/source-2"
+                        },
+                        {
+                          "name": "Example source 1",
+                          "snippet": "Invented snippet 1.",
+                          "url": "https://example.com/source-1"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "started_at": "2026-01-01T10:00:00.000000+00:00",
+              "completed_at": "2026-01-01T10:00:00.000000+00:00",
+              "icon": "search",
+              "tool_name": "search_web",
+              "source_tier": "SOURCE_TIER_DEFAULT",
+              "id": "step-search"
+            },
+            {
+              "status": "WORKFLOW_COMPLETED",
+              "title": "",
+              "items": [
+                {
+                  "id": "item-t0",
+                  "type": "WORKFLOW_ITEM_TEXT",
+                  "payload": {
+                    "text_payload": {
+                      "text": "Kettles heat water with an element.[1][2]\n\n```python\nx = [1]\n```\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n",
+                      "chunks": [
+                        "Kettles heat water with an element.[1][2]\n\n```python\nx = [1]\n```\n\n| Part | Role |\n| --- | --- |\n| Element | Heats |\n"
+                      ],
+                      "variant": "answer",
+                      "is_streaming": false
+                    }
+                  },
+                  "display_mode": "x",
+                  "variant": "answer"
+                }
+              ],
+              "started_at": "2026-01-01T10:00:00.000000",
+              "completed_at": "2026-01-01T10:00:00.000000",
+              "unnest_items": true,
+              "source_tier": "SOURCE_TIER_DEFAULT",
+              "id": "step-text-0"
+            }
+          ],
+          "snapshots": []
+        }
+      },
+      {
+        "intended_usage": "web_results",
+        "web_result_block": {
+          "progress": "DONE",
+          "web_results": [
+            {
+              "name": "Example source 1",
+              "snippet": "Invented snippet 1.",
+              "timestamp": "2026-01-01T10:00:00.000000",
+              "url": "https://example.com/source-1",
+              "meta_data": {
+                "citation_domain_name": null,
+                "client": "web",
+                "images": []
+              },
+              "is_attachment": false,
+              "is_image": false,
+              "is_code_interpreter": false,
+              "is_knowledge_card": false,
+              "is_navigational": false,
+              "is_widget": false,
+              "is_focused_web": false,
+              "is_client_context": false,
+              "is_memory": false,
+              "is_conversation_history": false,
+              "is_conversation_summary": false
+            },
+            {
+              "name": "Example source 2",
+              "snippet": "Invented snippet 2.",
+              "timestamp": "2026-01-01T10:00:00.000000",
+              "url": "https://example.com/source-2",
+              "meta_data": {
+                "citation_domain_name": null,
+                "client": "web",
+                "images": []
+              },
+              "is_attachment": false,
+              "is_image": false,
+              "is_code_interpreter": false,
+              "is_knowledge_card": false,
+              "is_navigational": false,
+              "is_widget": false,
+              "is_focused_web": false,
+              "is_client_context": false,
+              "is_memory": false,
+              "is_conversation_history": false,
+              "is_conversation_summary": false
+            },
+            {
+              "name": "Example source 3",
+              "snippet": "Invented snippet 3.",
+              "timestamp": "2026-01-01T10:00:00.000000",
+              "url": "https://example.com/source-3",
+              "meta_data": {
+                "citation_domain_name": null,
+                "client": "web",
+                "images": []
+              },
+              "is_attachment": false,
+              "is_image": false,
+              "is_code_interpreter": false,
+              "is_knowledge_card": false,
+              "is_navigational": false,
+              "is_widget": false,
+              "is_focused_web": false,
+              "is_client_context": false,
+              "is_memory": false,
+              "is_conversation_history": false,
+              "is_conversation_summary": false
+            }
+          ]
+        }
+      },
+      {
+        "intended_usage": "answer_tabs",
+        "answer_tabs_block": {
+          "modes": [
+            {
+              "answer_mode_type": "ANSWER"
+            },
+            {
+              "answer_mode_type": "SOURCES"
+            },
+            {
+              "answer_mode_type": "IMAGE",
+              "has_preview": false
+            }
+          ],
+          "reformulated_queries": []
+        }
+      },
+      {
+        "intended_usage": "sources_answer_mode",
+        "sources_mode_block": {
+          "answer_mode_type": "SOURCES",
+          "progress": "DONE",
+          "web_results": [
+            {
+              "name": "Example source 1",
+              "snippet": "Invented snippet 1.",
+              "timestamp": "2026-01-01T10:00:00.000000",
+              "url": "https://example.com/source-1",
+              "meta_data": {
+                "citation_domain_name": null,
+                "client": "web",
+                "images": []
+              },
+              "is_attachment": false,
+              "is_image": false,
+              "is_code_interpreter": false,
+              "is_knowledge_card": false,
+              "is_navigational": false,
+              "is_widget": false,
+              "is_focused_web": false,
+              "is_client_context": false,
+              "is_memory": false,
+              "is_conversation_history": false,
+              "is_conversation_summary": false
+            },
+            {
+              "name": "Example source 2",
+              "snippet": "Invented snippet 2.",
+              "timestamp": "2026-01-01T10:00:00.000000",
+              "url": "https://example.com/source-2",
+              "meta_data": {
+                "citation_domain_name": null,
+                "client": "web",
+                "images": []
+              },
+              "is_attachment": false,
+              "is_image": false,
+              "is_code_interpreter": false,
+              "is_knowledge_card": false,
+              "is_navigational": false,
+              "is_widget": false,
+              "is_focused_web": false,
+              "is_client_context": false,
+              "is_memory": false,
+              "is_conversation_history": false,
+              "is_conversation_summary": false
+            },
+            {
+              "name": "Example source 3",
+              "snippet": "Invented snippet 3.",
+              "timestamp": "2026-01-01T10:00:00.000000",
+              "url": "https://example.com/source-3",
+              "meta_data": {
+                "citation_domain_name": null,
+                "client": "web",
+                "images": []
+              },
+              "is_attachment": false,
+              "is_image": false,
+              "is_code_interpreter": false,
+              "is_knowledge_card": false,
+              "is_navigational": false,
+              "is_widget": false,
+              "is_focused_web": false,
+              "is_client_context": false,
+              "is_memory": false,
+              "is_conversation_history": false,
+              "is_conversation_summary": false
+            }
+          ],
+          "result_count": 3,
+          "rows": [
+            {
+              "citation": 1,
+              "status": "SELECTED",
+              "web_result": {
+                "name": "Example source 1",
+                "snippet": "Invented snippet 1.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-1",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              }
+            },
+            {
+              "citation": 2,
+              "status": "SELECTED",
+              "web_result": {
+                "name": "Example source 2",
+                "snippet": "Invented snippet 2.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-2",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              }
+            },
+            {
+              "status": "SELECTED",
+              "web_result": {
+                "name": "Example source 3",
+                "snippet": "Invented snippet 3.",
+                "timestamp": "2026-01-01T10:00:00.000000",
+                "url": "https://example.com/source-3",
+                "meta_data": {
+                  "citation_domain_name": null,
+                  "client": "web",
+                  "images": []
+                },
+                "is_attachment": false,
+                "is_image": false,
+                "is_code_interpreter": false,
+                "is_knowledge_card": false,
+                "is_navigational": false,
+                "is_widget": false,
+                "is_focused_web": false,
+                "is_client_context": false,
+                "is_memory": false,
+                "is_conversation_history": false,
+                "is_conversation_summary": false
+              }
+            }
+          ]
+        }
+      },
+      {
+        "intended_usage": "pending_followups",
+        "pending_followups_block": {
+          "followups": []
+        }
+      }
+    ],
+    "related_query_items": [],
+    "access_level": "PUBLIC_READ",
+    "answer_modes": [
+      {
+        "answer_mode_type": "ANSWER"
+      },
+      {
+        "answer_mode_type": "SOURCES"
+      },
+      {
+        "answer_mode_type": "IMAGE",
+        "has_preview": false
+      }
+    ],
+    "structured_answer_block_usages": [
+      "x"
+    ],
+    "reconnectable": false,
+    "classifier_results": {
+      "personal_search": false,
+      "skip_search": false,
+      "widget_type": "x",
+      "hide_nav": false,
+      "hide_sources": false,
+      "image_generation": false,
+      "time_widget": false,
+      "mhe_predictions": {
+        "skip_search": false,
+        "image_generation_intent": false,
+        "time_widget": false,
+        "places_search_intent": false,
+        "shopping_intent": false,
+        "image_preview": false,
+        "video_preview": false,
+        "study_intent": null,
+        "personal_search": false,
+        "weather_widget": false,
+        "finance_widget_gating": false,
+        "calculator_widget": false,
+        "comet_nav_widget_combined_target": false,
+        "finance_agent_gating": false
+      },
+      "mhe_predictions_full": {
+        "skip_search": {
+          "is_true": false,
+          "probability": null,
+          "threshold": null
+        },
+        "image_generation_intent": {
+          "is_true": false,
+          "probability": 0.00037956238,
+          "threshold": 0.98
+        },
+        "time_widget": {
+          "is_true": false,
+          "probability": 0.0011672974,
+          "threshold": 0.8
+        },
+        "places_search_intent": {
+          "is_true": false,
+          "probability": 0.017944336,
+          "threshold": 0.75
+        },
+        "shopping_intent": {
+          "is_true": false,
+          "probability": 0.0001487732,
+          "threshold": 0.8
+        },
+        "image_preview": {
+          "is_true": false,
+          "probability": 0.21777344,
+          "threshold": 0.42
+        },
+        "video_preview": {
+          "is_true": false,
+          "probability": 0.014038086,
+          "threshold": 0.5
+        },
+        "study_intent": null,
+        "personal_search": {
+          "is_true": false,
+          "probability": null,
+          "threshold": null
+        },
+        "skip_personal_search": {
+          "is_true": true,
+          "probability": 0.99609375,
+          "threshold": 0.95
+        },
+        "weather_widget": {
+          "is_true": false,
+          "probability": 0.011657715,
+          "threshold": 0.4
+        },
+        "finance_widget_gating": {
+          "is_true": false,
+          "probability": 0.08154297,
+          "threshold": 0.53
+        },
+        "calculator_widget": {
+          "is_true": false,
+          "probability": 0.0006866455,
+          "threshold": 0.3
+        },
+        "comet_nav_widget_combined_target": {
+          "is_true": false,
+          "probability": 0.018554688,
+          "threshold": 0.5
+        },
+        "domain_subdomain": {
+          "label": "x",
+          "probability": 0.68359375
+        },
+        "finance_agent_gating": {
+          "is_true": false,
+          "probability": 0.00029563904,
+          "threshold": 0.7
+        }
+      }
+    },
+    "search_implementation_mode": "multi_step",
+    "query_language": "en",
+    "search_mode": "SEARCH",
+    "social_info": {
+      "like_count": 0,
+      "user_likes": false,
+      "fork_count": 0,
+      "view_count": 1
+    },
+    "featured_images": []
+  },
+  "has_next_page": false,
+  "latest_entry": null,
+  "next_cursor": null,
+  "status": "success",
+  "thread_metadata": {
+    "author_name": "Example Sharer",
+    "author_id": "00000000-0000-4000-8000-000000000009",
+    "author_image": "https://example.com/avatar.png",
+    "author_username": "example-sharer",
+    "bookmark_state": "NOT_BOOKMARKED",
+    "collection_info": null,
+    "created_at": "2026-01-01T10:00:00.000000",
+    "crons": null,
+    "is_frozen_thread": false,
+    "is_ask_deep_research": false,
+    "is_ask_asset_task": false,
+    "local_workspace_directories": null,
+    "locked_reason": null,
+    "mode": "2",
+    "parent_info": null,
+    "sensitive_claims_visibility": null,
+    "subscribe_entry_uuids": null,
+    "thread_status": "completed",
+    "thread_status_summary": null,
+    "thread_status_summary_enum": null,
+    "title": "Example Perplexity thread",
+    "unread": null,
+    "updated_at": "2026-01-01T10:02:20.000000",
+    "wake_at": null,
+    "workflow_snapshots": null
+  }
+}

@@ -107,6 +107,49 @@ def test_a_page_no_provider_handles_cannot_end_the_capture(tmp_path: Path) -> No
     assert "Provider:  claude" in result.output
 
 
+def test_a_captured_perplexity_thread_is_exported(tmp_path: Path) -> None:
+    """The second provider captured rather than fetched, through the same listener."""
+    thread = (
+        Path(__file__).parent.parent / "fixtures" / "perplexity" / "share-minimal.json"
+    )
+    url = "https://www.perplexity.ai/search/00000000-0000-4000-8000-000000000001"
+    body = json.dumps(
+        {"url": url, "content": thread.read_text(encoding="utf-8")}
+    ).encode()
+
+    def run() -> None:
+        request = urllib.request.Request(
+            f"http://127.0.0.1:{PORT}/",
+            data=body,
+            headers={
+                "Content-Type": "application/json",
+                "Origin": "https://www.perplexity.ai",
+            },
+            method="POST",
+        )
+        for _ in range(60):
+            try:
+                urllib.request.urlopen(request, timeout=5).close()
+                return
+            except urllib.error.URLError:
+                time.sleep(0.05)
+
+    poster = threading.Thread(target=run)
+    poster.start()
+    written = tmp_path / "out.md"
+    result = runner.invoke(
+        app,
+        ["export", "--capture", "--port", str(PORT), "-f", "md", "-o", str(written)],
+    )
+    poster.join(timeout=5)
+
+    assert result.exit_code == 0, result.output
+    document = written.read_text(encoding="utf-8")
+    assert "Provider: perplexity" in document
+    assert "# Example Perplexity thread" in document
+    assert "**Sources**" in document
+
+
 def test_capturing_and_a_url_together_are_refused() -> None:
     result = runner.invoke(app, ["export", SHARE, "--capture"])
 

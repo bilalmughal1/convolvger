@@ -13,12 +13,16 @@ because it looks plausible.
 
 from urllib.parse import urlsplit
 
+from convolvger.capture.rules import CaptureRule
+
 SHARE_HOSTS = frozenset({"claude.ai"})
 
 SNAPSHOT_API = (
     "https://claude.ai/api/chat_snapshots/{share_id}"
     "?rendering_mode=messages&render_all_tools=true"
 )
+
+CAPTURE = CaptureRule(hosts=SHARE_HOSTS, path=r"^/share/([^/?#]+)", api=SNAPSHOT_API)
 """Where a browser gets the conversation behind a share page.
 
 The share page renders nothing by itself; the conversation arrives from

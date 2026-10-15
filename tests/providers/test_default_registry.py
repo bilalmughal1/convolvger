@@ -8,6 +8,7 @@ from convolvger.providers.default import build_registry
 from convolvger.providers.gemini import GeminiProvider
 from convolvger.providers.grok import GrokProvider
 from convolvger.providers.kimi import KimiProvider
+from convolvger.providers.perplexity import PerplexityProvider
 from convolvger.providers.qwen import QwenProvider
 
 
@@ -26,6 +27,7 @@ def test_registry_contains_chatgpt() -> None:
         "deepseek",
         "kimi",
         "qwen",
+        "perplexity",
     ]
 
 
@@ -115,3 +117,16 @@ def test_the_newer_providers_satisfy_the_protocol(
 )
 def test_registry_detects_each_newer_provider_s_share_url(url: str, name: str) -> None:
     assert build_registry().detect(url).name == name
+
+
+def test_perplexity_provider_satisfies_the_protocol() -> None:
+    provider: Provider = PerplexityProvider()
+
+    assert provider.name == "perplexity"
+
+
+def test_registry_detects_a_perplexity_share_url() -> None:
+    registry = build_registry()
+    url = "https://www.perplexity.ai/search/00000000-0000-4000-8000-000000000001"
+
+    assert registry.detect(url).name == "perplexity"

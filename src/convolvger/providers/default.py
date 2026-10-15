@@ -10,6 +10,7 @@ from convolvger.providers.deepseek import DeepSeekProvider
 from convolvger.providers.gemini import GeminiProvider
 from convolvger.providers.grok import GrokProvider
 from convolvger.providers.kimi import KimiProvider
+from convolvger.providers.perplexity import PerplexityProvider
 from convolvger.providers.qwen import QwenProvider
 from convolvger.providers.registry import ProviderRegistry
 
@@ -24,4 +25,5 @@ def build_registry() -> ProviderRegistry:
     registry.register(DeepSeekProvider())
     registry.register(KimiProvider())
     registry.register(QwenProvider())
+    registry.register(PerplexityProvider())
     return registry

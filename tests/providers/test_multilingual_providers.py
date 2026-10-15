@@ -33,6 +33,7 @@ from convolvger.providers.grok import GrokProvider
 from convolvger.providers.grok import _fetch as grok_fetch
 from convolvger.providers.kimi import KimiProvider
 from convolvger.providers.kimi import _fetch as kimi_fetch
+from convolvger.providers.perplexity import PerplexityProvider
 from convolvger.providers.qwen import QwenProvider
 from convolvger.providers.qwen import _fetch as qwen_fetch
 from convolvger.renderers import render_json, render_markdown
@@ -223,6 +224,47 @@ def qwen(escape: bool, texts: list[str]) -> RawSource:
     )
 
 
+def perplexity(escape: bool, texts: list[str]) -> RawSource:
+    entries = []
+    for index in range(0, len(texts), 2):
+        answer = texts[index + 1] if index + 1 < len(texts) else None
+        text = {
+            "text": answer,
+            "variant": "answer",
+            "chunks": [answer],
+            "is_streaming": False,
+        }
+        item = {"type": "WORKFLOW_ITEM_TEXT", "payload": {"text_payload": text}}
+        entries.append(
+            {
+                "uuid": f"q{index}",
+                "backend_uuid": f"a{index}",
+                "query_str": texts[index],
+                "status": "COMPLETED",
+                "thread_url_slug": "x",
+                "blocks": [
+                    {
+                        "intended_usage": "workflow_root",
+                        "workflow_block": {
+                            "steps": [{"items": [item]}] if answer else []
+                        },
+                    }
+                ],
+            }
+        )
+    body = {
+        "status": "success",
+        "entries": entries,
+        "first_entry": entries[0],
+        "has_next_page": False,
+        "thread_metadata": {"title": TITLE},
+    }
+    return RawSource(
+        url="https://www.perplexity.ai/search/x",
+        content=json.dumps(body, ensure_ascii=escape),
+    )
+
+
 SOURCES: dict[
     str,
     tuple[Callable[[RawSource], ParseResult], Callable[[bool, list[str]], RawSource]],
@@ -234,6 +276,7 @@ SOURCES: dict[
     "deepseek": (DeepSeekProvider().parse, deepseek),
     "kimi": (KimiProvider().parse, kimi),
     "qwen": (QwenProvider().parse, qwen),
+    "perplexity": (PerplexityProvider().parse, perplexity),
 }
 CASES = [(name, escape) for name in SOURCES for escape in (True, False)]
 

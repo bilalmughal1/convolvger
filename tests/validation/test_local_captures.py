@@ -213,7 +213,35 @@ def _qwen_keys(payload: dict[str, Any]) -> dict[str, set[str]]:
     }
 
 
-SHAPES = {"deepseek": _deepseek_keys, "kimi": _kimi_keys, "qwen": _qwen_keys}
+def _perplexity_keys(payload: dict[str, Any]) -> dict[str, set[str]]:
+    entries = payload["entries"]
+    blocks = [block for entry in entries for block in entry["blocks"]]
+    workflow = [b["workflow_block"] for b in blocks if "workflow_block" in b]
+    steps = [step for flow in workflow for step in flow["steps"]]
+    items = [item for step in steps for item in step["items"]]
+    text = [
+        i["payload"]["text_payload"] for i in items if "text_payload" in i["payload"]
+    ]
+    return {
+        "envelope": set(payload),
+        "thread": set(payload["thread_metadata"]),
+        "entry": _union(entries),
+        "blocks": {block["intended_usage"] for block in blocks},
+        "workflow": _union(workflow),
+        "step": _union(steps),
+        "item types": {item["type"] for item in items},
+        # The image one answer carried is left out of the fixture, which would
+        # otherwise answer every test with its finding; its own test adds one.
+        "text": _union(text) - {"images"},
+    }
+
+
+SHAPES = {
+    "deepseek": _deepseek_keys,
+    "kimi": _kimi_keys,
+    "qwen": _qwen_keys,
+    "perplexity": _perplexity_keys,
+}
 
 
 @pytest.mark.parametrize("provider", list(SHAPES))
@@ -322,3 +350,27 @@ def test_the_qwen_capture_parses_with_its_copies_in_step_and_citations_resolved(
         assert [_renumbered(text, r"\[\[(\d+)\]\]") for text in served] == [
             block.text for block in texts
         ]
+
+
+def test_the_perplexity_capture_parses_as_measured() -> None:
+    url = "https://www.perplexity.ai/search/c0644da2-41d2-4b1e-850f-053b89708567"
+    result = _parse_capture("perplexity", url)
+    conversation = result.conversation
+    assert conversation.id == url.rsplit("/", 1)[1]
+    assert [m.role for m in conversation.messages] == [
+        MessageRole.USER,
+        MessageRole.ASSISTANT,
+    ] * 2
+    # Exactly the results each answer's sources mark as cited.
+    assert [len(m.citations) for m in conversation.messages[1::2]] == [5, 4]
+    assert all(c.url and c.title for m in conversation.messages for c in m.citations)
+    assert [(f.code, f.message) for f in result.findings] == [
+        (
+            "unmodelled_content_type",
+            "image in the answer preserved in provider_metadata",
+        )
+    ]
+    document = render_markdown(conversation, findings=result.findings)
+    thread = conversation.provider_metadata["thread_metadata"]
+    for sharer in ("author_name", "author_username", "author_id"):
+        assert thread[sharer] not in document
