@@ -26,9 +26,7 @@ from convolvger.providers import _http
 from convolvger.providers.qwen._parse import carries_nothing
 from convolvger.providers.qwen._urls import api_url
 
-USER_AGENT = (
-    f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
-)
+USER_AGENT = f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
 TIMEOUT = httpx.Timeout(30.0)
 
 

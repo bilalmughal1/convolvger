@@ -36,9 +36,7 @@ from convolvger.providers.gemini._batchexecute import BatchExecuteError, decode
 from convolvger.providers.gemini._parse import CONVERSATION_RPC
 from convolvger.providers.gemini._urls import share_id
 
-USER_AGENT = (
-    f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
-)
+USER_AGENT = f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
 TIMEOUT = httpx.Timeout(30.0)
 
 ENDPOINT = "https://gemini.google.com/_/BardChatUi/data/batchexecute"

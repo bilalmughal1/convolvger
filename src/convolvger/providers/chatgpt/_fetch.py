@@ -15,9 +15,7 @@ from convolvger.core.errors import ConvolvgerError
 from convolvger.core.source import RawSource
 from convolvger.providers import _http
 
-USER_AGENT = (
-    f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
-)
+USER_AGENT = f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
 TIMEOUT = httpx.Timeout(30.0)
 
 

@@ -43,9 +43,7 @@ from convolvger.providers import _http
 from convolvger.providers.deepseek._parse import carries_nothing
 from convolvger.providers.deepseek._urls import api_url
 
-USER_AGENT = (
-    f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
-)
+USER_AGENT = f"convolvger/{version('convolvger')} (+https://github.com/fahadbilalsaleem/convolvger)"
 TIMEOUT = httpx.Timeout(30.0)
 
 
