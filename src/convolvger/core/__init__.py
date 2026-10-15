@@ -1,6 +1,7 @@
 from convolvger.core.archive import ArchiveEnvelope
 from convolvger.core.errors import ConvolvgerError, ProviderNotFoundError
 from convolvger.core.models import (
+    Citation,
     CodeBlock,
     ContentBlock,
     Conversation,
@@ -16,6 +17,7 @@ from convolvger.core.source import RawSource
 
 __all__ = [
     "ArchiveEnvelope",
+    "Citation",
     "CodeBlock",
     "ContentBlock",
     "Conversation",

@@ -14,6 +14,12 @@ than hidden. And it must not be inside code: ``x = [[3]]`` in a Python
 answer is a nested list, not a citation, and a fenced or inline code
 span is content whatever it looks like.
 
+A marker that resolves is replaced rather than dropped when the caller
+asks: the reader then sees ``[1]``, ``[2]`` and a list of what they name
+under the message, numbered in the order the message first cites each
+source, whatever the provider's own numbering. ``Sources`` keeps that
+count and builds the list.
+
 Nothing here knows a provider. The caller supplies the marker pattern,
 whose first group is the number, and says which numbers resolve.
 """
@@ -22,6 +28,8 @@ import re
 from bisect import bisect_right
 from collections.abc import Callable
 from dataclasses import dataclass, field
+
+from convolvger.core.models import Citation
 
 FENCE = re.compile(
     r"^[ \t]*(`{3,}|~{3,})[^\n]*\n.*?(?:^[ \t]*\1[ \t]*$|\Z)", re.M | re.S
@@ -75,8 +83,47 @@ def code_spans(text: str) -> list[tuple[int, int]]:
     return spans
 
 
-def lift(text: str, marker: re.Pattern[str], resolves: Callable[[str], bool]) -> Lifted:
-    """Remove every marker that resolves and lies outside code."""
+class Sources:
+    """The sources one message cites, numbered by first citation.
+
+    ``describe`` gives the link and title of the source a provider's own
+    reference names. A source cited twice keeps its first number.
+    """
+
+    def __init__(
+        self, describe: Callable[[str], tuple[str | None, str | None]]
+    ) -> None:
+        self._describe = describe
+        self._numbers: dict[str, int] = {}
+        self.citations: list[Citation] = []
+
+    def number(self, ref: str) -> int:
+        """Return the number ``ref`` is shown as, giving it the next one if new."""
+        known = self._numbers.get(ref)
+        if known is not None:
+            return known
+        number = len(self._numbers) + 1
+        self._numbers[ref] = number
+        url, title = self._describe(ref)
+        self.citations.append(Citation(number=number, url=url, title=title, ref=ref))
+        return number
+
+    def marker(self, ref: str) -> str:
+        """The marker a reader sees in place of the provider's own."""
+        return f"[{self.number(ref)}]"
+
+
+def lift(
+    text: str,
+    marker: re.Pattern[str],
+    resolves: Callable[[str], bool],
+    replacement: Callable[[str], str] | None = None,
+) -> Lifted:
+    """Remove every marker that resolves and lies outside code.
+
+    With ``replacement``, a resolving marker is replaced by what it
+    returns for the marker's number instead of being removed.
+    """
     spans = _merged(code_spans(text))
     lows = [low for low, _ in spans]
     kept: list[str] = []
@@ -89,6 +136,8 @@ def lift(text: str, marker: re.Pattern[str], resolves: Callable[[str], bool]) ->
             result.unresolved.append(match.group(0))
             continue
         kept.append(text[position : match.start()])
+        if replacement is not None:
+            kept.append(replacement(match.group(1)))
         result.lifted.append(match.group(0))
         position = match.end()
     kept.append(text[position:])

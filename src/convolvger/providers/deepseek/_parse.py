@@ -28,9 +28,11 @@ is kept there too and flagged.
 
 An answer cites its results inline as ``[citation:N]``, where N is a
 result's ``cite_index`` in the same message. A marker that resolves is
-lifted out of the visible text, and the fragment's served text is kept
-verbatim beside it; one that does not resolve is left and reported. A
-marker inside code is content and is never touched.
+shown as ``[n]``, numbered in the order the message first cites each
+result, and the result it names becomes one of the message's citations;
+the fragment's served text is kept verbatim beside it. One that does not
+resolve is left and reported. A marker inside code is content and is
+never touched.
 """
 
 import json
@@ -39,7 +41,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from convolvger.core import jsonload
-from convolvger.core.citations import lift
+from convolvger.core.citations import Sources, lift
 from convolvger.core.findings import Finding, collapse, finding
 from convolvger.core.models import (
     ContentBlock,
@@ -83,23 +85,32 @@ def carries_nothing(payload: Any) -> bool:
     return body is None or (isinstance(body, dict) and not body.get("messages"))
 
 
-def _cited(fragments: list[Any]) -> set[str]:
-    """Return the citation numbers a message's search results answer to."""
-    numbers: set[str] = set()
+def _cited(fragments: list[Any]) -> dict[str, dict[str, Any]]:
+    """Return a message's search results by the citation number they answer to."""
+    results: dict[str, dict[str, Any]] = {}
     for fragment in fragments:
         if isinstance(fragment, dict) and fragment.get("type") == SEARCH_KIND:
             for result in fragment.get("results") or []:
                 index = result.get("cite_index") if isinstance(result, dict) else None
                 if isinstance(index, int) and not isinstance(index, bool):
-                    numbers.add(str(index))
-    return numbers
+                    results.setdefault(str(index), result)
+    return results
+
+
+def _described(result: dict[str, Any]) -> tuple[str | None, str | None]:
+    url, title = result.get("url"), result.get("title")
+    return (
+        url if isinstance(url, str) and url else None,
+        title if isinstance(title, str) and title else None,
+    )
 
 
 def _fragments(
     raw: Any, findings: list[Finding], message_id: str | None
-) -> tuple[list[ContentBlock], dict[str, Any]]:
+) -> tuple[list[ContentBlock], dict[str, Any], Sources]:
     fragments = raw if isinstance(raw, list) else []
     cited = _cited(fragments)
+    sources = Sources(lambda ref: _described(cited[ref]))
     content: list[ContentBlock] = []
     extras: dict[str, Any] = {}
 
@@ -111,7 +122,7 @@ def _fragments(
         if isinstance(fragment, dict) and kind in TEXT_KINDS and isinstance(text, str):
             visible = text
             if kind == "RESPONSE":
-                outcome = lift(text, CITATION, cited.__contains__)
+                outcome = lift(text, CITATION, cited.__contains__, sources.marker)
                 visible = outcome.text
                 for marker in outcome.unresolved:
                     findings.append(
@@ -141,7 +152,7 @@ def _fragments(
                 message_id,
             )
         )
-    return content, extras
+    return content, extras, sources
 
 
 def _timestamp(value: Any) -> datetime | None:
@@ -157,7 +168,7 @@ def _message(raw: dict[str, Any], findings: list[Finding]) -> Message:
         if isinstance(served_id, int | str) and not isinstance(served_id, bool)
         else None
     )
-    content, extras = _fragments(raw.get("fragments"), findings, message_id)
+    content, extras, sources = _fragments(raw.get("fragments"), findings, message_id)
 
     if not content:
         findings.append(
@@ -206,6 +217,7 @@ def _message(raw: dict[str, Any], findings: list[Finding]) -> Message:
         timestamp=_timestamp(raw.get("inserted_at")),
         content=content,
         status=status if isinstance(status, str) else None,
+        citations=sources.citations,
         provider_metadata=metadata,
     )
 

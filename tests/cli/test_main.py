@@ -675,7 +675,11 @@ def test_a_saved_grok_response_is_archived_end_to_end(tmp_path: Path) -> None:
     assert "Provider: grok" in document
     assert "Example Grok conversation" in document
     assert "| Element | Heats |" in document
-    for leaked in ("<grok:", "citation_card", "example.com/source", "grok-3"):
+    assert (
+        "**Sources**\n\n1. [Example source 1](<https://example.com/source-1>)"
+        in document
+    )
+    for leaked in ("<grok:", "citation_card", "grok-3"):
         assert leaked not in document
 
 
@@ -724,21 +728,21 @@ NEWER_PROVIDERS = [
         "https://chat.deepseek.com/share/0example0share0id",
         "Shared Conversation",
         0,
-        ("[citation:2]", "example.com/source"),
+        ("[citation:2]", "example.com/source-3"),
     ),
     (
         "kimi",
         "https://www.kimi.ai/share/00000000-0000-4000-8000-000000000002",
         "Example Kimi conversation",
         2,
-        ("Example Sharer", "example.com/source"),
+        ("Example Sharer", "example.com/source-1", "example.com/source-3"),
     ),
     (
         "qwen",
         "https://chat.qwen.ai/s/00000000-0000-4000-8000-000000000001?fev=0.3.11",
         "Example Qwen conversation",
         0,
-        ("[[3]]", "shared-", "example.com/source"),
+        ("[[3]]", "shared-", "example.com/source-2"),
     ),
 ]
 
@@ -777,6 +781,7 @@ def test_a_saved_share_from_each_newer_provider_is_archived_end_to_end(
     assert f"# {title}" in written
     for leaked in leaks:
         assert leaked not in written
+    assert "**Sources**\n\n1. [Example source" in written
     envelope = ArchiveEnvelope.model_validate_json(archive.read_text(encoding="utf-8"))
     assert envelope.conversation.provider == provider
     assert envelope.retrieved_at is None

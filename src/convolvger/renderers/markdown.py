@@ -31,6 +31,7 @@ from typing import Any
 
 from convolvger.core.findings import Finding, Level, collapse
 from convolvger.core.models import (
+    Citation,
     CodeBlock,
     ContentBlock,
     Conversation,
@@ -72,9 +73,37 @@ def _reference(raw: dict[str, Any]) -> str | None:
         title = None
     url = url.strip() if isinstance(url, str) and url.strip() else None
     if title and url:
-        safe = title.replace("[", "\\[").replace("]", "\\]")
-        return f"[{safe}](<{url}>)"
+        return _link(title, url)
     return title or url
+
+
+def _link(text: str, url: str) -> str:
+    """A Markdown link that neither its text nor its address can break.
+
+    The text escapes its brackets, and its backslashes so that one cannot
+    escape a bracket of the link itself. The address is written between angle
+    brackets, which allow spaces and parentheses; only the brackets
+    themselves and line breaks could end it early, so those are
+    percent-encoded, as a browser would send them.
+    """
+    safe = text.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
+    address = (
+        url.replace("<", "%3C").replace(">", "%3E").replace("\n", "%0A")
+    ).replace("\r", "%0D")
+    return f"[{safe}](<{address}>)"
+
+
+def _sources(citations: list[Citation]) -> str:
+    """The sources a message cites, numbered as its text shows them."""
+    lines = ["**Sources**", ""]
+    for citation in citations:
+        title = " ".join(citation.title.split()) if citation.title else None
+        if citation.url:
+            entry = _link(title or citation.url, citation.url)
+        else:
+            entry = title or "(no link or title served)"
+        lines.append(f"{citation.number}. {entry}")
+    return "\n".join(lines)
 
 
 def _fence(text: str, language: str | None) -> str:
@@ -156,6 +185,8 @@ def _render_message(message: Message) -> str:
     if message.timestamp:
         parts.append(f"*{message.timestamp.isoformat()}*")
     parts.extend(_render_block(block) for block in message.content)
+    if message.citations:
+        parts.append(_sources(message.citations))
     return "\n\n".join(parts)
 
 

@@ -5,6 +5,7 @@ import pytest
 
 from convolvger.core.findings import finding
 from convolvger.core.models import (
+    Citation,
     CodeBlock,
     Conversation,
     Message,
@@ -213,6 +214,60 @@ def test_a_language_naming_a_backtick_is_fenced_with_tildes() -> None:
     )
 
     assert "~~~~py`x\nx = 1\n~~~\ny = 2\n~~~~" in output
+
+
+def test_a_message_lists_the_sources_it_cites_under_its_text() -> None:
+    output = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[TextBlock(text="Copper heats evenly.[1] Steel lasts.[2]")],
+                citations=[
+                    Citation(
+                        number=1, url="https://example.com/a", title="Copper [guide]"
+                    ),
+                    Citation(number=2, url="https://example.com/b", title=None),
+                    Citation(number=3, url=None, title="A book"),
+                ],
+            )
+        )
+    )
+
+    assert (
+        "Copper heats evenly.[1] Steel lasts.[2]\n\n**Sources**\n\n"
+        "1. [Copper \\[guide\\]](<https://example.com/a>)\n"
+        "2. [https://example.com/b](<https://example.com/b>)\n"
+        "3. A book"
+    ) in output
+
+
+def test_a_message_citing_nothing_has_no_sources_list() -> None:
+    output = render_markdown(conversation(text(MessageRole.ASSISTANT, "No sources.")))
+    assert "**Sources**" not in output
+
+
+@pytest.mark.parametrize(
+    ("title", "url", "link"),
+    [
+        ("Ends in \\", "https://e.x/a", "[Ends in \\\\](<https://e.x/a>)"),
+        ("Two\nlines", "https://e.x/a", "[Two lines](<https://e.x/a>)"),
+        ("Angle", "https://e.x/<x>", "[Angle](<https://e.x/%3Cx%3E>)"),
+        ("Paren", "https://e.x/A_(b)", "[Paren](<https://e.x/A_(b)>)"),
+    ],
+)
+def test_a_source_link_cannot_be_broken_by_its_title_or_address(
+    title: str, url: str, link: str
+) -> None:
+    output = render_markdown(
+        conversation(
+            Message(
+                role=MessageRole.ASSISTANT,
+                content=[TextBlock(text="Claim.[1]")],
+                citations=[Citation(number=1, url=url, title=title)],
+            )
+        )
+    )
+    assert f"1. {link}" in output
 
 
 def test_reasoning_is_visually_distinct_from_assistant_prose() -> None:

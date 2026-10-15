@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from convolvger.core.citations import code_spans, lift
+from convolvger.core.citations import Sources, code_spans, lift
 
 MARKER = re.compile(r"\[\[(\d+)\]\]")
 
@@ -85,3 +85,34 @@ def test_many_markers_among_many_code_spans_are_lifted_in_linear_time() -> None:
     outcome = lift(text, MARKER, known)
     assert len(outcome.lifted) == 16_000
     assert time.perf_counter() - started < 2
+
+
+def test_a_resolved_marker_can_be_replaced_rather_than_removed() -> None:
+    outcome = lift(
+        "Copper heats.[[2]] See `x = [[1]]`.[[9]]", MARKER, known, lambda n: f"<{n}>"
+    )
+    assert outcome.text == "Copper heats.<2> See `x = [[1]]`.[[9]]"
+    assert outcome.lifted == ["[[2]]"]
+    assert outcome.unresolved == ["[[9]]"]
+
+
+def test_sources_are_numbered_by_first_citation_and_described_once() -> None:
+    asked: list[str] = []
+
+    def describe(ref: str) -> tuple[str | None, str | None]:
+        asked.append(ref)
+        return f"https://example.com/{ref}", f"Title {ref}"
+
+    sources = Sources(describe)
+    assert [sources.marker(ref) for ref in ("7", "3", "7", "1")] == [
+        "[1]",
+        "[2]",
+        "[1]",
+        "[3]",
+    ]
+    assert asked == ["7", "3", "1"]
+    assert [(c.number, c.ref, c.url, c.title) for c in sources.citations] == [
+        (1, "7", "https://example.com/7", "Title 7"),
+        (2, "3", "https://example.com/3", "Title 3"),
+        (3, "1", "https://example.com/1", "Title 1"),
+    ]

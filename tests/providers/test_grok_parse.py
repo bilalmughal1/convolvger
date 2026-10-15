@@ -23,16 +23,20 @@ independent reading of the markup rather than against itself."""
 
 
 def without_carried_citations(message: str, cards: list[str]) -> str:
-    """Remove each inline citation whose card the response carries."""
-    carried = {json.loads(card)["id"] for card in cards}
+    """Number each inline citation whose card the response carries, by its link."""
+    carried = {json.loads(card)["id"]: json.loads(card)["url"] for card in cards}
+    numbers: dict[str, int] = {}
 
-    def drop(match: re.Match[str]) -> str:
+    def number(match: re.Match[str]) -> str:
         opening = match.group(1)
         card = re.search(r'card_id="([^"]*)"', opening)
         cited = 'type="render_inline_citation"' in opening
-        return "" if cited and card and card.group(1) in carried else match.group(0)
+        if not (cited and card and card.group(1) in carried):
+            return match.group(0)
+        link = carried[card.group(1)]
+        return f"[{numbers.setdefault(link, len(numbers) + 1)}]"
 
-    return CITATION.sub(drop, message)
+    return CITATION.sub(number, message)
 
 
 def text_of(message: Message) -> str:
@@ -126,13 +130,41 @@ def test_a_parent_outside_the_share_is_kept_and_not_reported(
     assert result.findings == []
 
 
-def test_citation_markup_is_lifted_out_of_the_text(minimal: dict[str, Any]) -> None:
-    answer = text_of(_parse.parse(source(minimal)).conversation.messages[3])
+def test_citation_markup_becomes_numbered_citations(minimal: dict[str, Any]) -> None:
+    message = _parse.parse(source(minimal)).conversation.messages[3]
+    answer = text_of(message)
     assert "<grok:" not in answer
     assert answer.startswith(
-        "Kettles boil water by passing current through a heating element.\n\n"
+        "Kettles boil water by passing current through a heating element.[1]"
     )
+    assert "[2]" in answer
     assert "| Element | Heats |" in answer
+    assert [(c.number, c.ref, c.url, c.title) for c in message.citations] == [
+        (
+            1,
+            "https://example.com/source-1",
+            "https://example.com/source-1",
+            "Example source 1",
+        ),
+        (
+            2,
+            "https://example.com/source-2",
+            "https://example.com/source-2",
+            "Example source 2",
+        ),
+    ]
+
+
+def test_two_cards_linking_one_page_share_a_number(minimal: dict[str, Any]) -> None:
+    """Measured: eight cards pointed at seven pages."""
+    response = minimal["responses"][3]
+    cards = [json.loads(card) for card in response["cardAttachmentsJson"]]
+    cards[1]["url"] = cards[0]["url"]
+    response["cardAttachmentsJson"] = [json.dumps(card) for card in cards]
+    message = _parse.parse(source(minimal)).conversation.messages[3]
+    assert "[2]" not in text_of(message)
+    assert text_of(message).count("[1]") == 2
+    assert [c.number for c in message.citations] == [1]
 
 
 def test_the_served_text_is_kept_whenever_citations_are_lifted(
@@ -188,7 +220,7 @@ def test_unclosed_markup_is_flagged_and_kept(minimal: dict[str, Any]) -> None:
     ]
 
 
-def test_search_results_cards_and_model_are_kept_out_of_the_document(
+def test_cards_and_model_stay_out_and_cited_results_are_listed(
     minimal: dict[str, Any],
 ) -> None:
     result = _parse.parse(source(minimal))
@@ -199,9 +231,23 @@ def test_search_results_cards_and_model_are_kept_out_of_the_document(
     assert metadata["citedXposts"] == []
 
     document = render_markdown(result.conversation, findings=result.findings)
-    assert "example.com/source-1" not in document
+    assert "1. [Example source 1](<https://example.com/source-1>)" in document
     assert "grok-3" not in document
     assert "<grok:" not in document
+
+
+def test_a_web_result_no_card_cites_stays_out_of_the_document(
+    minimal: dict[str, Any],
+) -> None:
+    minimal["responses"][3]["webSearchResults"].append(
+        {"url": "https://example.com/uncited", "title": "Uncited", "preview": ""}
+    )
+    result = _parse.parse(source(minimal))
+    document = render_markdown(result.conversation, findings=result.findings)
+    assert "example.com/uncited" not in document
+    assert "example.com/uncited" in render_json(
+        result.conversation, findings=result.findings
+    )
 
 
 def test_the_json_archive_keeps_what_the_document_leaves_out(

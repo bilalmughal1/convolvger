@@ -27,9 +27,12 @@ An answer's text carries its citations inline, as
 ``<grok:render type="render_inline_citation" card_id=...>`` markup
 pointing into ``cardAttachmentsJson``. Left in, that markup reaches the
 Markdown a reader sees. A citation whose card the payload carries is
-therefore lifted out of the visible text, and the served ``message`` is
-kept verbatim in ``provider_metadata`` beside it, so nothing the
-provider sent is lost. Markup of any other shape is left in the text
+therefore shown as ``[n]``, and the source its card links to becomes one
+of the message's citations, titled from the web result with the same
+link. Sources are numbered by link in the order the message first cites
+them, since two cards were measured pointing at one page. The served
+``message`` is kept verbatim in ``provider_metadata`` beside it, so
+nothing the provider sent is lost. Markup of any other shape is left in the text
 and flagged: text this version cannot account for is shown rather than
 hidden.
 
@@ -45,6 +48,7 @@ from datetime import datetime
 from typing import Any
 
 from convolvger.core import jsonload
+from convolvger.core.citations import Sources
 from convolvger.core.findings import Finding, collapse, finding
 from convolvger.core.models import (
     ContentBlock,
@@ -155,25 +159,25 @@ def _role(sender: Any, findings: list[Finding], message_id: str | None) -> Messa
 
 def _card_ids(
     raw: dict[str, Any], findings: list[Finding], message_id: str | None
-) -> set[str]:
-    """Return the ids of the cards a response carries.
+) -> dict[str, dict[str, Any]]:
+    """Return the cards a response carries, by id.
 
     Each card arrives as a JSON *string* inside a list. The strings stay
     in ``provider_metadata`` exactly as served; this only reads them.
     """
     cards = raw.get("cardAttachmentsJson")
     if not isinstance(cards, list):
-        return set()
+        return {}
 
-    found: set[str] = set()
+    found: dict[str, dict[str, Any]] = {}
     for card in cards:
         try:
             decoded = jsonload.loads(card) if isinstance(card, str) else None
         except (json.JSONDecodeError, jsonload.JSONNestingError):
             decoded = None
         identifier = decoded.get("id") if isinstance(decoded, dict) else None
-        if isinstance(identifier, str):
-            found.add(identifier)
+        if isinstance(identifier, str) and isinstance(decoded, dict):
+            found[identifier] = decoded
         else:
             findings.append(
                 finding(
@@ -185,10 +189,26 @@ def _card_ids(
     return found
 
 
+def _titles(raw: dict[str, Any]) -> dict[str, str]:
+    """The title of each web result a response carries, by its link."""
+    titles: dict[str, str] = {}
+    for result in raw.get("webSearchResults") or []:
+        if isinstance(result, dict):
+            url, title = result.get("url"), result.get("title")
+            if isinstance(url, str) and isinstance(title, str) and title:
+                titles.setdefault(url, title)
+    return titles
+
+
 def _lift_citations(
-    text: str, cards: set[str], findings: list[Finding], message_id: str | None
+    text: str,
+    cards: dict[str, dict[str, Any]],
+    sources: Sources,
+    findings: list[Finding],
+    message_id: str | None,
 ) -> str:
-    """Return ``text`` without the inline citations whose card the payload carries.
+    """Return ``text`` with each inline citation whose card the payload carries
+    shown as a numbered marker.
 
     The served string is not kept here; the caller keeps it whole
     whenever the result differs from it.
@@ -200,8 +220,13 @@ def _lift_citations(
     for match in RENDER.finditer(text):
         attributes = dict(ATTRIBUTE.findall(match.group(1)))
         kind = attributes.get("type")
-        if kind == INLINE_CITATION and attributes.get("card_id") in cards:
+        card = cards.get(attributes.get("card_id", ""))
+        if kind == INLINE_CITATION and card is not None:
             kept.append(text[position : match.start()])
+            url = card.get("url")
+            kept.append(
+                sources.marker(url if isinstance(url, str) and url else card["id"])
+            )
             position = match.end()
             continue
         left += 1
@@ -276,10 +301,15 @@ def _message(raw: dict[str, Any], findings: list[Finding]) -> Message:
     served = raw.get(MESSAGE_KEY)
     content: list[ContentBlock] = []
     text: str | None = None
+    # Read only where there is text to cite from, as before citations were kept.
+    cards = _card_ids(raw, findings, message_id) if isinstance(served, str) else {}
+    links = {card.get("url") for card in cards.values()}
+    titles = _titles(raw)
+    sources = Sources(
+        lambda ref: (ref, titles.get(ref)) if ref in links else (None, None)
+    )
     if isinstance(served, str):
-        text = _lift_citations(
-            served, _card_ids(raw, findings, message_id), findings, message_id
-        )
+        text = _lift_citations(served, cards, sources, findings, message_id)
         if text:
             content.append(TextBlock(text=text))
 
@@ -303,6 +333,7 @@ def _message(raw: dict[str, Any], findings: list[Finding]) -> Message:
         role=_role(raw.get("sender"), findings, message_id),
         timestamp=_timestamp(raw.get("createTime")),
         content=content,
+        citations=sources.citations,
         provider_metadata=metadata,
     )
 

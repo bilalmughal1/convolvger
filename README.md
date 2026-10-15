@@ -63,7 +63,9 @@ listed at [github.com/bilalmughal1/convolvger/releases](https://github.com/bilal
 
 Archives written by an older version stay readable: each one records the schema
 it was written against, and a newer Convolvger reads the versions it lists under
-`--version` rather than assuming.
+`--version` rather than assuming. The reverse does not hold. Archives from 0.7
+record schema 4, which adds a message's citations, and Convolvger 0.6 refuses
+them with a message saying so.
 
 ## Usage
 
@@ -177,10 +179,12 @@ the page loads its conversation separately, so Convolvger asks for the same
 JSON the page does. No cookie or account is needed. The share id is taken as
 it appears in the link, whatever its prefix.
 
-A Grok answer marks its citations inline. Those markers are lifted out of the
-text so they do not clutter the document; the JSON archive keeps the message
-exactly as served, alongside the web results, X posts, citation cards and
-model name the provider served. None of it reaches Markdown. The reasoning
+A Grok answer marks its citations inline. Each becomes a number in the text,
+`[1]`, `[2]`, and the page it links to is listed under the answer, titled
+from the web result for that page; two citations of one page share a number.
+The JSON archive keeps the message exactly as served, alongside the web
+results, X posts, citation cards and model name the provider served. Only the
+cited pages reach Markdown, not the rest of the search. The reasoning
 trace Grok shows beside a thinking answer is kept in the JSON too, but this
 version does not model it, so it is reported as a warning rather than passed
 over. Files and images a message names are reported as not carried: the
@@ -207,13 +211,16 @@ User-Agent with no cookie or account, and Convolvger asks it directly.
 
 DeepSeek and Qwen number their citations inside the answer text
 (`[citation:3]`, `[[3]]`). A number that points at a search result the share
-carries is taken out of the text so the document reads cleanly, and the
-answer exactly as served is kept in the JSON archive beside it, with the
-search results. A number that points at nothing is left in place and
-reported, and a number inside code is never touched: `x = [[3]]` is a
-nested list, not a citation. Kimi marks citations beside the text rather
-than inside it, so its text needs no change. None of the citations or search
-results reach Markdown.
+carries is shown as `[1]`, `[2]` and so on, counted in the order the answer
+first cites each result, and those results are listed under the answer as
+its sources. The answer exactly as served is kept in the JSON archive beside
+it, with every search result. A number that points at nothing is left in
+place and reported, and a number inside code is never touched: `x = [[3]]`
+is a nested list, not a citation. Kimi marks citations beside the text rather
+than inside it, so its text is left as served and the results it cites are
+listed under it. A search result the answer does not cite stays in the JSON
+archive only: in the shares measured, about a third of the results were
+cited.
 
 Kimi and Qwen show the model's reasoning beside an answer, and it appears in
 the document as reasoning: a labelled quote set apart from the answer, as
@@ -366,9 +373,9 @@ Claude share snapshots can be parsed and exported, but not fetched: the service 
 
 Gemini share links can be fetched, parsed and exported, in all three of the link forms Google issues. Citations and search queries are preserved in the JSON archive rather than rendered into the document.
 
-Grok share links can be fetched, parsed and exported. Inline citations, search results and X posts are preserved in the JSON archive rather than rendered into the document; the reasoning trace is preserved but not yet modelled, and is reported as such.
+Grok share links can be fetched, parsed and exported. Inline citations are numbered in the text and the pages they cite are listed under the answer; the full search results and X posts are preserved in the JSON archive. The reasoning trace is preserved but not yet modelled, and is reported as such.
 
-DeepSeek, Kimi and Qwen share links can be fetched, parsed and exported. Citations and search results are preserved in the JSON archive rather than rendered into the document, and inline citation numbers are taken out of the text only where they resolve. Kimi's and Qwen's reasoning is shown in the document as labelled reasoning, kept apart from the answer.
+DeepSeek, Kimi and Qwen share links can be fetched, parsed and exported. The search results an answer cites are listed under it, with inline citation numbers shown as `[1]`, `[2]` where they resolve; every search result is preserved in the JSON archive. Kimi's and Qwen's reasoning is shown in the document as labelled reasoning, kept apart from the answer.
 
 Extraction records structured findings, each with a stable code and a level. A note is recorded but does not change the exit status; a warning does. Both are written into the JSON archive either way, so nothing is withheld from the record because it was judged unremarkable.
 

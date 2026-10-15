@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from convolvger.core.archive import (
+    READABLE_VERSIONS,
     SCHEMA_VERSION,
     ArchiveEnvelope,
     ArchiveError,
@@ -15,6 +16,7 @@ from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import finding
 from convolvger.core.jsonload import ARCHIVE_MAX_DEPTH, MAX_DEPTH
 from convolvger.core.models import (
+    Citation,
     Conversation,
     Message,
     MessageRole,
@@ -306,3 +308,28 @@ def test_an_archive_keeps_conversation_level_provider_metadata() -> None:
         "up_to_date": True,
         "created_by": "A Name",
     }
+
+
+def test_an_archive_written_by_0_6_1_still_loads() -> None:
+    """Version 3, written by the published 0.6.1 from the synthetic Qwen share."""
+    envelope = load_archive((ARCHIVES / "v3-minimal.json").read_text(encoding="utf-8"))
+
+    assert envelope.schema_version == 3
+    assert envelope.tool_version == "0.6.1"
+    assert len(envelope.conversation.messages) == 4
+    assert all(message.citations == [] for message in envelope.conversation.messages)
+
+
+def test_this_version_writes_4_and_reads_every_version_since_2() -> None:
+    assert SCHEMA_VERSION == 4
+    assert frozenset({2, 3, 4}) == READABLE_VERSIONS
+
+
+def test_citations_survive_a_round_trip_through_the_archive() -> None:
+    cited = conversation()
+    cited.messages[0].citations = [
+        Citation(number=1, url="https://example.com/a", title="A", ref="7"),
+        Citation(number=2, url=None, title=None, ref=None),
+    ]
+    envelope = load_archive(render_json(cited))
+    assert envelope.conversation.messages[0].citations == cited.messages[0].citations

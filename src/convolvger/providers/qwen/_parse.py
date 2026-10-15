@@ -39,8 +39,10 @@ An answer cites its results inline as ``[[N]]``. The results are
 numbered from 1 straight across every search in the message: measured,
 the first search's results carried the labels 1 to 17 and the second's
 18 to 34 in the search's own observation text. A marker that resolves is
-lifted out of the visible text and the part's served text kept verbatim
-beside it; one that does not resolve is left and reported. A marker
+shown as ``[n]``, numbered in the order the message first cites each
+result, and the result becomes one of the message's citations; the
+part's served text is kept verbatim beside it. One that does not resolve
+is left and reported. A marker
 inside code -- ``[[1]]`` is also a nested list in Python -- is content
 and is never touched.
 
@@ -55,7 +57,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from convolvger.core import jsonload
-from convolvger.core.citations import lift
+from convolvger.core.citations import Sources, lift
 from convolvger.core.findings import Finding, collapse, finding
 from convolvger.core.models import (
     ContentBlock,
@@ -110,16 +112,26 @@ def _timestamp(value: Any) -> datetime | None:
     return None
 
 
-def _resolvable(parts: list[Any]) -> set[str]:
-    """Return every citation number a message's searches answer to."""
-    total = 0
+def _resolvable(parts: list[Any]) -> dict[str, Any]:
+    """Return a message's search results by the citation number they answer to."""
+    found: list[Any] = []
     for part in parts:
         if isinstance(part, dict) and part.get("phase") == SEARCH:
             extra = part.get("extra")
             results = extra.get("web_search_info") if isinstance(extra, dict) else None
             if isinstance(results, list):
-                total += len(results)
-    return {str(number) for number in range(1, total + 1)}
+                found.extend(results)
+    return {str(number): result for number, result in enumerate(found, start=1)}
+
+
+def _described(result: Any) -> tuple[str | None, str | None]:
+    if not isinstance(result, dict):
+        return None, None
+    url, title = result.get("url"), result.get("title")
+    return (
+        url if isinstance(url, str) and url else None,
+        title if isinstance(title, str) and title else None,
+    )
 
 
 def _summary(part: dict[str, Any]) -> list[ReasoningBlock] | None:
@@ -154,9 +166,10 @@ def _summary(part: dict[str, Any]) -> list[ReasoningBlock] | None:
 
 def _parts(
     raw: Any, findings: list[Finding], message_id: str | None
-) -> tuple[list[ContentBlock], dict[str, Any]]:
+) -> tuple[list[ContentBlock], dict[str, Any], Sources]:
     parts = raw if isinstance(raw, list) else []
     numbers = _resolvable(parts)
+    sources = Sources(lambda ref: _described(numbers[ref]))
     content: list[ContentBlock] = []
     extras: dict[str, Any] = {}
 
@@ -166,7 +179,7 @@ def _parts(
         text = part.get("content") if isinstance(part, dict) else None
 
         if isinstance(part, dict) and phase == ANSWER and isinstance(text, str):
-            outcome = lift(text, CITATION, numbers.__contains__)
+            outcome = lift(text, CITATION, numbers.__contains__, sources.marker)
             for marker in outcome.unresolved:
                 findings.append(
                     finding(
@@ -205,7 +218,7 @@ def _parts(
                 message_id,
             )
         )
-    return content, extras
+    return content, extras, sources
 
 
 def _message(node: dict[str, Any], active: bool, findings: list[Finding]) -> Message:
@@ -215,7 +228,7 @@ def _message(node: dict[str, Any], active: bool, findings: list[Finding]) -> Mes
     if message_id is None:
         mapped.discard("id")
 
-    content, extras = _parts(node.get("content_list"), findings, message_id)
+    content, extras, sources = _parts(node.get("content_list"), findings, message_id)
     served = node.get("content")
     if not content and isinstance(served, str) and served:
         content.append(TextBlock(text=served))
@@ -279,6 +292,7 @@ def _message(node: dict[str, Any], active: bool, findings: list[Finding]) -> Mes
         timestamp=_timestamp(node.get("timestamp")),
         content=content,
         active=active,
+        citations=sources.citations,
         provider_metadata=metadata,
     )
 

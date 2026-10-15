@@ -106,6 +106,25 @@ ContentBlock = Annotated[
 ToolResultBlock.model_rebuild()
 
 
+class Citation(BaseModel):
+    """A source a message cites, as the provider served it.
+
+    ``number`` is the one shown in the message's text, counted from 1 in
+    the order the message first cites each source. ``ref`` is the
+    provider's own name for the source -- an index, an id or a link -- so
+    a citation can be traced back to the result it was read from, which
+    the archive keeps whole in ``provider_metadata``. Only cited sources
+    are listed: a search's other results stay in the metadata alone.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    number: int
+    url: str | None = None
+    title: str | None = None
+    ref: str | None = None
+
+
 class Message(BaseModel):
     """A single turn in a conversation.
 
@@ -125,6 +144,7 @@ class Message(BaseModel):
     active: bool = True
     status: str | None = None
     recipient: str | None = None
+    citations: list[Citation] = Field(default_factory=list)
     provider_metadata: dict[str, Any] = Field(default_factory=dict)
 
 

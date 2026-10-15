@@ -91,9 +91,13 @@ def test_citations_are_numbered_across_every_search_in_the_message(
     minimal: dict[str, Any],
 ) -> None:
     """[[3]] is the first result of the second search, which had one."""
-    answer = text_of(messages_of(minimal)[1])
-    assert answer.startswith("Kettles heat water with an element.\n\n")
-    assert "[[3]]" not in answer.split("```")[0]
+    message = messages_of(minimal)[1]
+    answer = text_of(message)
+    assert answer.startswith("Kettles heat water with an element.[1][2]\n\n")
+    assert [(c.number, c.ref, c.url, c.title) for c in message.citations] == [
+        (1, "1", "https://example.com/source-1", "Example source 1"),
+        (2, "3", "https://example.com/source-3", "Example source 3"),
+    ]
 
 
 def test_a_nested_list_inside_code_is_never_taken_for_a_citation(
@@ -206,8 +210,12 @@ def test_search_results_and_the_sharer_stay_out_of_the_document(
     conversation = result.conversation
     assert conversation.provider_metadata["user_id"].startswith("shared-")
     document = render_markdown(conversation, findings=result.findings)
-    for leaked in ("shared-", "example.com/source"):
+    for leaked in ("shared-", "example.com/source-2"):
         assert leaked not in document
+    assert (
+        "**Sources**\n\n1. [Example source 1](<https://example.com/source-1>)\n"
+        "2. [Example source 3](<https://example.com/source-3>)"
+    ) in document
     # Reasoning is shown, set apart from the answer as a labelled quote.
     assert "**Reasoning — Planning the answer**\n> Invented summary" in document
     archive = render_json(conversation, findings=result.findings)

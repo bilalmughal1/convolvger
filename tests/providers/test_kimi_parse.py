@@ -31,11 +31,15 @@ def minimal() -> dict[str, Any]:
 
 
 def without_reasoning(payload: dict[str, Any]) -> dict[str, Any]:
-    """The fixture minus its tool block, which is flagged by design."""
+    """The fixture minus its tool block, which is flagged by design.
+
+    Its references go with it: they name the search results it carried.
+    """
     for message in payload["share"]["messages"]:
         message["blocks"] = [
             block for block in message["blocks"] if "tool" not in block
         ]
+        message.pop("references", None)
     return payload
 
 
@@ -169,7 +173,7 @@ def test_every_block_is_accounted_for(minimal: dict[str, Any]) -> None:
                 assert held == block
 
 
-def test_citations_and_the_sharer_stay_out_of_the_document(
+def test_the_sharer_and_uncited_results_stay_out_of_the_document(
     minimal: dict[str, Any],
 ) -> None:
     result = _parse.parse(source(minimal))
@@ -179,13 +183,42 @@ def test_citations_and_the_sharer_stay_out_of_the_document(
 
     document = render_markdown(conversation, findings=result.findings)
     assert "Example Sharer" not in document
-    assert "example.com/source" not in document
+    # The one result a reference names is listed; the two it does not name are not.
+    assert (
+        "**Sources**\n\n1. [Example source 2](<https://example.com/source-2>)"
+        in document
+    )
+    assert "example.com/source-1" not in document
+    assert "example.com/source-3" not in document
     # Reasoning is shown, set apart from the answer as a labelled quote.
     assert "**Reasoning — Checking the switch**\n> Search to confirm" in document
 
     archive = render_json(conversation, findings=result.findings)
     assert "Example Sharer" in archive
     assert "Search to confirm" in archive
+
+
+def test_the_results_references_name_become_the_message_citations(
+    minimal: dict[str, Any],
+) -> None:
+    """In the order the references name them; the text is left as served."""
+    message = _parse.parse(source(minimal)).conversation.messages[3]
+    assert [(c.number, c.ref, c.url, c.title) for c in message.citations] == [
+        (1, "2", "https://example.com/source-2", "Example source 2")
+    ]
+    assert "[1]" not in text_of(message)
+
+
+def test_a_reference_naming_no_search_result_is_reported(
+    minimal: dict[str, Any],
+) -> None:
+    minimal["share"]["messages"][3]["references"][0]["items"][0]["search"]["id"] = "99"
+    result = _parse.parse(source(minimal))
+    assert result.conversation.messages[3].citations == []
+    assert (
+        "unmodelled_content_type",
+        "reference names no search result, preserved in provider_metadata",
+    ) in [(f.code, f.message) for f in result.findings]
 
 
 def test_a_status_other_than_completed_is_reported(minimal: dict[str, Any]) -> None:

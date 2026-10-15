@@ -75,13 +75,30 @@ def test_messages_follow_the_served_order_not_their_times(
     assert messages[1].provider_metadata["message_id"] == 2
 
 
-def test_resolved_citations_are_lifted_and_those_in_code_are_left(
+def test_resolved_citations_are_numbered_and_those_in_code_are_left(
     minimal: dict[str, Any],
 ) -> None:
-    answer = text_of(_parse.parse(source(minimal)).conversation.messages[1])
-    assert answer.startswith("Kettles heat water with an element.\n\n")
+    message = _parse.parse(source(minimal)).conversation.messages[1]
+    answer = text_of(message)
+    assert answer.startswith("Kettles heat water with an element.[1][2]\n\n")
     assert "x = [citation:1]" in answer
     assert answer.count("[citation:") == 1
+    assert [(c.number, c.ref, c.url, c.title) for c in message.citations] == [
+        (1, "1", "https://example.com/source-1", "Example source 1"),
+        (2, "2", "https://example.com/source-2", "Example source 2"),
+    ]
+
+
+def test_sources_are_numbered_by_first_citation_not_by_the_provider(
+    minimal: dict[str, Any],
+) -> None:
+    """The provider's index stays in ``ref``; a source cited again keeps its number."""
+    fragments = minimal["data"]["biz_data"]["messages"][1]["fragments"]
+    response = next(f for f in fragments if f["type"] == "RESPONSE")
+    response["content"] = "First[citation:3] then[citation:1] again[citation:3]."
+    message = _parse.parse(source(minimal)).conversation.messages[1]
+    assert text_of(message) == "First[1] then[2] again[1]."
+    assert [(c.number, c.ref) for c in message.citations] == [(1, "3"), (2, "1")]
 
 
 def test_the_served_text_is_kept_whenever_citations_are_lifted(
@@ -113,12 +130,16 @@ def test_a_citation_that_names_no_result_is_left_and_reported(
     ]
 
 
-def test_search_results_stay_out_of_the_document(minimal: dict[str, Any]) -> None:
+def test_only_cited_results_reach_the_document(minimal: dict[str, Any]) -> None:
     result = _parse.parse(source(minimal))
     search = result.conversation.messages[1].provider_metadata["fragment_extras"]["0"]
     assert len(search["results"]) == 3
     document = render_markdown(result.conversation, findings=result.findings)
-    assert "example.com/source" not in document
+    assert (
+        "**Sources**\n\n1. [Example source 1](<https://example.com/source-1>)\n"
+        "2. [Example source 2](<https://example.com/source-2>)"
+    ) in document
+    assert "example.com/source-3" not in document
     assert "example.com/source" in render_json(
         result.conversation, findings=result.findings
     )

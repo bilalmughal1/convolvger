@@ -20,7 +20,7 @@ from convolvger.core.errors import ConvolvgerError
 from convolvger.core.findings import Finding
 from convolvger.core.models import Conversation
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 """The version this release writes.
 
 Bumped only when a change would stop an older reader loading a file.
@@ -32,10 +32,13 @@ added ``provider_metadata`` to a conversation, which is the same kind
 of change and would normally need its own bump -- but version 3 had
 not been released when it was added, so no reader existed that could
 refuse it and the rule had nothing to protect. A field added to a
-nested model after a release does need one.
+nested model after a release does need one. Version 4 added
+``citations`` to a message, after 0.6.1 shipped; measured, 0.6.1
+refuses a message carrying it, so the version says so before that
+reader gets as far as the field.
 """
 
-READABLE_VERSIONS: frozenset[int] = frozenset({2, SCHEMA_VERSION})
+READABLE_VERSIONS: frozenset[int] = frozenset({2, 3, SCHEMA_VERSION})
 """Every version this release can read, not merely the one it writes.
 
 A format that orphans its own older files on each release is a poor

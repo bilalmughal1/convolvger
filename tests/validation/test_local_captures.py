@@ -74,16 +74,20 @@ independent reading of the markup rather than against itself."""
 
 
 def without_carried_citations(message: str, cards: list[str]) -> str:
-    """Remove each inline citation whose card the response carries."""
-    carried = {json.loads(card)["id"] for card in cards}
+    """Number each inline citation whose card the response carries, by its link."""
+    carried = {json.loads(card)["id"]: json.loads(card).get("url") for card in cards}
+    numbers: dict[str, int] = {}
 
-    def drop(match: re.Match[str]) -> str:
+    def number(match: re.Match[str]) -> str:
         opening = match.group(1)
         card = re.search(r'card_id="([^"]*)"', opening)
         cited = 'type="render_inline_citation"' in opening
-        return "" if cited and card and card.group(1) in carried else match.group(0)
+        if not (cited and card and card.group(1) in carried):
+            return match.group(0)
+        link = carried[card.group(1)] or card.group(1)
+        return f"[{numbers.setdefault(link, len(numbers) + 1)}]"
 
-    return CITATION.sub(drop, message)
+    return CITATION.sub(number, message)
 
 
 grok_capture = pytest.mark.skipif(
@@ -233,6 +237,21 @@ def _parse_capture(provider: str, url: str) -> Any:
     )
 
 
+def _renumbered(served: str, marker: str) -> str:
+    """``served`` with each marker shown as the number of its first citation.
+
+    Written apart from the parser, as the expectation it is checked
+    against; neither capture cites inside code, as the earlier version of
+    this check, which removed every marker, showed.
+    """
+    numbers: dict[str, int] = {}
+    return re.sub(
+        marker,
+        lambda m: f"[{numbers.setdefault(m.group(1), len(numbers) + 1)}]",
+        served,
+    )
+
+
 def _served(extras: dict[str, Any]) -> list[str]:
     return [item["content"] for item in extras.values() if "content" in item]
 
@@ -252,7 +271,10 @@ def test_the_deepseek_capture_parses_clean_with_every_citation_resolved() -> Non
                 lifted += 1
                 block = message.content[0]
                 assert isinstance(block, TextBlock)
-                assert re.sub(r"\[citation:\d+\]", "", served) == block.text
+                assert _renumbered(served, r"\[citation:(\d+)\]") == block.text
+                assert len(message.citations) == len(
+                    set(re.findall(r"\[\d+\]", block.text))
+                )
     assert lifted > 0
 
 
@@ -297,6 +319,6 @@ def test_the_qwen_capture_parses_with_its_copies_in_step_and_citations_resolved(
         texts = [b for b in message.content if isinstance(b, TextBlock)]
         assert reasoning
         assert message.content == [*reasoning, *texts]
-        assert [re.sub(r"\[\[\d+\]\]", "", text) for text in served] == [
+        assert [_renumbered(text, r"\[\[(\d+)\]\]") for text in served] == [
             block.text for block in texts
         ]

@@ -8,6 +8,19 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- A message now lists the sources it cites. Under each DeepSeek, Qwen, Grok and
+  Kimi answer that cites search results, a numbered **Sources** list links each
+  one by its title, and the citation in the text reads `[1]`, `[2]`, counted in
+  the order the answer first cites each source. Before, the markers were
+  removed and no source reached the Markdown. Only cited results are listed:
+  in the real shares measured, 49 of 152 results carried were cited. Uncited
+  results stay in the JSON archive, which keeps everything as served. Kimi's
+  text is left as served, since its citations sit beside the text. Grok
+  numbers by page, since two of its cards were measured linking one page
+- Archive schema version 4: a message records its citations. This version
+  reads versions 2, 3 and 4. Convolvger 0.6 refuses a version 4 archive with a
+  message naming the version, rather than reading it
+
 - Kimi's and Qwen's reasoning is shown in the Markdown as reasoning, a labelled
   quote set apart from the answer, as ChatGPT's thoughts already were, instead
   of being kept only in the JSON and reported as unmodelled. A Kimi thought's

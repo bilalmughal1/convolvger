@@ -29,8 +29,13 @@ in ``provider_metadata`` under its position, so nothing served is lost.
 
 Citations are not marked inside the text. Each is a ``references`` entry
 naming the span of the answer it supports and the search result behind
-it, and is kept in ``provider_metadata`` with the rest; no renderer
-reads it.
+it. The results they name become the message's citations, numbered in
+the order the references list them, so the document can say what the
+answer drew on; the text is left as served, since a marker placed at a
+quoted span would be text the provider never sent, and the span can
+occur more than once. The entries themselves are kept in
+``provider_metadata`` with the rest, and a reference naming no search
+the message carries is reported.
 
 ``creator`` names the account that shared the conversation. It is kept
 in ``provider_metadata`` for the reason Claude's is: the JSON export is
@@ -46,6 +51,7 @@ from datetime import datetime
 from typing import Any, TypeGuard
 
 from convolvger.core import jsonload
+from convolvger.core.citations import Sources
 from convolvger.core.findings import Finding, collapse, finding
 from convolvger.core.models import (
     ContentBlock,
@@ -134,6 +140,56 @@ def _reasoning(
     return reasoning, unheld
 
 
+def _search_results(raw: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """The search results a message's tool blocks carry, by their id."""
+    results: dict[str, dict[str, Any]] = {}
+    blocks = raw.get("blocks")
+    for block in blocks if isinstance(blocks, list) else []:
+        tool = block.get("tool") if isinstance(block, dict) else None
+        contents = tool.get("contents") if isinstance(tool, dict) else None
+        for item in contents if isinstance(contents, list) else []:
+            found = item.get("searchResult") if isinstance(item, dict) else None
+            ident = found.get("id") if isinstance(found, dict) else None
+            base = found.get("base") if isinstance(found, dict) else None
+            if isinstance(ident, str) and isinstance(base, dict):
+                results.setdefault(ident, base)
+    return results
+
+
+def _cited(
+    raw: dict[str, Any], findings: list[Finding], message_id: str | None
+) -> Sources:
+    """The search results a message's references name, in the order named."""
+    results = _search_results(raw)
+
+    def described(ref: str) -> tuple[str | None, str | None]:
+        url, title = results[ref].get("url"), results[ref].get("title")
+        return (
+            url if isinstance(url, str) and url else None,
+            title if isinstance(title, str) and title else None,
+        )
+
+    sources = Sources(described)
+    references = raw.get("references")
+    for reference in references if isinstance(references, list) else []:
+        items = reference.get("items") if isinstance(reference, dict) else None
+        for item in items if isinstance(items, list) else []:
+            search = item.get("search") if isinstance(item, dict) else None
+            ref = search.get("id") if isinstance(search, dict) else None
+            if isinstance(ref, str) and ref in results:
+                sources.number(ref)
+            else:
+                findings.append(
+                    finding(
+                        "unmodelled_content_type",
+                        "reference names no search result, preserved in "
+                        "provider_metadata",
+                        message_id,
+                    )
+                )
+    return sources
+
+
 def _blocks(
     raw: Any, findings: list[Finding], message_id: str | None
 ) -> tuple[list[ContentBlock], dict[str, Any]]:
@@ -203,6 +259,7 @@ def _message(raw: dict[str, Any], findings: list[Finding]) -> Message:
     identifier = raw.get("id")
     message_id = identifier if isinstance(identifier, str) and identifier else None
     content, extras = _blocks(raw.get("blocks"), findings, message_id)
+    sources = _cited(raw, findings, message_id)
 
     if not content:
         findings.append(finding("message_has_no_content", "no text block", message_id))
@@ -239,6 +296,7 @@ def _message(raw: dict[str, Any], findings: list[Finding]) -> Message:
         timestamp=_timestamp(raw.get("createTime")),
         content=content,
         status=status if isinstance(status, str) else None,
+        citations=sources.citations,
         provider_metadata=metadata,
     )
 
